@@ -1,5 +1,6 @@
 #![no_std]
 
+pub mod data;
 pub mod widgets;
 
 use crate::widgets::Widget;
