@@ -1,18 +1,21 @@
 #![no_std]
 
-use core::{fmt::Binary, marker::PhantomData};
+use core::marker::PhantomData;
 
 use embedded_graphics::{
     draw_target::DrawTarget,
     mono_font::{ascii::Font6x10, MonoFont, MonoTextStyle, MonoTextStyleBuilder},
     pixelcolor::{BinaryColor, PixelColor},
     prelude::Point,
-    primitives::Rectangle,
-    text::{self, TextRenderer},
+    text::TextRenderer,
 };
 use embedded_gui::{
-    BoundingBox, Button, Canvas, Label, LabelConstructor, LabelProperties, MeasuredSize, Widget,
-    WidgetProperties, WidgetRenderer,
+    widgets::{
+        button::Button,
+        label::{Label, LabelConstructor, LabelProperties},
+        Widget, WidgetProperties,
+    },
+    BoundingBox, Canvas, MeasuredSize, WidgetRenderer,
 };
 
 pub struct EgCanvas<C, D>
@@ -60,14 +63,16 @@ where
     F: MonoFont,
     C: PixelColor,
 {
-    fn text_color(mut self, text_color: C) -> Self {
+    /// Customize the text color
+    pub fn text_color(mut self, text_color: C) -> Self {
         self.renderer = MonoTextStyleBuilder::from(&self.renderer)
             .text_color(text_color)
             .build();
         self
     }
 
-    fn font<F2: MonoFont>(self, font: F2) -> LabelStyle<MonoTextStyle<C, F2>> {
+    /// Customize the font
+    pub fn font<F2: MonoFont>(self, font: F2) -> LabelStyle<MonoTextStyle<C, F2>> {
         LabelStyle {
             renderer: MonoTextStyleBuilder::from(&self.renderer)
                 .font(font)

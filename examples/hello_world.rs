@@ -3,7 +3,14 @@ use embedded_graphics::{pixelcolor::BinaryColor, prelude::Size as EgSize};
 use embedded_graphics_simulator::{
     BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, Window as SimWindow,
 };
-use embedded_gui::{Button, Label, LabelConstructor, Size, Widget, Window};
+use embedded_gui::{
+    widgets::{
+        button::Button,
+        label::{Label, LabelConstructor},
+        Widget,
+    },
+    Size, Window,
+};
 
 fn main() {
     let display = SimulatorDisplay::<BinaryColor>::new(EgSize::new(256, 256));
