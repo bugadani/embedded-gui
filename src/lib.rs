@@ -38,15 +38,10 @@ pub trait WidgetRenderer<C: Canvas>: Widget {
     fn draw(&self, canvas: &mut C) -> Result<(), C::Error>;
 }
 
-pub struct NoRenderer;
-
-pub enum NoCanvas {}
-impl Canvas for NoCanvas {
-    type Error = ();
-}
-
 pub trait Canvas {
     type Error;
+
+    fn size(&self) -> MeasuredSize;
 }
 
 pub enum MeasureConstraint {
@@ -86,8 +81,8 @@ where
 
     pub fn measure(&mut self) {
         self.root.measure(MeasureSpec {
-            width: MeasureConstraint::AtMost(0),
-            height: MeasureConstraint::AtMost(0),
+            width: MeasureConstraint::AtMost(self.canvas.size().width),
+            height: MeasureConstraint::AtMost(self.canvas.size().height),
         });
     }
 

@@ -38,6 +38,15 @@ where
 
 impl<C: PixelColor, D: DrawTarget<Color = C>> Canvas for EgCanvas<C, D> {
     type Error = <D as DrawTarget>::Error;
+
+    fn size(&self) -> MeasuredSize {
+        let size = self.target.bounding_box().size;
+
+        MeasuredSize {
+            width: size.width,
+            height: size.height,
+        }
+    }
 }
 
 pub struct LabelStyle<T>
