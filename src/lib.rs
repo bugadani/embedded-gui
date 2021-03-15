@@ -162,13 +162,13 @@ where
         let width = match measure_spec.width {
             MeasureConstraint::AtMost(width) => width.min(size.width),
             MeasureConstraint::Exactly(width) => width,
-            Unspecified => size.width,
+            MeasureConstraint::Unspecified => size.width,
         };
 
         let height = match measure_spec.height {
             MeasureConstraint::AtMost(height) => height.min(size.height),
             MeasureConstraint::Exactly(height) => height,
-            Unspecified => size.height,
+            MeasureConstraint::Unspecified => size.height,
         };
 
         self.set_measured_size(MeasuredSize { width, height })

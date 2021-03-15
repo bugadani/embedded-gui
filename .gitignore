@@ -1,2 +1,5 @@
 /target
 Cargo.lock
+
+/backend-embedded-graphics/target
+/backend-embedded-graphics/Cargo.lock
