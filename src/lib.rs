@@ -103,6 +103,10 @@ where
         }
     }
 
+    pub fn update(&mut self) {
+        self.root.update()
+    }
+
     pub fn measure(&mut self) {
         self.root.measure(MeasureSpec {
             width: MeasureConstraint::AtMost(self.canvas.size().width),

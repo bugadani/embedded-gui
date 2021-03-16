@@ -1,7 +1,9 @@
 use std::{thread, time::Duration};
 
 use backend_embedded_graphics::EgCanvas;
-use embedded_graphics::{pixelcolor::BinaryColor, prelude::Size as EgSize};
+use embedded_graphics::{
+    draw_target::DrawTarget, pixelcolor::BinaryColor, prelude::Size as EgSize,
+};
 use embedded_graphics_simulator::{
     sdl2::MouseButton, BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent,
     Window as SimWindow,
@@ -75,6 +77,9 @@ fn main() {
     let mut window = SimWindow::new("TextBox demonstration", &output_settings);
 
     loop {
+        gui.canvas.target.clear(BinaryColor::Off).unwrap();
+
+        gui.update();
         gui.measure();
         gui.arrange();
         gui.draw().unwrap();
