@@ -4,6 +4,7 @@ pub mod button;
 pub mod label;
 
 pub trait Widget {
+    type Data;
     //type InputController: InputController;
 
     //fn input_event(&mut self, event: <Self::InputController as InputController>::Event) -> bool;
@@ -51,5 +52,42 @@ impl Default for WidgetProperties {
             width: Size::WrapContent,
             height: Size::WrapContent,
         }
+    }
+}
+
+pub struct WidgetDataHolder<W, D> {
+    pub data: D,
+    pub on_data_changed: fn(&mut W, &D),
+}
+
+impl<W> Default for WidgetDataHolder<W, ()> {
+    fn default() -> Self {
+        Self {
+            data: (),
+            on_data_changed: |_, _| (),
+        }
+    }
+}
+
+impl<W> WidgetDataHolder<W, ()> {
+    pub fn bind<W2, D>(self, data: D) -> WidgetDataHolder<W2, D> {
+        WidgetDataHolder {
+            data,
+            on_data_changed: |_, _| (),
+        }
+    }
+}
+
+pub trait DataHolder: Widget {
+    fn data_holder(&mut self) -> &mut WidgetDataHolder<Self, Self::Data>
+    where
+        Self: Sized;
+
+    fn on_data_changed(mut self, callback: fn(&mut Self, &Self::Data)) -> Self
+    where
+        Self: Sized,
+    {
+        self.data_holder().on_data_changed = callback;
+        self
     }
 }

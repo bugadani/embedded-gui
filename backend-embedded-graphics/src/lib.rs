@@ -13,7 +13,7 @@ use embedded_gui::{
     widgets::{
         button::Button,
         label::{Label, LabelConstructor, LabelProperties},
-        Widget, WidgetProperties,
+        Widget, WidgetDataHolder, WidgetProperties,
     },
     BoundingBox, Canvas, MeasuredSize, WidgetRenderer,
 };
@@ -107,7 +107,7 @@ where
 }
 
 impl<F, C, D> LabelConstructor<EgCanvas<C, D>, LabelStyle<F>>
-    for Label<EgCanvas<C, D>, LabelStyle<F>>
+    for Label<EgCanvas<C, D>, LabelStyle<F>, ()>
 where
     F: TextRenderer,
     C: PixelColor,
@@ -121,17 +121,18 @@ where
             label_properties: LabelStyle::default(),
             bounds: BoundingBox::default(),
             _marker: PhantomData,
+            data_holder: WidgetDataHolder::default(),
         }
     }
 }
 
-impl<F, C, D> WidgetRenderer<EgCanvas<C, D>> for Label<EgCanvas<C, D>, LabelStyle<F>>
+impl<F, C, DT, D> WidgetRenderer<EgCanvas<C, DT>> for Label<EgCanvas<C, DT>, LabelStyle<F>, D>
 where
     F: TextRenderer<Color = C>,
     C: PixelColor,
-    D: DrawTarget<Color = C>,
+    DT: DrawTarget<Color = C>,
 {
-    fn draw(&self, canvas: &mut EgCanvas<C, D>) -> Result<(), D::Error> {
+    fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
         self.label_properties
             .renderer
             .draw_string(
@@ -146,13 +147,13 @@ where
     }
 }
 
-impl<C, D, I> WidgetRenderer<EgCanvas<C, D>> for Button<I>
+impl<C, DT, I, D> WidgetRenderer<EgCanvas<C, DT>> for Button<I, D>
 where
-    I: Widget + WidgetRenderer<EgCanvas<C, D>>,
+    I: Widget + WidgetRenderer<EgCanvas<C, DT>>,
     C: PixelColor,
-    D: DrawTarget<Color = C>,
+    DT: DrawTarget<Color = C>,
 {
-    fn draw(&self, canvas: &mut EgCanvas<C, D>) -> Result<(), D::Error> {
+    fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
         self.inner.draw(canvas)
     }
 }

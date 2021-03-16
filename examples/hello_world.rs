@@ -4,10 +4,11 @@ use embedded_graphics_simulator::{
     BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, Window as SimWindow,
 };
 use embedded_gui::{
+    data::WidgetData,
     widgets::{
         button::Button,
         label::{Label, LabelConstructor},
-        Widget,
+        DataHolder, Widget,
     },
     Size, Window,
 };
@@ -15,9 +16,18 @@ use embedded_gui::{
 fn main() {
     let display = SimulatorDisplay::<BinaryColor>::new(EgSize::new(256, 256));
 
+    let counter = WidgetData::new(true, |_| {});
     let mut gui = Window::new(
         EgCanvas::new(display),
-        Button::new(Label::new("foobar")).width(Size::FillParent),
+        Button::new(
+            Label::new("foobar")
+                .bind(&counter)
+                .on_data_changed(|mut widget, data| {
+                    widget.text = if *data.get() { "on" } else { "off" };
+                }),
+        )
+        .bind(&counter)
+        .width(Size::FillParent),
     );
 
     gui.measure();
