@@ -57,6 +57,7 @@ fn main() {
             Label::new("foobar")
                 .bind(&counter)
                 .on_data_changed(|mut widget, data| {
+                    // FIXME: not called
                     widget.text = if *data.get() { "on" } else { "off" };
                 }),
         )
