@@ -10,6 +10,7 @@ use embedded_graphics::{
     text::TextRenderer,
 };
 use embedded_gui::{
+    data::{NoData, WidgetData},
     widgets::{
         button::Button,
         label::{Label, LabelConstructor, LabelProperties},
@@ -107,7 +108,7 @@ where
 }
 
 impl<F, C, D> LabelConstructor<EgCanvas<C, D>, LabelStyle<F>>
-    for Label<EgCanvas<C, D>, LabelStyle<F>, ()>
+    for Label<EgCanvas<C, D>, LabelStyle<F>, NoData>
 where
     F: TextRenderer,
     C: PixelColor,
@@ -131,6 +132,7 @@ where
     F: TextRenderer<Color = C>,
     C: PixelColor,
     DT: DrawTarget<Color = C>,
+    D: WidgetData,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
         self.label_properties
@@ -152,6 +154,7 @@ where
     I: Widget + WidgetRenderer<EgCanvas<C, DT>>,
     C: PixelColor,
     DT: DrawTarget<Color = C>,
+    D: WidgetData,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
         self.inner.draw(canvas)

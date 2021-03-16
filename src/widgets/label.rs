@@ -1,6 +1,7 @@
 use core::marker::PhantomData;
 
 use crate::{
+    data::{NoData, WidgetData},
     widgets::{DataHolder, Widget, WidgetDataHolder, WidgetProperties},
     BoundingBox, Canvas, MeasureConstraint, MeasureSpec, MeasuredSize,
 };
@@ -10,7 +11,7 @@ pub trait LabelProperties<C: Canvas> {
 }
 
 pub trait LabelConstructor<C, P> {
-    fn new(text: &'static str) -> Label<C, P, ()>
+    fn new(text: &'static str) -> Label<C, P, NoData>
     where
         C: Canvas,
         P: LabelProperties<C>;
@@ -20,6 +21,7 @@ pub struct Label<C, P, D>
 where
     C: Canvas,
     P: LabelProperties<C>,
+    D: WidgetData,
 {
     // FIXME: use heapless::String
     pub text: &'static str,
@@ -30,12 +32,15 @@ where
     pub _marker: PhantomData<C>,
 }
 
-impl<C, P> Label<C, P, ()>
+impl<C, P> Label<C, P, NoData>
 where
     C: Canvas,
     P: LabelProperties<C>,
 {
-    pub fn bind<D>(self, data: D) -> Label<C, P, D> {
+    pub fn bind<D>(self, data: D) -> Label<C, P, D>
+    where
+        D: WidgetData,
+    {
         Label {
             widget_properties: self.widget_properties,
             label_properties: self.label_properties,
@@ -51,6 +56,7 @@ impl<C, P, D> DataHolder for Label<C, P, D>
 where
     C: Canvas,
     P: LabelProperties<C>,
+    D: WidgetData,
 {
     type Data = D;
 
@@ -66,6 +72,7 @@ impl<C, P, D> Widget for Label<C, P, D>
 where
     C: Canvas,
     P: LabelProperties<C>,
+    D: WidgetData,
 {
     fn widget_properties(&mut self) -> &mut WidgetProperties {
         &mut self.widget_properties
@@ -96,4 +103,6 @@ where
 
         self.set_measured_size(MeasuredSize { width, height })
     }
+
+    fn update_impl(&mut self) {}
 }

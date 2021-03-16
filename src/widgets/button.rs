@@ -1,17 +1,21 @@
 use crate::{
+    data::{NoData, WidgetData},
     input::{InputEvent, Key},
     widgets::{DataHolder, Widget, WidgetDataHolder, WidgetProperties},
     BoundingBox, InputCtxt, MeasureSpec,
 };
 
-pub struct Button<I, D> {
+pub struct Button<I, D>
+where
+    D: WidgetData,
+{
     pub widget_properties: WidgetProperties,
     pub inner: I,
     pub data_holder: WidgetDataHolder<Self, D>,
     pub on_clicked: fn(&mut D),
 }
 
-impl<I> Button<I, ()>
+impl<I> Button<I, NoData>
 where
     I: Widget,
 {
@@ -19,14 +23,14 @@ where
         Self {
             widget_properties: WidgetProperties::default(),
             inner,
-            data_holder: Default::default(),
+            data_holder: WidgetDataHolder::default(),
             on_clicked: |_| (),
         }
     }
 
     pub fn bind<D>(self, data: D) -> Button<I, D>
     where
-        Self: Sized,
+        D: WidgetData,
     {
         Button {
             widget_properties: self.widget_properties,
@@ -40,6 +44,7 @@ where
 impl<I, D> Button<I, D>
 where
     I: Widget,
+    D: WidgetData,
 {
     pub fn on_clicked(self, callback: fn(&mut D)) -> Button<I, D>
     where
@@ -63,6 +68,7 @@ where
 impl<I, D> DataHolder for Button<I, D>
 where
     I: Widget,
+    D: WidgetData,
 {
     type Data = D;
 
@@ -77,6 +83,7 @@ where
 impl<I, D> Widget for Button<I, D>
 where
     I: Widget,
+    D: WidgetData,
 {
     fn widget_properties(&mut self) -> &mut WidgetProperties {
         &mut self.widget_properties
@@ -138,4 +145,6 @@ where
             false
         }
     }
+
+    fn update_impl(&mut self) {}
 }

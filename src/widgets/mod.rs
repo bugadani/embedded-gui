@@ -1,4 +1,5 @@
 use crate::{
+    data::{NoData, WidgetData},
     input::{InputEvent, Key},
     BoundingBox, InputCtxt, MeasureSpec, MeasuredSize, Position, Size,
 };
@@ -81,6 +82,16 @@ pub trait Widget {
             None
         }
     }
+
+    fn update(&mut self) {
+        for i in 0..self.children() {
+            let child = self.get_mut_child(i);
+            child.update();
+        }
+        self.update_impl()
+    }
+
+    fn update_impl(&mut self) {}
 }
 
 pub struct WidgetProperties {
@@ -97,22 +108,28 @@ impl Default for WidgetProperties {
     }
 }
 
-pub struct WidgetDataHolder<W, D> {
+pub struct WidgetDataHolder<W, D>
+where
+    D: WidgetData,
+{
     pub data: D,
     pub on_data_changed: fn(&mut W, &D),
 }
 
-impl<W> Default for WidgetDataHolder<W, ()> {
+impl<W> Default for WidgetDataHolder<W, NoData> {
     fn default() -> Self {
         Self {
-            data: (),
+            data: NoData::default(),
             on_data_changed: |_, _| (),
         }
     }
 }
 
-impl<W> WidgetDataHolder<W, ()> {
-    pub fn bind<W2, D>(self, data: D) -> WidgetDataHolder<W2, D> {
+impl<W> WidgetDataHolder<W, NoData> {
+    pub fn bind<W2, D>(self, data: D) -> WidgetDataHolder<W2, D>
+    where
+        D: WidgetData,
+    {
         WidgetDataHolder {
             data,
             on_data_changed: |_, _| (),
@@ -121,7 +138,7 @@ impl<W> WidgetDataHolder<W, ()> {
 }
 
 pub trait DataHolder: Widget {
-    type Data;
+    type Data: WidgetData;
 
     fn data_holder(&mut self) -> &mut WidgetDataHolder<Self, Self::Data>
     where

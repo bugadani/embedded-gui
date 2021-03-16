@@ -7,7 +7,7 @@ use embedded_graphics_simulator::{
     Window as SimWindow,
 };
 use embedded_gui::{
-    data::WidgetData,
+    data::{BoundData, WidgetData},
     input::InputEvent,
     widgets::{
         button::Button,
@@ -45,7 +45,10 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
 fn main() {
     let display = SimulatorDisplay::<BinaryColor>::new(EgSize::new(256, 256));
 
-    let counter = WidgetData::new(true, |_| {});
+    let counter = BoundData::new(true, |data| {
+        println!("Data changed to {:?}", data);
+    });
+
     let mut gui = Window::new(
         EgCanvas::new(display),
         Button::new(
