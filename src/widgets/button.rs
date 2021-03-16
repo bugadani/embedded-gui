@@ -7,6 +7,7 @@ pub struct Button<I, D> {
     pub widget_properties: WidgetProperties,
     pub inner: I,
     pub data_holder: WidgetDataHolder<Self, D>,
+    pub on_clicked: fn(&mut Self, &mut D),
 }
 
 impl<I> Button<I, ()>
@@ -18,6 +19,7 @@ where
             widget_properties: WidgetProperties::default(),
             inner,
             data_holder: Default::default(),
+            on_clicked: |_, _| (),
         }
     }
 
@@ -29,6 +31,24 @@ where
             widget_properties: self.widget_properties,
             inner: self.inner,
             data_holder: self.data_holder.bind(data),
+            on_clicked: |_, _| (),
+        }
+    }
+}
+
+impl<I, D> Button<I, D>
+where
+    I: Widget,
+{
+    pub fn on_clicked(self, callback: fn(&mut Self, &mut D)) -> Button<I, D>
+    where
+        Self: Sized,
+    {
+        Button {
+            widget_properties: self.widget_properties,
+            inner: self.inner,
+            data_holder: self.data_holder,
+            on_clicked: callback,
         }
     }
 }

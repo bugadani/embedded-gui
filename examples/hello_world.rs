@@ -27,6 +27,12 @@ fn main() {
                 }),
         )
         .bind(&counter)
+        .on_clicked(|_, data| {
+            data.update(|mut data| {
+                *data = !*data;
+                true
+            });
+        })
         .width(Size::FillParent),
     );
 
