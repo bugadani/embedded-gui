@@ -52,6 +52,8 @@ where
     C: Canvas,
     P: LabelProperties<C>,
 {
+    type Data = D;
+
     fn data_holder(&mut self) -> &mut WidgetDataHolder<Self, Self::Data>
     where
         Self: Sized,
@@ -65,8 +67,6 @@ where
     C: Canvas,
     P: LabelProperties<C>,
 {
-    type Data = D;
-
     fn widget_properties(&mut self) -> &mut WidgetProperties {
         &mut self.widget_properties
     }

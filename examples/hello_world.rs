@@ -1,17 +1,46 @@
+use std::{thread, time::Duration};
+
 use backend_embedded_graphics::EgCanvas;
 use embedded_graphics::{pixelcolor::BinaryColor, prelude::Size as EgSize};
 use embedded_graphics_simulator::{
-    BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, Window as SimWindow,
+    sdl2::MouseButton, BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent,
+    Window as SimWindow,
 };
 use embedded_gui::{
     data::WidgetData,
+    input::InputEvent,
     widgets::{
         button::Button,
         label::{Label, LabelConstructor},
         DataHolder, Widget,
     },
-    Size, Window,
+    Position, Size, Window,
 };
+
+fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
+    match event {
+        SimulatorEvent::MouseButtonUp {
+            mouse_btn: MouseButton::Left,
+            point,
+        } => Ok(InputEvent::PointerUp(Position {
+            x: point.x,
+            y: point.y,
+        })),
+        SimulatorEvent::MouseButtonDown {
+            mouse_btn: MouseButton::Left,
+            point,
+        } => Ok(InputEvent::PointerDown(Position {
+            x: point.x,
+            y: point.y,
+        })),
+        SimulatorEvent::MouseMove { point } => Ok(InputEvent::PointerHover(Position {
+            x: point.x,
+            y: point.y,
+        })),
+        SimulatorEvent::Quit => Err(true),
+        _ => Err(false),
+    }
+}
 
 fn main() {
     let display = SimulatorDisplay::<BinaryColor>::new(EgSize::new(256, 256));
@@ -27,21 +56,41 @@ fn main() {
                 }),
         )
         .bind(&counter)
-        .on_clicked(|_, data| {
+        .on_clicked(|data| {
             data.update(|mut data| {
                 *data = !*data;
                 true
             });
+            println!("Clicked!");
         })
         .width(Size::FillParent),
     );
 
-    gui.measure();
-    gui.arrange();
-    gui.draw().unwrap();
-
     let output_settings = OutputSettingsBuilder::new()
         .theme(BinaryColorTheme::OledBlue)
         .build();
-    SimWindow::new("Hello GUI", &output_settings).show_static(&gui.canvas.target);
+    let mut window = SimWindow::new("TextBox demonstration", &output_settings);
+
+    loop {
+        gui.measure();
+        gui.arrange();
+        gui.draw().unwrap();
+
+        // Update the window.
+        window.update(&gui.canvas.target);
+
+        // Handle key and mouse events.
+        for event in window.events() {
+            match convert_input(event) {
+                Ok(input) => {
+                    gui.input_event(input);
+                }
+                Err(true) => return,
+                _ => {}
+            }
+        }
+
+        // Wait for a little while.
+        thread::sleep(Duration::from_millis(10));
+    }
 }

@@ -1,10 +1,12 @@
-use crate::{BoundingBox, MeasureSpec, MeasuredSize, Position, Size};
+use crate::{
+    input::{InputEvent, Key},
+    BoundingBox, InputCtxt, MeasureSpec, MeasuredSize, Position, Size,
+};
 
 pub mod button;
 pub mod label;
 
 pub trait Widget {
-    type Data;
     //type InputController: InputController;
 
     //fn input_event(&mut self, event: <Self::InputController as InputController>::Event) -> bool;
@@ -13,6 +15,18 @@ pub trait Widget {
     fn bounding_box(&self) -> BoundingBox;
 
     fn bounding_box_mut(&mut self) -> &mut BoundingBox;
+
+    fn children(&self) -> usize {
+        0
+    }
+
+    fn get_child(&self, _idx: usize) -> &dyn Widget {
+        unimplemented!()
+    }
+
+    fn get_mut_child(&mut self, _idx: usize) -> &mut dyn Widget {
+        unimplemented!()
+    }
 
     fn width(mut self, width: Size) -> Self
     where
@@ -38,6 +52,34 @@ pub trait Widget {
 
     fn set_measured_size(&mut self, size: MeasuredSize) {
         self.bounding_box_mut().size = size;
+    }
+
+    fn handle_input(&mut self, ctxt: &mut InputCtxt, event: InputEvent) -> bool {
+        if matches!(event, InputEvent::KeyDown(Key::Tab, _, _)) {
+            ctxt.select_next_widget();
+            true
+        } else {
+            false
+        }
+    }
+
+    fn hit_test(&self, position: Position) -> Option<usize> {
+        if self.bounding_box().hit_test(position) {
+            if self.children() > 0 {
+                let mut index = 0;
+                for i in 0..self.children() {
+                    let child = self.get_child(i);
+                    if let Some(idx) = child.hit_test(position) {
+                        return Some(index + idx);
+                    }
+                    index += child.children();
+                }
+            }
+
+            Some(0)
+        } else {
+            None
+        }
     }
 }
 
@@ -79,6 +121,8 @@ impl<W> WidgetDataHolder<W, ()> {
 }
 
 pub trait DataHolder: Widget {
+    type Data;
+
     fn data_holder(&mut self) -> &mut WidgetDataHolder<Self, Self::Data>
     where
         Self: Sized;
