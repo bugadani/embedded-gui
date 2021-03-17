@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use crate::{
     data::{NoData, WidgetData},
-    widgets::{DataHolder, Widget, WidgetDataHolder, WidgetProperties, WidgetWrapper},
+    widgets::{Widget, WidgetProperties, WidgetWrapper},
     BoundingBox, Canvas, MeasureConstraint, MeasureSpec, MeasuredSize,
 };
 
@@ -63,23 +63,6 @@ where
             widget: self.widget.bind::<D>(),
             data_holder: self.data_holder.bind(data),
         }
-    }
-}
-
-impl<C, P, D> DataHolder for WidgetWrapper<Label<C, P, D>, D>
-where
-    C: Canvas,
-    P: LabelProperties<C>,
-    D: WidgetData,
-{
-    type Data = D;
-    type Widget = Label<C, P, D>;
-
-    fn data_holder(&mut self) -> &mut WidgetDataHolder<Self::Widget, Self::Data>
-    where
-        Self: Sized,
-    {
-        &mut self.data_holder
     }
 }
 

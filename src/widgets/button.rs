@@ -1,7 +1,7 @@
 use crate::{
     data::{NoData, WidgetData},
     input::{InputEvent, Key},
-    widgets::{DataHolder, Widget, WidgetDataHolder, WidgetProperties, WidgetWrapper},
+    widgets::{Widget, WidgetDataHolder, WidgetProperties, WidgetWrapper},
     BoundingBox, InputCtxt, MeasureSpec, Position,
 };
 
@@ -89,22 +89,6 @@ where
     fn fire_on_clicked(&mut self) {
         let callback = self.widget.on_clicked;
         callback(&mut self.data_holder.data)
-    }
-}
-
-impl<I, D> DataHolder for WidgetWrapper<Button<I, D>, D>
-where
-    I: Widget,
-    D: WidgetData,
-{
-    type Data = D;
-    type Widget = Button<I, D>;
-
-    fn data_holder(&mut self) -> &mut WidgetDataHolder<Self::Widget, Self::Data>
-    where
-        Self: Sized,
-    {
-        &mut self.data_holder
     }
 }
 

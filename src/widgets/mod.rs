@@ -167,3 +167,19 @@ pub struct WidgetWrapper<W, D: WidgetData> {
     pub widget: W,
     pub data_holder: WidgetDataHolder<W, D>,
 }
+
+impl<W, D> DataHolder for WidgetWrapper<W, D>
+where
+    D: WidgetData,
+    WidgetWrapper<W, D>: Widget,
+{
+    type Data = D;
+    type Widget = W;
+
+    fn data_holder(&mut self) -> &mut WidgetDataHolder<Self::Widget, Self::Data>
+    where
+        Self: Sized,
+    {
+        &mut self.data_holder
+    }
+}
