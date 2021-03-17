@@ -16,7 +16,7 @@ use embedded_gui::{
     widgets::{
         border::{Border, BorderProperties},
         button::Button,
-        fill::{FillDirection, FillParent},
+        fill::{FillDirection, FillParent, HorizontalAlignment, VerticalAlignment},
         label::{Label, LabelConstructor, LabelProperties},
         spacing::Spacing,
         Widget, WidgetDataHolder, WidgetWrapper,
@@ -245,12 +245,14 @@ where
     }
 }
 
-impl<C, DT, W, FD> WidgetRenderer<EgCanvas<C, DT>> for FillParent<W, FD>
+impl<C, DT, W, FD, H, V> WidgetRenderer<EgCanvas<C, DT>> for FillParent<W, FD, H, V>
 where
     FD: FillDirection,
     W: Widget + WidgetRenderer<EgCanvas<C, DT>>,
     C: PixelColor,
     DT: DrawTarget<Color = C>,
+    H: HorizontalAlignment,
+    V: VerticalAlignment,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
         self.inner.draw(canvas)
