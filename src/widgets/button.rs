@@ -186,7 +186,7 @@ where
         }
     }
 
-    fn update_impl(&mut self) {
+    fn update(&mut self) {
         self.data_holder.update(&mut self.widget);
     }
 }

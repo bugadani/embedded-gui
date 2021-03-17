@@ -104,7 +104,12 @@ where
     }
 
     pub fn update(&mut self) {
-        self.root.update()
+        let child_count = self.root.children();
+
+        self.root.update();
+        for idx in 0..child_count {
+            self.root.get_mut_child(idx).update();
+        }
     }
 
     pub fn measure(&mut self) {

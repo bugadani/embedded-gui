@@ -83,15 +83,7 @@ pub trait Widget {
         }
     }
 
-    fn update(&mut self) {
-        for i in 0..self.children() {
-            let child = self.get_mut_child(i);
-            child.update();
-        }
-        self.update_impl()
-    }
-
-    fn update_impl(&mut self) {}
+    fn update(&mut self) {}
 }
 
 pub struct WidgetProperties {
