@@ -6,18 +6,34 @@ use embedded_graphics::{
     draw_target::DrawTarget,
     mono_font::{ascii::Font6x10, MonoFont, MonoTextStyle, MonoTextStyleBuilder},
     pixelcolor::{BinaryColor, PixelColor},
-    prelude::Point,
+    prelude::{Point, Primitive, Size},
+    primitives::{PrimitiveStyle, PrimitiveStyleBuilder, Rectangle, StrokeAlignment},
     text::TextRenderer,
+    Drawable,
 };
 use embedded_gui::{
     data::{NoData, WidgetData},
     widgets::{
+        border::{Border, BorderProperties},
         button::Button,
         label::{Label, LabelConstructor, LabelProperties},
         Widget, WidgetDataHolder, WidgetProperties, WidgetWrapper,
     },
     BoundingBox, Canvas, MeasuredSize, WidgetRenderer,
 };
+
+trait ToRectangle {
+    fn to_rectangle(self) -> Rectangle;
+}
+
+impl ToRectangle for BoundingBox {
+    fn to_rectangle(self) -> Rectangle {
+        let top_left = Point::new(self.position.x, self.position.y);
+        let size = Size::new(self.size.width, self.size.height);
+
+        Rectangle::new(top_left, size)
+    }
+}
 
 pub struct EgCanvas<C, D>
 where
@@ -129,6 +145,41 @@ where
     }
 }
 
+pub struct BorderStyle<W, C>
+where
+    W: Widget,
+    C: PixelColor,
+{
+    style: PrimitiveStyle<C>,
+    _marker: PhantomData<W>,
+}
+
+impl<W> Default for BorderStyle<W, BinaryColor>
+where
+    W: Widget,
+{
+    fn default() -> Self {
+        Self {
+            style: PrimitiveStyleBuilder::new()
+                .stroke_alignment(StrokeAlignment::Outside)
+                .stroke_color(BinaryColor::On)
+                .stroke_width(1)
+                .build(),
+            _marker: PhantomData,
+        }
+    }
+}
+
+impl<W, C> BorderProperties for BorderStyle<W, C>
+where
+    W: Widget,
+    C: PixelColor,
+{
+    fn get_border_width(&self) -> u32 {
+        self.style.stroke_width
+    }
+}
+
 impl<F, C, DT, D> WidgetRenderer<EgCanvas<C, DT>> for Label<EgCanvas<C, DT>, LabelStyle<F>, D>
 where
     F: TextRenderer<Color = C>,
@@ -145,6 +196,25 @@ where
                 &mut canvas.target,
             )
             .map(|_| ())
+    }
+}
+
+impl<W, C, DT, D> WidgetRenderer<EgCanvas<C, DT>> for Border<W, BorderStyle<W, C>, D>
+where
+    W: Widget + WidgetRenderer<EgCanvas<C, DT>>,
+    C: PixelColor,
+    DT: DrawTarget<Color = C>,
+    D: WidgetData,
+    BorderStyle<W, C>: BorderProperties,
+{
+    fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
+        let bounds = self.inner.bounding_box();
+        let border = bounds
+            .to_rectangle()
+            .into_styled(self.border_properties.style);
+
+        self.inner.draw(canvas)?;
+        border.draw(&mut canvas.target)
     }
 }
 

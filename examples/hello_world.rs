@@ -12,6 +12,7 @@ use embedded_gui::{
     data::{BoundData, WidgetData},
     input::InputEvent,
     widgets::{
+        border::Border,
         button::Button,
         label::{Label, LabelConstructor},
         DataHolder, Widget,
@@ -53,13 +54,13 @@ fn main() {
 
     let mut gui = Window::new(
         EgCanvas::new(display),
-        Button::new(
+        Button::new(Border::new(
             Label::new("Click me")
                 .bind(&flag)
                 .on_data_changed(|mut widget, data| {
                     widget.text = if *data.get() { "on" } else { "off" };
                 }),
-        )
+        ))
         .bind(&flag)
         .on_clicked(|data| {
             data.update(|mut data| *data = !*data);

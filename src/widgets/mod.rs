@@ -4,6 +4,7 @@ use crate::{
     BoundingBox, InputCtxt, MeasureSpec, MeasuredSize, Position, Size,
 };
 
+pub mod border;
 pub mod button;
 pub mod label;
 

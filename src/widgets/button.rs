@@ -102,7 +102,6 @@ where
     }
 
     fn arrange(&mut self, position: Position) {
-        self.bounding_box_mut().position = position;
         self.widget.inner.arrange(position);
     }
 
@@ -111,7 +110,7 @@ where
     }
 
     fn bounding_box_mut(&mut self) -> &mut BoundingBox {
-        self.widget.inner.bounding_box_mut()
+        unimplemented!()
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
