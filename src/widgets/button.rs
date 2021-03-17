@@ -1,11 +1,11 @@
 use crate::{
     data::{NoData, WidgetData},
     input::{InputEvent, Key},
-    widgets::{DataHolder, Widget, WidgetDataHolder, WidgetProperties},
+    widgets::{DataHolder, Widget, WidgetDataHolder, WidgetProperties, WidgetWrapper},
     BoundingBox, InputCtxt, MeasureSpec, Position,
 };
 
-pub struct ButtonWidget<I, D>
+pub struct Button<I, D>
 where
     D: WidgetData,
 {
@@ -14,23 +14,26 @@ where
     pub on_clicked: fn(&mut D),
 }
 
-impl<I> ButtonWidget<I, NoData>
+impl<I> Button<I, NoData>
 where
     I: Widget,
 {
-    pub fn new(inner: I) -> Self {
-        Self {
-            widget_properties: WidgetProperties::default(),
-            inner,
-            on_clicked: |_| (),
+    pub fn new(inner: I) -> WidgetWrapper<Self, NoData> {
+        WidgetWrapper {
+            widget: Self {
+                widget_properties: WidgetProperties::default(),
+                inner,
+                on_clicked: |_| (),
+            },
+            data_holder: WidgetDataHolder::default(),
         }
     }
 
-    pub fn bind<D>(self) -> ButtonWidget<I, D>
+    pub fn bind<D>(self) -> Button<I, D>
     where
         D: WidgetData,
     {
-        ButtonWidget {
+        Button {
             widget_properties: self.widget_properties,
             inner: self.inner,
             on_clicked: |_| (),
@@ -38,7 +41,7 @@ where
     }
 }
 
-impl<I, D> ButtonWidget<I, D>
+impl<I, D> Button<I, D>
 where
     I: Widget,
     D: WidgetData,
@@ -52,46 +55,31 @@ where
     }
 }
 
-pub struct Button<I, D>
-where
-    D: WidgetData,
-{
-    pub widget: ButtonWidget<I, D>,
-    pub data_holder: WidgetDataHolder<ButtonWidget<I, D>, D>,
-}
-
-impl<I> Button<I, NoData>
+impl<I> WidgetWrapper<Button<I, NoData>, NoData>
 where
     I: Widget,
 {
-    pub fn new(inner: I) -> Self {
-        Self {
-            widget: ButtonWidget::new(inner),
-            data_holder: WidgetDataHolder::default(),
-        }
-    }
-
-    pub fn bind<D>(self, data: D) -> Button<I, D>
+    pub fn bind<D>(self, data: D) -> WidgetWrapper<Button<I, D>, D>
     where
         D: WidgetData,
     {
-        Button {
+        WidgetWrapper {
             widget: self.widget.bind::<D>(),
             data_holder: self.data_holder.bind(data),
         }
     }
 }
 
-impl<I, D> Button<I, D>
+impl<I, D> WidgetWrapper<Button<I, D>, D>
 where
     I: Widget,
     D: WidgetData,
 {
-    pub fn on_clicked(self, callback: fn(&mut D)) -> Button<I, D>
+    pub fn on_clicked(self, callback: fn(&mut D)) -> WidgetWrapper<Button<I, D>, D>
     where
         Self: Sized,
     {
-        Button {
+        WidgetWrapper {
             widget: self.widget.on_clicked(callback),
             data_holder: self.data_holder,
         }
@@ -104,13 +92,13 @@ where
     }
 }
 
-impl<I, D> DataHolder for Button<I, D>
+impl<I, D> DataHolder for WidgetWrapper<Button<I, D>, D>
 where
     I: Widget,
     D: WidgetData,
 {
     type Data = D;
-    type Widget = ButtonWidget<I, D>;
+    type Widget = Button<I, D>;
 
     fn data_holder(&mut self) -> &mut WidgetDataHolder<Self::Widget, Self::Data>
     where
@@ -120,7 +108,7 @@ where
     }
 }
 
-impl<I, D> Widget for Button<I, D>
+impl<I, D> Widget for WidgetWrapper<Button<I, D>, D>
 where
     I: Widget,
     D: WidgetData,

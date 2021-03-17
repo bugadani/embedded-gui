@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use crate::{
     data::{NoData, WidgetData},
-    widgets::{DataHolder, Widget, WidgetDataHolder, WidgetProperties},
+    widgets::{DataHolder, Widget, WidgetDataHolder, WidgetProperties, WidgetWrapper},
     BoundingBox, Canvas, MeasureConstraint, MeasureSpec, MeasuredSize,
 };
 
@@ -11,13 +11,13 @@ pub trait LabelProperties<C: Canvas> {
 }
 
 pub trait LabelConstructor<C, P> {
-    fn new(text: &'static str) -> Label<C, P, NoData>
+    fn new(text: &'static str) -> WidgetWrapper<Label<C, P, NoData>, NoData>
     where
         C: Canvas,
         P: LabelProperties<C>;
 }
 
-pub struct LabelWidget<C, P, D>
+pub struct Label<C, P, D>
 where
     C: Canvas,
     P: LabelProperties<C>,
@@ -31,16 +31,16 @@ where
     pub _marker: PhantomData<(C, D)>,
 }
 
-impl<C, P> LabelWidget<C, P, NoData>
+impl<C, P> Label<C, P, NoData>
 where
     C: Canvas,
     P: LabelProperties<C>,
 {
-    pub fn bind<D>(self) -> LabelWidget<C, P, D>
+    pub fn bind<D>(self) -> Label<C, P, D>
     where
         D: WidgetData,
     {
-        LabelWidget {
+        Label {
             widget_properties: self.widget_properties,
             label_properties: self.label_properties,
             bounds: self.bounds,
@@ -50,41 +50,30 @@ where
     }
 }
 
-// TODO maybe these wrappers can be merged - WidgetHolder struct which is Widget + DataHolder
-pub struct Label<C, P, D>
-where
-    C: Canvas,
-    P: LabelProperties<C>,
-    D: WidgetData,
-{
-    pub widget: LabelWidget<C, P, D>,
-    pub data_holder: WidgetDataHolder<LabelWidget<C, P, D>, D>,
-}
-
-impl<C, P> Label<C, P, NoData>
+impl<C, P> WidgetWrapper<Label<C, P, NoData>, NoData>
 where
     C: Canvas,
     P: LabelProperties<C>,
 {
-    pub fn bind<D>(self, data: D) -> Label<C, P, D>
+    pub fn bind<D>(self, data: D) -> WidgetWrapper<Label<C, P, D>, D>
     where
         D: WidgetData,
     {
-        Label {
+        WidgetWrapper {
             widget: self.widget.bind::<D>(),
             data_holder: self.data_holder.bind(data),
         }
     }
 }
 
-impl<C, P, D> DataHolder for Label<C, P, D>
+impl<C, P, D> DataHolder for WidgetWrapper<Label<C, P, D>, D>
 where
     C: Canvas,
     P: LabelProperties<C>,
     D: WidgetData,
 {
     type Data = D;
-    type Widget = LabelWidget<C, P, D>;
+    type Widget = Label<C, P, D>;
 
     fn data_holder(&mut self) -> &mut WidgetDataHolder<Self::Widget, Self::Data>
     where
@@ -94,7 +83,7 @@ where
     }
 }
 
-impl<C, P, D> Widget for Label<C, P, D>
+impl<C, P, D> Widget for WidgetWrapper<Label<C, P, D>, D>
 where
     C: Canvas,
     P: LabelProperties<C>,

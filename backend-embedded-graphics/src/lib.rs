@@ -13,8 +13,8 @@ use embedded_gui::{
     data::{NoData, WidgetData},
     widgets::{
         button::Button,
-        label::{Label, LabelConstructor, LabelProperties, LabelWidget},
-        Widget, WidgetDataHolder, WidgetProperties,
+        label::{Label, LabelConstructor, LabelProperties},
+        Widget, WidgetDataHolder, WidgetProperties, WidgetWrapper,
     },
     BoundingBox, Canvas, MeasuredSize, WidgetRenderer,
 };
@@ -115,9 +115,9 @@ where
     LabelStyle<F>: Default,
     D: DrawTarget<Color = C>,
 {
-    fn new(text: &'static str) -> Self {
-        Self {
-            widget: LabelWidget {
+    fn new(text: &'static str) -> WidgetWrapper<Self, NoData> {
+        WidgetWrapper {
+            widget: Label {
                 text,
                 widget_properties: WidgetProperties::default(),
                 label_properties: LabelStyle::default(),
@@ -137,15 +137,11 @@ where
     D: WidgetData,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
-        self.widget
-            .label_properties
+        self.label_properties
             .renderer
             .draw_string(
-                self.widget.text,
-                Point::new(
-                    self.bounding_box().position.x,
-                    self.bounding_box().position.y,
-                ),
+                self.text,
+                Point::new(self.bounds.position.x, self.bounds.position.y),
                 &mut canvas.target,
             )
             .map(|_| ())
@@ -160,6 +156,6 @@ where
     D: WidgetData,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
-        self.widget.inner.draw(canvas)
+        self.inner.draw(canvas)
     }
 }

@@ -6,7 +6,11 @@ pub mod widgets;
 
 use input::SelectionModifier;
 
-use crate::{input::InputEvent, widgets::Widget};
+use crate::{
+    data::WidgetData,
+    input::InputEvent,
+    widgets::{Widget, WidgetWrapper},
+};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Position {
@@ -53,8 +57,19 @@ impl Default for BoundingBox {
     }
 }
 
-pub trait WidgetRenderer<C: Canvas>: Widget {
+pub trait WidgetRenderer<C: Canvas> {
     fn draw(&self, canvas: &mut C) -> Result<(), C::Error>;
+}
+
+impl<C, W, D> WidgetRenderer<C> for WidgetWrapper<W, D>
+where
+    C: Canvas,
+    D: WidgetData,
+    W: WidgetRenderer<C>,
+{
+    fn draw(&self, canvas: &mut C) -> Result<(), C::Error> {
+        self.widget.draw(canvas)
+    }
 }
 
 pub trait Canvas {

@@ -162,3 +162,8 @@ pub trait DataHolder: Widget {
         self
     }
 }
+
+pub struct WidgetWrapper<W, D: WidgetData> {
+    pub widget: W,
+    pub data_holder: WidgetDataHolder<W, D>,
+}
