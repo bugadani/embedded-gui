@@ -114,6 +114,15 @@ where
         self.widget.set_bottom(space);
         self
     }
+
+    pub fn all(mut self, space: u32) -> Self {
+        self.widget.set_left(space);
+        self.widget.set_right(space);
+        self.widget.set_top(space);
+        self.widget.set_bottom(space);
+
+        self
+    }
 }
 
 impl<W, D> Widget for WidgetWrapper<Spacing<W, D>, D>
@@ -151,8 +160,12 @@ where
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
-        // todo modify measure_spec
-        self.widget.inner.measure(measure_spec);
+        let spacing = self.widget.spacing;
+
+        self.widget.inner.measure(MeasureSpec {
+            width: measure_spec.width.shrink(spacing.left + spacing.right),
+            height: measure_spec.height.shrink(spacing.top + spacing.bottom),
+        });
     }
 
     fn children(&self) -> usize {
