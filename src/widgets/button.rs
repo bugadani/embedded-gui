@@ -9,7 +9,6 @@ pub struct Button<I, D>
 where
     D: WidgetData,
 {
-    pub widget_properties: WidgetProperties,
     pub inner: I,
     pub on_clicked: fn(&mut D),
 }
@@ -21,7 +20,6 @@ where
     pub fn new(inner: I) -> WidgetWrapper<Self, NoData> {
         WidgetWrapper {
             widget: Self {
-                widget_properties: WidgetProperties::default(),
                 inner,
                 on_clicked: |_| (),
             },
@@ -34,7 +32,6 @@ where
         D: WidgetData,
     {
         Button {
-            widget_properties: self.widget_properties,
             inner: self.inner,
             on_clicked: |_| (),
         }
@@ -98,7 +95,7 @@ where
     D: WidgetData,
 {
     fn widget_properties(&mut self) -> &mut WidgetProperties {
-        &mut self.widget.widget_properties
+        self.widget.inner.widget_properties()
     }
 
     fn arrange(&mut self, position: Position) {
