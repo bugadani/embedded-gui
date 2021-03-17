@@ -1,4 +1,4 @@
-//#![no_std]
+#![no_std]
 
 pub mod data;
 pub mod input;
