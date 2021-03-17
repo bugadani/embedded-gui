@@ -107,8 +107,12 @@ where
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
-        // todo modify measure_spec
-        self.widget.inner.measure(measure_spec);
+        let bw = self.widget.border_properties.get_border_width();
+
+        self.widget.inner.measure(MeasureSpec {
+            width: measure_spec.width.shrink(2 * bw),
+            height: measure_spec.height.shrink(2 * bw),
+        });
     }
 
     fn children(&self) -> usize {

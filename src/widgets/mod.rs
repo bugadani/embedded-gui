@@ -1,11 +1,12 @@
 use crate::{
     data::{NoData, WidgetData},
     input::{InputEvent, Key},
-    BoundingBox, InputCtxt, MeasureSpec, MeasuredSize, Position, Size,
+    BoundingBox, InputCtxt, MeasureSpec, MeasuredSize, Position,
 };
 
 pub mod border;
 pub mod button;
+pub mod fill;
 pub mod label;
 pub mod spacing;
 
@@ -69,20 +70,6 @@ pub trait Widget {
     }
 
     fn update(&mut self) {}
-}
-
-pub struct WidgetProperties {
-    pub width: Size,
-    pub height: Size,
-}
-
-impl Default for WidgetProperties {
-    fn default() -> Self {
-        Self {
-            width: Size::WrapContent,
-            height: Size::WrapContent,
-        }
-    }
 }
 
 pub struct WidgetDataHolder<W, D>

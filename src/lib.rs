@@ -1,4 +1,4 @@
-#![no_std]
+//#![no_std]
 
 pub mod data;
 pub mod input;
@@ -24,13 +24,13 @@ pub struct PositionDelta {
     pub y: i32,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct MeasuredSize {
     pub width: u32,
     pub height: u32,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct BoundingBox {
     pub position: Position,
     pub size: MeasuredSize,
@@ -78,21 +78,27 @@ pub trait Canvas {
     fn size(&self) -> MeasuredSize;
 }
 
+#[derive(Copy, Clone, Debug)]
 pub enum MeasureConstraint {
     AtMost(u32),
     Exactly(u32),
     Unspecified,
 }
 
+impl MeasureConstraint {
+    pub fn shrink(self, by: u32) -> MeasureConstraint {
+        match self {
+            MeasureConstraint::AtMost(size) => MeasureConstraint::AtMost(size.saturating_sub(by)),
+            MeasureConstraint::Exactly(size) => MeasureConstraint::Exactly(size.saturating_sub(by)),
+            MeasureConstraint::Unspecified => MeasureConstraint::Unspecified,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
 pub struct MeasureSpec {
     width: MeasureConstraint,
     height: MeasureConstraint,
-}
-
-pub enum Size {
-    WrapContent,
-    FillParent,
-    Exact(u32),
 }
 
 pub struct Window<C, W>

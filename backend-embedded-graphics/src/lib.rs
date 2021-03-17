@@ -16,6 +16,7 @@ use embedded_gui::{
     widgets::{
         border::{Border, BorderProperties},
         button::Button,
+        fill::{FillDirection, FillParent},
         label::{Label, LabelConstructor, LabelProperties},
         spacing::Spacing,
         Widget, WidgetDataHolder, WidgetWrapper,
@@ -161,7 +162,7 @@ where
     fn default() -> Self {
         Self {
             style: PrimitiveStyleBuilder::new()
-                .stroke_alignment(StrokeAlignment::Outside)
+                .stroke_alignment(StrokeAlignment::Inside)
                 .stroke_color(BinaryColor::On)
                 .stroke_width(1)
                 .build(),
@@ -199,7 +200,9 @@ where
     }
 }
 
-impl<W, C, DT, D> WidgetRenderer<EgCanvas<C, DT>> for Border<W, BorderStyle<W, C>, D>
+// TODO: draw target should be clipped to widget's bounds, so this can be restored to Border
+impl<W, C, DT, D> WidgetRenderer<EgCanvas<C, DT>>
+    for WidgetWrapper<Border<W, BorderStyle<W, C>, D>, D>
 where
     W: Widget + WidgetRenderer<EgCanvas<C, DT>>,
     C: PixelColor,
@@ -208,12 +211,12 @@ where
     BorderStyle<W, C>: BorderProperties,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
-        let bounds = self.inner.bounding_box();
+        let bounds = self.bounding_box();
         let border = bounds
             .to_rectangle()
-            .into_styled(self.border_properties.style);
+            .into_styled(self.widget.border_properties.style);
 
-        self.inner.draw(canvas)?;
+        self.widget.inner.draw(canvas)?;
         border.draw(&mut canvas.target)
     }
 }
@@ -236,6 +239,18 @@ where
     C: PixelColor,
     DT: DrawTarget<Color = C>,
     D: WidgetData,
+{
+    fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
+        self.inner.draw(canvas)
+    }
+}
+
+impl<C, DT, W, FD> WidgetRenderer<EgCanvas<C, DT>> for FillParent<W, FD>
+where
+    FD: FillDirection,
+    W: Widget + WidgetRenderer<EgCanvas<C, DT>>,
+    C: PixelColor,
+    DT: DrawTarget<Color = C>,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
         self.inner.draw(canvas)
