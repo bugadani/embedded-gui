@@ -16,9 +16,9 @@ use embedded_gui::{
         button::Button,
         label::{Label, LabelConstructor},
         spacing::Spacing,
-        DataHolder, Widget,
+        DataHolder,
     },
-    Position, Size, Window,
+    Position, Window,
 };
 
 fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
@@ -67,8 +67,7 @@ fn main() {
             .bind(&flag)
             .on_clicked(|data| {
                 data.update(|mut data| *data = !*data);
-            })
-            .width(Size::FillParent),
+            }),
         );
 
     let output_settings = OutputSettingsBuilder::new()

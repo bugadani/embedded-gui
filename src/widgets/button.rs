@@ -1,7 +1,7 @@
 use crate::{
     data::{NoData, WidgetData},
     input::{InputEvent, Key},
-    widgets::{Widget, WidgetDataHolder, WidgetProperties, WidgetWrapper},
+    widgets::{Widget, WidgetDataHolder, WidgetWrapper},
     BoundingBox, InputCtxt, MeasureSpec, Position,
 };
 
@@ -94,10 +94,6 @@ where
     I: Widget,
     D: WidgetData,
 {
-    fn widget_properties(&mut self) -> &mut WidgetProperties {
-        self.widget.inner.widget_properties()
-    }
-
     fn arrange(&mut self, position: Position) {
         self.widget.inner.arrange(position);
     }

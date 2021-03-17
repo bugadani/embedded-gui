@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use crate::{
     data::{NoData, WidgetData},
-    widgets::{Widget, WidgetProperties, WidgetWrapper},
+    widgets::{Widget, WidgetWrapper},
     BoundingBox, Canvas, MeasureConstraint, MeasureSpec, MeasuredSize,
 };
 
@@ -25,7 +25,6 @@ where
 {
     // FIXME: use heapless::String
     pub text: &'static str,
-    pub widget_properties: WidgetProperties,
     pub label_properties: P,
     pub bounds: BoundingBox,
     pub _marker: PhantomData<(C, D)>,
@@ -41,7 +40,6 @@ where
         D: WidgetData,
     {
         Label {
-            widget_properties: self.widget_properties,
             label_properties: self.label_properties,
             bounds: self.bounds,
             text: self.text,
@@ -72,10 +70,6 @@ where
     P: LabelProperties<C>,
     D: WidgetData,
 {
-    fn widget_properties(&mut self) -> &mut WidgetProperties {
-        &mut self.widget.widget_properties
-    }
-
     fn bounding_box(&self) -> BoundingBox {
         self.widget.bounds
     }

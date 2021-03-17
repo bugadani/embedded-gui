@@ -10,8 +10,6 @@ pub mod label;
 pub mod spacing;
 
 pub trait Widget {
-    fn widget_properties(&mut self) -> &mut WidgetProperties;
-
     fn bounding_box(&self) -> BoundingBox;
 
     fn bounding_box_mut(&mut self) -> &mut BoundingBox;
@@ -26,22 +24,6 @@ pub trait Widget {
 
     fn get_mut_child(&mut self, _idx: usize) -> &mut dyn Widget {
         unimplemented!()
-    }
-
-    fn width(mut self, width: Size) -> Self
-    where
-        Self: Sized,
-    {
-        self.widget_properties().width = width;
-        self
-    }
-
-    fn height(mut self, height: Size) -> Self
-    where
-        Self: Sized,
-    {
-        self.widget_properties().height = height;
-        self
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec);

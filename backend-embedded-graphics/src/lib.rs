@@ -18,7 +18,7 @@ use embedded_gui::{
         button::Button,
         label::{Label, LabelConstructor, LabelProperties},
         spacing::Spacing,
-        Widget, WidgetDataHolder, WidgetProperties, WidgetWrapper,
+        Widget, WidgetDataHolder, WidgetWrapper,
     },
     BoundingBox, Canvas, MeasuredSize, WidgetRenderer,
 };
@@ -136,7 +136,6 @@ where
         WidgetWrapper {
             widget: Label {
                 text,
-                widget_properties: WidgetProperties::default(),
                 label_properties: LabelStyle::default(),
                 bounds: BoundingBox::default(),
                 _marker: PhantomData,

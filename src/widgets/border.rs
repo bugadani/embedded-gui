@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use crate::{
     data::{NoData, WidgetData},
     input::InputEvent,
-    widgets::{Widget, WidgetDataHolder, WidgetProperties, WidgetWrapper},
+    widgets::{Widget, WidgetDataHolder, WidgetWrapper},
     BoundingBox, InputCtxt, MeasureSpec, MeasuredSize, Position,
 };
 
@@ -77,10 +77,6 @@ where
     P: BorderProperties,
     D: WidgetData,
 {
-    fn widget_properties(&mut self) -> &mut WidgetProperties {
-        self.widget.inner.widget_properties()
-    }
-
     fn arrange(&mut self, position: Position) {
         let bw = self.widget.border_properties.get_border_width();
 
