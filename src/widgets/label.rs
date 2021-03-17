@@ -17,7 +17,7 @@ pub trait LabelConstructor<C, P> {
         P: LabelProperties<C>;
 }
 
-pub struct Label<C, P, D>
+pub struct LabelWidget<C, P, D>
 where
     C: Canvas,
     P: LabelProperties<C>,
@@ -28,8 +28,37 @@ where
     pub widget_properties: WidgetProperties,
     pub label_properties: P,
     pub bounds: BoundingBox,
-    pub data_holder: WidgetDataHolder<Self, D>,
-    pub _marker: PhantomData<C>,
+    pub _marker: PhantomData<(C, D)>,
+}
+
+impl<C, P> LabelWidget<C, P, NoData>
+where
+    C: Canvas,
+    P: LabelProperties<C>,
+{
+    pub fn bind<D>(self) -> LabelWidget<C, P, D>
+    where
+        D: WidgetData,
+    {
+        LabelWidget {
+            widget_properties: self.widget_properties,
+            label_properties: self.label_properties,
+            bounds: self.bounds,
+            text: self.text,
+            _marker: PhantomData,
+        }
+    }
+}
+
+// TODO maybe these wrappers can be merged - WidgetHolder struct which is Widget + DataHolder
+pub struct Label<C, P, D>
+where
+    C: Canvas,
+    P: LabelProperties<C>,
+    D: WidgetData,
+{
+    pub widget: LabelWidget<C, P, D>,
+    pub data_holder: WidgetDataHolder<LabelWidget<C, P, D>, D>,
 }
 
 impl<C, P> Label<C, P, NoData>
@@ -42,12 +71,8 @@ where
         D: WidgetData,
     {
         Label {
-            widget_properties: self.widget_properties,
-            label_properties: self.label_properties,
-            bounds: self.bounds,
-            text: self.text,
+            widget: self.widget.bind::<D>(),
             data_holder: self.data_holder.bind(data),
-            _marker: PhantomData,
         }
     }
 }
@@ -59,8 +84,9 @@ where
     D: WidgetData,
 {
     type Data = D;
+    type Widget = LabelWidget<C, P, D>;
 
-    fn data_holder(&mut self) -> &mut WidgetDataHolder<Self, Self::Data>
+    fn data_holder(&mut self) -> &mut WidgetDataHolder<Self::Widget, Self::Data>
     where
         Self: Sized,
     {
@@ -75,19 +101,19 @@ where
     D: WidgetData,
 {
     fn widget_properties(&mut self) -> &mut WidgetProperties {
-        &mut self.widget_properties
+        &mut self.widget.widget_properties
     }
 
     fn bounding_box(&self) -> BoundingBox {
-        self.bounds
+        self.widget.bounds
     }
 
     fn bounding_box_mut(&mut self) -> &mut BoundingBox {
-        &mut self.bounds
+        &mut self.widget.bounds
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
-        let size = self.label_properties.measure_text(self.text);
+        let size = self.widget.label_properties.measure_text(self.widget.text);
 
         let width = match measure_spec.width {
             MeasureConstraint::AtMost(width) => width.min(size.width),
@@ -104,5 +130,7 @@ where
         self.set_measured_size(MeasuredSize { width, height })
     }
 
-    fn update_impl(&mut self) {}
+    fn update_impl(&mut self) {
+        self.data_holder.update(&mut self.widget);
+    }
 }

@@ -6,7 +6,7 @@ use core::{
 pub trait WidgetData {
     type Data;
 
-    fn update(&self, _f: impl Fn(RefMut<Self::Data>) -> bool);
+    fn update(&self, _f: impl Fn(RefMut<Self::Data>));
 
     fn get(&self) -> Ref<Self::Data>;
 
@@ -19,7 +19,7 @@ where
 {
     type Data = T::Data;
 
-    fn update(&self, f: impl Fn(RefMut<Self::Data>) -> bool) {
+    fn update(&self, f: impl Fn(RefMut<Self::Data>)) {
         (*self).update(f)
     }
 
@@ -47,7 +47,7 @@ impl Default for NoData {
 impl WidgetData for NoData {
     type Data = ();
 
-    fn update(&self, _f: impl Fn(RefMut<Self::Data>) -> bool) {}
+    fn update(&self, _f: impl Fn(RefMut<Self::Data>)) {}
 
     fn get(&self) -> Ref<Self::Data> {
         self.cell.borrow()
@@ -96,18 +96,20 @@ where
 {
     type Data = D;
 
-    fn update(&self, f: impl Fn(RefMut<Self::Data>) -> bool) {
+    fn update(&self, updater: impl Fn(RefMut<Self::Data>)) {
         let borrow = self.inner.borrow_mut();
-        let (data, mut version) = RefMut::map_split(borrow, |f| (&mut f.data, &mut f.version));
-        if f(data) {
-            *version = version.wrapping_add(1);
-            core::mem::drop(version);
 
-            let borrow = self.inner.borrow_mut();
-            let (data, mut on_changed) =
-                RefMut::map_split(borrow, |f| (&mut f.data, &mut f.on_changed));
-            on_changed(data.deref());
-        }
+        let (data, mut version) = RefMut::map_split(borrow, |f| (&mut f.data, &mut f.version));
+        updater(data);
+
+        *version = version.wrapping_add(1);
+        core::mem::drop(version);
+
+        let borrow = self.inner.borrow_mut();
+        let (data, mut on_changed) =
+            RefMut::map_split(borrow, |f| (&mut f.data, &mut f.on_changed));
+
+        on_changed(data.deref());
     }
 
     fn get(&self) -> Ref<Self::Data> {

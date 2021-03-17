@@ -5,14 +5,59 @@ use crate::{
     BoundingBox, InputCtxt, MeasureSpec,
 };
 
-pub struct Button<I, D>
+pub struct ButtonWidget<I, D>
 where
     D: WidgetData,
 {
     pub widget_properties: WidgetProperties,
     pub inner: I,
-    pub data_holder: WidgetDataHolder<Self, D>,
     pub on_clicked: fn(&mut D),
+}
+
+impl<I> ButtonWidget<I, NoData>
+where
+    I: Widget,
+{
+    pub fn new(inner: I) -> Self {
+        Self {
+            widget_properties: WidgetProperties::default(),
+            inner,
+            on_clicked: |_| (),
+        }
+    }
+
+    pub fn bind<D>(self) -> ButtonWidget<I, D>
+    where
+        D: WidgetData,
+    {
+        ButtonWidget {
+            widget_properties: self.widget_properties,
+            inner: self.inner,
+            on_clicked: |_| (),
+        }
+    }
+}
+
+impl<I, D> ButtonWidget<I, D>
+where
+    I: Widget,
+    D: WidgetData,
+{
+    pub fn on_clicked(mut self, callback: fn(&mut D)) -> Self
+    where
+        D: WidgetData,
+    {
+        self.on_clicked = callback;
+        self
+    }
+}
+
+pub struct Button<I, D>
+where
+    D: WidgetData,
+{
+    pub widget: ButtonWidget<I, D>,
+    pub data_holder: WidgetDataHolder<ButtonWidget<I, D>, D>,
 }
 
 impl<I> Button<I, NoData>
@@ -21,10 +66,8 @@ where
 {
     pub fn new(inner: I) -> Self {
         Self {
-            widget_properties: WidgetProperties::default(),
-            inner,
+            widget: ButtonWidget::new(inner),
             data_holder: WidgetDataHolder::default(),
-            on_clicked: |_| (),
         }
     }
 
@@ -33,10 +76,8 @@ where
         D: WidgetData,
     {
         Button {
-            widget_properties: self.widget_properties,
-            inner: self.inner,
+            widget: self.widget.bind::<D>(),
             data_holder: self.data_holder.bind(data),
-            on_clicked: |_| (),
         }
     }
 }
@@ -51,16 +92,14 @@ where
         Self: Sized,
     {
         Button {
-            widget_properties: self.widget_properties,
-            inner: self.inner,
+            widget: self.widget.on_clicked(callback),
             data_holder: self.data_holder,
-            on_clicked: callback,
         }
     }
 
     fn fire_on_pressed(&mut self) {}
     fn fire_on_clicked(&mut self) {
-        let callback = self.on_clicked;
+        let callback = self.widget.on_clicked;
         callback(&mut self.data_holder.data)
     }
 }
@@ -71,8 +110,9 @@ where
     D: WidgetData,
 {
     type Data = D;
+    type Widget = ButtonWidget<I, D>;
 
-    fn data_holder(&mut self) -> &mut WidgetDataHolder<Self, Self::Data>
+    fn data_holder(&mut self) -> &mut WidgetDataHolder<Self::Widget, Self::Data>
     where
         Self: Sized,
     {
@@ -86,43 +126,43 @@ where
     D: WidgetData,
 {
     fn widget_properties(&mut self) -> &mut WidgetProperties {
-        &mut self.widget_properties
+        &mut self.widget.widget_properties
     }
 
     fn bounding_box(&self) -> BoundingBox {
-        self.inner.bounding_box()
+        self.widget.inner.bounding_box()
     }
 
     fn bounding_box_mut(&mut self) -> &mut BoundingBox {
-        self.inner.bounding_box_mut()
+        self.widget.inner.bounding_box_mut()
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
-        self.inner.measure(measure_spec)
+        self.widget.inner.measure(measure_spec)
     }
 
     fn children(&self) -> usize {
-        1 + self.inner.children()
+        1 + self.widget.inner.children()
     }
 
     fn get_child(&self, idx: usize) -> &dyn Widget {
         if idx == 0 {
-            &self.inner
+            &self.widget.inner
         } else {
-            self.inner.get_child(idx - 1)
+            self.widget.inner.get_child(idx - 1)
         }
     }
 
     fn get_mut_child(&mut self, idx: usize) -> &mut dyn Widget {
         if idx == 0 {
-            &mut self.inner
+            &mut self.widget.inner
         } else {
-            self.inner.get_mut_child(idx - 1)
+            self.widget.inner.get_mut_child(idx - 1)
         }
     }
 
     fn handle_input(&mut self, ctxt: &mut InputCtxt, event: InputEvent) -> bool {
-        if !self.inner.handle_input(ctxt, event) {
+        if !self.widget.inner.handle_input(ctxt, event) {
             match event {
                 InputEvent::KeyUp(Key::Space, _) => self.fire_on_clicked(),
                 InputEvent::KeyUp(Key::Tab, _) => ctxt.select_next_widget(),
@@ -146,5 +186,7 @@ where
         }
     }
 
-    fn update_impl(&mut self) {}
+    fn update_impl(&mut self) {
+        self.data_holder.update(&mut self.widget);
+    }
 }

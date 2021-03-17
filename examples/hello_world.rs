@@ -45,29 +45,24 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
 }
 
 fn main() {
-    let display = SimulatorDisplay::<BinaryColor>::new(EgSize::new(256, 256));
+    let display = SimulatorDisplay::<BinaryColor>::new(EgSize::new(64, 32));
 
-    let counter = BoundData::new(true, |data| {
+    let flag = BoundData::new(true, |data| {
         println!("Data changed to {:?}", data);
     });
 
     let mut gui = Window::new(
         EgCanvas::new(display),
         Button::new(
-            Label::new("foobar")
-                .bind(&counter)
+            Label::new("Click me")
+                .bind(&flag)
                 .on_data_changed(|mut widget, data| {
-                    // FIXME: not called
                     widget.text = if *data.get() { "on" } else { "off" };
                 }),
         )
-        .bind(&counter)
+        .bind(&flag)
         .on_clicked(|data| {
-            data.update(|mut data| {
-                *data = !*data;
-                true
-            });
-            println!("Clicked!");
+            data.update(|mut data| *data = !*data);
         })
         .width(Size::FillParent),
     );
@@ -75,7 +70,7 @@ fn main() {
     let output_settings = OutputSettingsBuilder::new()
         .theme(BinaryColorTheme::OledBlue)
         .build();
-    let mut window = SimWindow::new("TextBox demonstration", &output_settings);
+    let mut window = SimWindow::new("GUI demonstration", &output_settings);
 
     loop {
         gui.canvas.target.clear(BinaryColor::Off).unwrap();

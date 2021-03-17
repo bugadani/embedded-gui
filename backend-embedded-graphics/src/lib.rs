@@ -13,7 +13,7 @@ use embedded_gui::{
     data::{NoData, WidgetData},
     widgets::{
         button::Button,
-        label::{Label, LabelConstructor, LabelProperties},
+        label::{Label, LabelConstructor, LabelProperties, LabelWidget},
         Widget, WidgetDataHolder, WidgetProperties,
     },
     BoundingBox, Canvas, MeasuredSize, WidgetRenderer,
@@ -117,11 +117,13 @@ where
 {
     fn new(text: &'static str) -> Self {
         Self {
-            text,
-            widget_properties: WidgetProperties::default(),
-            label_properties: LabelStyle::default(),
-            bounds: BoundingBox::default(),
-            _marker: PhantomData,
+            widget: LabelWidget {
+                text,
+                widget_properties: WidgetProperties::default(),
+                label_properties: LabelStyle::default(),
+                bounds: BoundingBox::default(),
+                _marker: PhantomData,
+            },
             data_holder: WidgetDataHolder::default(),
         }
     }
@@ -135,10 +137,11 @@ where
     D: WidgetData,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
-        self.label_properties
+        self.widget
+            .label_properties
             .renderer
             .draw_string(
-                self.text,
+                self.widget.text,
                 Point::new(
                     self.bounding_box().position.x,
                     self.bounding_box().position.y,
@@ -157,6 +160,6 @@ where
     D: WidgetData,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
-        self.inner.draw(canvas)
+        self.widget.inner.draw(canvas)
     }
 }
