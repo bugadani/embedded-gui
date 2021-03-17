@@ -15,6 +15,7 @@ use embedded_gui::{
         border::Border,
         button::Button,
         label::{Label, LabelConstructor},
+        spacing::Spacing,
         DataHolder, Widget,
     },
     Position, Size, Window,
@@ -52,21 +53,23 @@ fn main() {
         println!("Data changed to {:?}", data);
     });
 
-    let mut gui = Window::new(
-        EgCanvas::new(display),
-        Button::new(Border::new(
-            Label::new("Click me")
-                .bind(&flag)
-                .on_data_changed(|mut widget, data| {
-                    widget.text = if *data.get() { "on" } else { "off" };
-                }),
-        ))
-        .bind(&flag)
-        .on_clicked(|data| {
-            data.update(|mut data| *data = !*data);
-        })
-        .width(Size::FillParent),
-    );
+    let mut gui =
+        Window::new(
+            EgCanvas::new(display),
+            Button::new(Border::new(
+                Spacing::new(Label::new("Click me").bind(&flag).on_data_changed(
+                    |mut widget, data| {
+                        widget.text = if *data.get() { "on" } else { "off" };
+                    },
+                ))
+                .left(8),
+            ))
+            .bind(&flag)
+            .on_clicked(|data| {
+                data.update(|mut data| *data = !*data);
+            })
+            .width(Size::FillParent),
+        );
 
     let output_settings = OutputSettingsBuilder::new()
         .theme(BinaryColorTheme::OledBlue)

@@ -17,6 +17,7 @@ use embedded_gui::{
         border::{Border, BorderProperties},
         button::Button,
         label::{Label, LabelConstructor, LabelProperties},
+        spacing::Spacing,
         Widget, WidgetDataHolder, WidgetProperties, WidgetWrapper,
     },
     BoundingBox, Canvas, MeasuredSize, WidgetRenderer,
@@ -219,6 +220,18 @@ where
 }
 
 impl<C, DT, I, D> WidgetRenderer<EgCanvas<C, DT>> for Button<I, D>
+where
+    I: Widget + WidgetRenderer<EgCanvas<C, DT>>,
+    C: PixelColor,
+    DT: DrawTarget<Color = C>,
+    D: WidgetData,
+{
+    fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
+        self.inner.draw(canvas)
+    }
+}
+
+impl<C, DT, I, D> WidgetRenderer<EgCanvas<C, DT>> for Spacing<I, D>
 where
     I: Widget + WidgetRenderer<EgCanvas<C, DT>>,
     C: PixelColor,

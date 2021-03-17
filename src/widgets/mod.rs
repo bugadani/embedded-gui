@@ -7,6 +7,7 @@ use crate::{
 pub mod border;
 pub mod button;
 pub mod label;
+pub mod spacing;
 
 pub trait Widget {
     fn widget_properties(&mut self) -> &mut WidgetProperties;

@@ -7,29 +7,31 @@ use crate::{
     BoundingBox, InputCtxt, MeasureSpec, MeasuredSize, Position,
 };
 
-pub trait BorderProperties {
-    fn get_border_width(&self) -> u32;
+#[derive(Default, Clone, Copy)]
+pub struct SpacingSpec {
+    pub top: u32,
+    pub right: u32,
+    pub bottom: u32,
+    pub left: u32,
 }
 
-pub struct Border<I, P, D>
+pub struct Spacing<W, D>
 where
-    P: BorderProperties,
     D: WidgetData,
 {
-    pub inner: I,
-    pub border_properties: P,
+    pub inner: W,
+    pub spacing: SpacingSpec,
     pub _marker: PhantomData<D>,
 }
 
-impl<I, P> Border<I, P, NoData>
+impl<W> Spacing<W, NoData>
 where
-    I: Widget,
-    P: BorderProperties + Default,
+    W: Widget,
 {
-    pub fn new(inner: I) -> WidgetWrapper<Border<I, P, NoData>, NoData> {
+    pub fn new(inner: W) -> WidgetWrapper<Spacing<W, NoData>, NoData> {
         WidgetWrapper {
-            widget: Border {
-                border_properties: P::default(),
+            widget: Spacing {
+                spacing: SpacingSpec::default(),
                 inner,
                 _marker: PhantomData,
             },
@@ -38,29 +40,46 @@ where
     }
 }
 
-impl<W, P> Border<W, P, NoData>
+impl<W, D> Spacing<W, D>
 where
     W: Widget,
-    P: BorderProperties,
+    D: WidgetData,
 {
-    pub fn bind<D>(self) -> Border<W, P, D>
+    pub fn set_left(&mut self, space: u32) {
+        self.spacing.left = space;
+    }
+    pub fn set_right(&mut self, space: u32) {
+        self.spacing.right = space;
+    }
+    pub fn set_top(&mut self, space: u32) {
+        self.spacing.top = space;
+    }
+    pub fn set_bottom(&mut self, space: u32) {
+        self.spacing.bottom = space;
+    }
+}
+
+impl<W> Spacing<W, NoData>
+where
+    W: Widget,
+{
+    pub fn bind<D>(self) -> Spacing<W, D>
     where
         D: WidgetData,
     {
-        Border {
+        Spacing {
             inner: self.inner,
-            border_properties: self.border_properties,
+            spacing: self.spacing,
             _marker: PhantomData,
         }
     }
 }
 
-impl<W, P> WidgetWrapper<Border<W, P, NoData>, NoData>
+impl<W> WidgetWrapper<Spacing<W, NoData>, NoData>
 where
     W: Widget,
-    P: BorderProperties,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Border<W, P, D>, D>
+    pub fn bind<D>(self, data: D) -> WidgetWrapper<Spacing<W, D>, D>
     where
         D: WidgetData,
     {
@@ -71,10 +90,35 @@ where
     }
 }
 
-impl<W, P, D> Widget for WidgetWrapper<Border<W, P, D>, D>
+impl<W, D> WidgetWrapper<Spacing<W, D>, D>
 where
     W: Widget,
-    P: BorderProperties,
+    D: WidgetData,
+{
+    pub fn left(mut self, space: u32) -> Self {
+        self.widget.set_left(space);
+        self
+    }
+
+    pub fn right(mut self, space: u32) -> Self {
+        self.widget.set_right(space);
+        self
+    }
+
+    pub fn top(mut self, space: u32) -> Self {
+        self.widget.set_top(space);
+        self
+    }
+
+    pub fn bottom(mut self, space: u32) -> Self {
+        self.widget.set_bottom(space);
+        self
+    }
+}
+
+impl<W, D> Widget for WidgetWrapper<Spacing<W, D>, D>
+where
+    W: Widget,
     D: WidgetData,
 {
     fn widget_properties(&mut self) -> &mut WidgetProperties {
@@ -82,26 +126,26 @@ where
     }
 
     fn arrange(&mut self, position: Position) {
-        let bw = self.widget.border_properties.get_border_width();
+        let spacing = self.widget.spacing;
 
         self.widget.inner.arrange(Position {
-            x: position.x + bw as i32,
-            y: position.y + bw as i32,
+            x: position.x + spacing.left as i32,
+            y: position.y + spacing.top as i32,
         });
     }
 
     fn bounding_box(&self) -> BoundingBox {
-        let bw = self.widget.border_properties.get_border_width();
+        let spacing = self.widget.spacing;
         let bounds = self.widget.inner.bounding_box();
 
         BoundingBox {
             position: Position {
-                x: bounds.position.x - bw as i32,
-                y: bounds.position.y - bw as i32,
+                x: bounds.position.x - spacing.left as i32,
+                y: bounds.position.y - spacing.top as i32,
             },
             size: MeasuredSize {
-                width: bounds.size.width + 2 * bw,
-                height: bounds.size.height + 2 * bw,
+                width: bounds.size.width + spacing.left + spacing.right,
+                height: bounds.size.height + spacing.top + spacing.bottom,
             },
         }
     }
