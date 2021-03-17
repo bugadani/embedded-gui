@@ -45,6 +45,10 @@ pub trait Widget {
     fn measure(&mut self, measure_spec: MeasureSpec);
 
     fn arrange(&mut self, position: Position) {
+        debug_assert!(
+            self.children() == 0,
+            "Arrange must be implemented by non-leaf widgets"
+        );
         self.bounding_box_mut().position = position;
     }
 

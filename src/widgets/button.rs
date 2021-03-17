@@ -2,7 +2,7 @@ use crate::{
     data::{NoData, WidgetData},
     input::{InputEvent, Key},
     widgets::{DataHolder, Widget, WidgetDataHolder, WidgetProperties},
-    BoundingBox, InputCtxt, MeasureSpec,
+    BoundingBox, InputCtxt, MeasureSpec, Position,
 };
 
 pub struct ButtonWidget<I, D>
@@ -127,6 +127,11 @@ where
 {
     fn widget_properties(&mut self) -> &mut WidgetProperties {
         &mut self.widget.widget_properties
+    }
+
+    fn arrange(&mut self, position: Position) {
+        self.bounding_box_mut().position = position;
+        self.widget.inner.arrange(position);
     }
 
     fn bounding_box(&self) -> BoundingBox {
