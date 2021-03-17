@@ -8,9 +8,6 @@ pub mod button;
 pub mod label;
 
 pub trait Widget {
-    //type InputController: InputController;
-
-    //fn input_event(&mut self, event: <Self::InputController as InputController>::Event) -> bool;
     fn widget_properties(&mut self) -> &mut WidgetProperties;
 
     fn bounding_box(&self) -> BoundingBox;
