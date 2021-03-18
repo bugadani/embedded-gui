@@ -176,8 +176,14 @@ where
     W: Widget,
     C: PixelColor,
 {
+    type Color = C;
+
     fn get_border_width(&self) -> u32 {
         self.style.stroke_width
+    }
+
+    fn border_color(&mut self, color: Self::Color) {
+        self.style.stroke_color = Some(color);
     }
 }
 

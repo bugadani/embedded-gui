@@ -8,6 +8,10 @@ use crate::{
 };
 
 pub trait BorderProperties {
+    type Color;
+
+    fn border_color(&mut self, color: Self::Color);
+
     fn get_border_width(&self) -> u32;
 }
 
@@ -55,6 +59,17 @@ where
     }
 }
 
+impl<W, P, D> Border<W, P, D>
+where
+    W: Widget,
+    P: BorderProperties,
+    D: WidgetData,
+{
+    pub fn border_color(&mut self, color: P::Color) {
+        self.border_properties.border_color(color);
+    }
+}
+
 impl<W, P> WidgetWrapper<Border<W, P, NoData>, NoData>
 where
     W: Widget,
@@ -68,6 +83,11 @@ where
             widget: self.widget.bind::<D>(),
             data_holder: self.data_holder.bind(data),
         }
+    }
+
+    pub fn border_color(mut self, color: P::Color) -> Self {
+        self.widget.border_color(color);
+        self
     }
 }
 

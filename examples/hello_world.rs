@@ -57,15 +57,18 @@ fn main() {
     let mut gui = Window::new(
         EgCanvas::new(display),
         Spacing::new(
-            Button::new(Border::new(
-                FillParent::both(Label::new("Click me").bind(&flag).on_data_changed(
-                    |mut widget, data| {
-                        widget.text = if *data.get() { "on" } else { "off" };
-                    },
-                ))
-                .align_horizontal(Center)
-                .align_vertical(Bottom),
-            ))
+            Button::new(
+                Border::new(
+                    FillParent::both(Label::new("Click me").bind(&flag).on_data_changed(
+                        |mut widget, data| {
+                            widget.text = if *data.get() { "on" } else { "off" };
+                        },
+                    ))
+                    .align_horizontal(Center)
+                    .align_vertical(Bottom),
+                )
+                .border_color(BinaryColor::Off),
+            )
             .bind(&flag)
             .on_clicked(|data| {
                 data.update(|mut data| *data = !*data);
