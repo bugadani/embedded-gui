@@ -2,8 +2,8 @@ use core::marker::PhantomData;
 
 use crate::{
     data::{NoData, WidgetData},
-    widgets::{Widget, WidgetWrapper},
-    BoundingBox, Canvas, MeasureConstraint, MeasureSpec, MeasuredSize,
+    widgets::{Widget, WidgetStateHolder, WidgetWrapper},
+    BoundingBox, Canvas, MeasureConstraint, MeasureSpec, MeasuredSize, WidgetState,
 };
 
 pub trait LabelProperties<C: Canvas> {
@@ -60,7 +60,34 @@ where
         WidgetWrapper {
             widget: self.widget.bind::<D>(),
             data_holder: self.data_holder.bind(data),
+            on_state_changed: |_, _| (),
+            state: WidgetState::default(),
         }
+    }
+}
+
+impl<C, P, D> WidgetStateHolder for WidgetWrapper<Label<C, P, D>, D>
+where
+    C: Canvas,
+    P: LabelProperties<C>,
+    D: WidgetData,
+{
+    fn change_state(&mut self, state: u32) {
+        // apply state
+        if self.state.change_state(state) {
+            (self.on_state_changed)(&mut self.widget, self.state);
+        }
+    }
+
+    fn change_selection(&mut self, state: bool) {
+        // apply state
+        if self.state.change_selection(state) {
+            (self.on_state_changed)(&mut self.widget, self.state);
+        }
+    }
+
+    fn is_selectable(&self) -> bool {
+        true
     }
 }
 

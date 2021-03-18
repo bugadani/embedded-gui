@@ -1,7 +1,7 @@
 use crate::{
     data::{NoData, WidgetData},
     input::{InputEvent, Key},
-    BoundingBox, InputCtxt, MeasureSpec, MeasuredSize, Position,
+    BoundingBox, InputCtxt, MeasureSpec, MeasuredSize, Position, WidgetState,
 };
 
 pub mod border;
@@ -10,7 +10,7 @@ pub mod fill;
 pub mod label;
 pub mod spacing;
 
-pub trait Widget {
+pub trait Widget: WidgetStateHolder {
     fn bounding_box(&self) -> BoundingBox;
 
     fn bounding_box_mut(&mut self) -> &mut BoundingBox;
@@ -57,12 +57,16 @@ pub trait Widget {
                 for i in 0..self.children() {
                     let child = self.get_child(i);
                     if let Some(idx) = child.hit_test(position) {
-                        return Some(index + idx);
+                        if idx != 0 || child.is_selectable() {
+                            return Some(index + idx);
+                        }
                     }
                     index += child.children();
                 }
             }
+        }
 
+        if self.is_selectable() {
             Some(0)
         } else {
             None
@@ -134,9 +138,35 @@ pub trait DataHolder: Widget {
     }
 }
 
-pub struct WidgetWrapper<W, D: WidgetData> {
+pub trait WidgetStateHolder {
+    fn change_state(&mut self, state: u32);
+    fn change_selection(&mut self, state: bool);
+    fn is_selectable(&self) -> bool {
+        true
+    }
+}
+
+pub struct WidgetWrapper<W, D>
+where
+    D: WidgetData,
+{
     pub widget: W,
     pub data_holder: WidgetDataHolder<W, D>,
+    pub state: WidgetState,
+    pub on_state_changed: fn(&mut W, WidgetState),
+}
+
+impl<W, D> WidgetWrapper<W, D>
+where
+    D: WidgetData,
+{
+    pub fn on_state_changed(mut self, callback: fn(&mut W, WidgetState)) -> Self
+    where
+        Self: Sized,
+    {
+        self.on_state_changed = callback;
+        self
+    }
 }
 
 impl<W, D> DataHolder for WidgetWrapper<W, D>

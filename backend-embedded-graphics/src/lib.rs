@@ -21,7 +21,7 @@ use embedded_gui::{
         spacing::Spacing,
         Widget, WidgetDataHolder, WidgetWrapper,
     },
-    BoundingBox, Canvas, MeasuredSize, WidgetRenderer,
+    BoundingBox, Canvas, MeasuredSize, WidgetRenderer, WidgetState,
 };
 
 trait ToRectangle {
@@ -142,6 +142,8 @@ where
                 _marker: PhantomData,
             },
             data_holder: WidgetDataHolder::default(),
+            on_state_changed: |_, _| (),
+            state: WidgetState::default(),
         }
     }
 }

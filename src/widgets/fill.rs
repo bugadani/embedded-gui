@@ -1,6 +1,7 @@
 use crate::{
-    input::InputEvent, widgets::Widget, BoundingBox, InputCtxt, MeasureConstraint, MeasureSpec,
-    MeasuredSize, Position,
+    input::InputEvent,
+    widgets::{Widget, WidgetStateHolder},
+    BoundingBox, InputCtxt, MeasureConstraint, MeasureSpec, MeasuredSize, Position,
 };
 
 pub trait HorizontalAlignment {
@@ -168,6 +169,25 @@ where
             horizontal_alignment: self.horizontal_alignment,
             vertical_alignment: align,
         }
+    }
+}
+
+impl<W, D, H, V> WidgetStateHolder for FillParent<W, D, H, V>
+where
+    W: Widget,
+    D: FillDirection,
+    H: HorizontalAlignment,
+    V: VerticalAlignment,
+{
+    fn change_state(&mut self, state: u32) {
+        // propagate state to child widget
+        self.inner.change_state(state);
+    }
+
+    fn change_selection(&mut self, _state: bool) {}
+
+    fn is_selectable(&self) -> bool {
+        false
     }
 }
 

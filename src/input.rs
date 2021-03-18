@@ -1,4 +1,4 @@
-use crate::{Position, PositionDelta};
+use crate::Position;
 
 #[derive(Copy, Clone, Debug)]
 pub enum Key {
@@ -71,7 +71,6 @@ pub enum InputEvent {
     PointerHover(Position),
     PointerDown(Position),
     PointerMove(Position),
-    PointerMoveDelta(PositionDelta),
     PointerUp(Position),
     HorizontalScroll(i32),
     VerticalScroll(i32),

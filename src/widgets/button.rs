@@ -1,8 +1,8 @@
 use crate::{
     data::{NoData, WidgetData},
     input::{InputEvent, Key},
-    widgets::{Widget, WidgetDataHolder, WidgetWrapper},
-    BoundingBox, InputCtxt, MeasureSpec, Position,
+    widgets::{Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
+    BoundingBox, InputCtxt, MeasureSpec, Position, WidgetState,
 };
 
 pub struct Button<I, D>
@@ -11,6 +11,12 @@ where
 {
     pub inner: I,
     pub on_clicked: fn(&mut D),
+}
+
+impl Button<(), NoData> {
+    pub const STATE_IDLE: u32 = 0;
+    pub const STATE_HOVERED: u32 = 1;
+    pub const STATE_PRESSED: u32 = 2;
 }
 
 impl<I> Button<I, NoData>
@@ -24,6 +30,8 @@ where
                 on_clicked: |_| (),
             },
             data_holder: WidgetDataHolder::default(),
+            on_state_changed: |_, _| (),
+            state: WidgetState::default(),
         }
     }
 
@@ -63,6 +71,8 @@ where
         WidgetWrapper {
             widget: self.widget.bind::<D>(),
             data_holder: self.data_holder.bind(data),
+            on_state_changed: |_, _| (),
+            state: WidgetState::default(),
         }
     }
 }
@@ -72,13 +82,15 @@ where
     I: Widget,
     D: WidgetData,
 {
-    pub fn on_clicked(self, callback: fn(&mut D)) -> WidgetWrapper<Button<I, D>, D>
+    pub fn on_clicked(self, callback: fn(&mut D)) -> Self
     where
         Self: Sized,
     {
         WidgetWrapper {
             widget: self.widget.on_clicked(callback),
             data_holder: self.data_holder,
+            on_state_changed: self.on_state_changed,
+            state: self.state,
         }
     }
 
@@ -86,6 +98,37 @@ where
     fn fire_on_clicked(&mut self) {
         let callback = self.widget.on_clicked;
         callback(&mut self.data_holder.data)
+    }
+}
+
+impl<I, D> WidgetStateHolder for WidgetWrapper<Button<I, D>, D>
+where
+    I: Widget,
+    D: WidgetData,
+{
+    fn change_state(&mut self, state: u32) {
+        // propagate state to child widget
+        self.widget.inner.change_state(state);
+        // apply state
+        if self.state.change_state(state) {
+            (self.on_state_changed)(&mut self.widget, self.state);
+        }
+    }
+
+    fn change_selection(&mut self, state: bool) {
+        // apply state
+        if self.state.change_selection(state) {
+            (self.on_state_changed)(&mut self.widget, self.state);
+        }
+        if !state {
+            // while this isn't correct (i.e. deselecting by keyboard removes hover state)
+            // it might be good enough
+            self.change_state(Button::STATE_IDLE);
+        }
+    }
+
+    fn is_selectable(&self) -> bool {
+        true
     }
 }
 
@@ -131,28 +174,41 @@ where
     }
 
     fn handle_input(&mut self, ctxt: &mut InputCtxt, event: InputEvent) -> bool {
-        if !self.widget.inner.handle_input(ctxt, event) {
-            match event {
-                InputEvent::KeyUp(Key::Space, _) => self.fire_on_clicked(),
-                InputEvent::KeyUp(Key::Tab, _) => ctxt.select_next_widget(),
-                InputEvent::PointerHover(_) => {}
-                InputEvent::PointerDown(_) => {
-                    self.fire_on_pressed();
+        match event {
+            InputEvent::KeyUp(Key::Space, _) => self.fire_on_clicked(),
+            InputEvent::KeyUp(Key::Tab, _) => ctxt.select_next_widget(),
+            InputEvent::PointerHover(pos) => {
+                if self.bounding_box().hit_test(pos) {
+                    self.change_state(Button::STATE_HOVERED);
+                } else {
+                    self.change_state(Button::STATE_IDLE);
                 }
-                InputEvent::PointerMove(_) => {}
-                InputEvent::PointerMoveDelta(_) => {}
-                InputEvent::PointerUp(pos) => {
-                    if self.bounding_box().hit_test(pos) {
-                        self.fire_on_clicked();
-                    }
-                }
-                _ => return false,
             }
-
-            true
-        } else {
-            false
+            InputEvent::PointerDown(pos) => {
+                if self.bounding_box().hit_test(pos) {
+                    self.change_state(Button::STATE_PRESSED);
+                    self.fire_on_pressed();
+                } else {
+                    self.change_state(Button::STATE_IDLE);
+                }
+            }
+            InputEvent::PointerMove(pos) => {
+                if !self.bounding_box().hit_test(pos) {
+                    self.change_state(Button::STATE_IDLE);
+                }
+            }
+            InputEvent::PointerUp(pos) => {
+                if self.bounding_box().hit_test(pos) {
+                    self.change_state(Button::STATE_HOVERED);
+                    self.fire_on_clicked();
+                } else {
+                    self.change_state(Button::STATE_IDLE);
+                }
+            }
+            _ => return false,
         }
+
+        true
     }
 
     fn update(&mut self) {

@@ -23,27 +23,44 @@ use embedded_gui::{
 };
 
 fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
-    match event {
-        SimulatorEvent::MouseButtonUp {
-            mouse_btn: MouseButton::Left,
-            point,
-        } => Ok(InputEvent::PointerUp(Position {
-            x: point.x,
-            y: point.y,
-        })),
-        SimulatorEvent::MouseButtonDown {
-            mouse_btn: MouseButton::Left,
-            point,
-        } => Ok(InputEvent::PointerDown(Position {
-            x: point.x,
-            y: point.y,
-        })),
-        SimulatorEvent::MouseMove { point } => Ok(InputEvent::PointerHover(Position {
-            x: point.x,
-            y: point.y,
-        })),
-        SimulatorEvent::Quit => Err(true),
-        _ => Err(false),
+    unsafe {
+        // This is fine for a demo
+        static mut MOUSE_DOWN: bool = false;
+        match event {
+            SimulatorEvent::MouseButtonUp {
+                mouse_btn: MouseButton::Left,
+                point,
+            } => {
+                MOUSE_DOWN = false;
+                Ok(InputEvent::PointerUp(Position {
+                    x: point.x,
+                    y: point.y,
+                }))
+            }
+            SimulatorEvent::MouseButtonDown {
+                mouse_btn: MouseButton::Left,
+                point,
+            } => {
+                MOUSE_DOWN = true;
+                Ok(InputEvent::PointerDown(Position {
+                    x: point.x,
+                    y: point.y,
+                }))
+            }
+            SimulatorEvent::MouseMove { point } => Ok(if MOUSE_DOWN {
+                InputEvent::PointerMove(Position {
+                    x: point.x,
+                    y: point.y,
+                })
+            } else {
+                InputEvent::PointerHover(Position {
+                    x: point.x,
+                    y: point.y,
+                })
+            }),
+            SimulatorEvent::Quit => Err(true),
+            _ => Err(false),
+        }
     }
 }
 
@@ -67,14 +84,19 @@ fn main() {
                     .align_horizontal(Center)
                     .align_vertical(Bottom),
                 )
-                .border_color(BinaryColor::Off),
+                .border_color(BinaryColor::Off)
+                .on_state_changed(|widget, state| match state.state() {
+                    Button::STATE_HOVERED => widget.border_color(BinaryColor::On),
+                    Button::STATE_PRESSED => widget.border_color(BinaryColor::Off),
+                    _ => widget.border_color(BinaryColor::Off),
+                }),
             )
             .bind(&flag)
             .on_clicked(|data| {
                 data.update(|mut data| *data = !*data);
             }),
         )
-        .all(2),
+        .all(4),
     );
 
     let output_settings = OutputSettingsBuilder::new()

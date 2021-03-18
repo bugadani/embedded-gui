@@ -2,9 +2,8 @@ use core::marker::PhantomData;
 
 use crate::{
     data::{NoData, WidgetData},
-    input::InputEvent,
-    widgets::{Widget, WidgetDataHolder, WidgetWrapper},
-    BoundingBox, InputCtxt, MeasureSpec, MeasuredSize, Position,
+    widgets::{Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
+    BoundingBox, MeasureSpec, MeasuredSize, Position, WidgetState,
 };
 
 pub trait BorderProperties {
@@ -38,6 +37,8 @@ where
                 _marker: PhantomData,
             },
             data_holder: WidgetDataHolder::default(),
+            on_state_changed: |_, _| (),
+            state: WidgetState::default(),
         }
     }
 }
@@ -82,12 +83,35 @@ where
         WidgetWrapper {
             widget: self.widget.bind::<D>(),
             data_holder: self.data_holder.bind(data),
+            on_state_changed: |_, _| (),
+            state: WidgetState::default(),
         }
     }
 
     pub fn border_color(mut self, color: P::Color) -> Self {
         self.widget.border_color(color);
         self
+    }
+}
+
+impl<W, P, D> WidgetStateHolder for WidgetWrapper<Border<W, P, D>, D>
+where
+    W: Widget,
+    P: BorderProperties,
+    D: WidgetData,
+{
+    fn change_state(&mut self, state: u32) {
+        // propagate state to child widget
+        self.widget.inner.change_state(state);
+        if self.state.change_state(state) {
+            (self.on_state_changed)(&mut self.widget, self.state)
+        }
+    }
+
+    fn change_selection(&mut self, _state: bool) {}
+
+    fn is_selectable(&self) -> bool {
+        false
     }
 }
 
@@ -153,10 +177,6 @@ where
         } else {
             self.widget.inner.get_mut_child(idx - 1)
         }
-    }
-
-    fn handle_input(&mut self, ctxt: &mut InputCtxt, event: InputEvent) -> bool {
-        self.widget.inner.handle_input(ctxt, event)
     }
 
     fn update(&mut self) {
