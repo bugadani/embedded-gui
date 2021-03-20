@@ -8,7 +8,7 @@ use crate::{
     BoundingBox, MeasureSpec, Position, WidgetState,
 };
 
-pub struct Button<I, D>
+pub struct Button<I, D = NoData>
 where
     D: WidgetData,
 {
@@ -26,7 +26,7 @@ impl<I> Button<I, NoData>
 where
     I: Widget,
 {
-    pub fn new(inner: I) -> WidgetWrapper<Self, NoData> {
+    pub fn new(inner: I) -> WidgetWrapper<Self> {
         WidgetWrapper::new(Button {
             inner,
             on_clicked: |_| (),
@@ -57,7 +57,7 @@ where
     }
 }
 
-impl<I> WidgetWrapper<Button<I, NoData>, NoData>
+impl<I> WidgetWrapper<Button<I>, NoData>
 where
     I: Widget,
 {
@@ -68,7 +68,7 @@ where
         WidgetWrapper {
             parent_index: self.parent_index,
             widget: self.widget.bind::<D>(),
-            data_holder: WidgetDataHolder::<Button<I, D>, NoData>::default().bind(data),
+            data_holder: WidgetDataHolder::<Button<I, D>>::default().bind(data),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }

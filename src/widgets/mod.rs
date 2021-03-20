@@ -54,7 +54,7 @@ pub trait Widget: WidgetStateHolder + ParentHolder {
     }
 }
 
-pub struct WidgetDataHolder<W, D>
+pub struct WidgetDataHolder<W, D = NoData>
 where
     D: WidgetData,
 {
@@ -124,7 +124,7 @@ pub trait WidgetStateHolder {
     }
 }
 
-pub struct WidgetWrapper<W, D>
+pub struct WidgetWrapper<W, D = NoData>
 where
     D: WidgetData,
 {
