@@ -5,7 +5,7 @@ use crate::{
         event::{InputEvent, PointerEvent},
     },
     widgets::{ParentHolder, Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
-    BoundingBox, MeasureSpec, Position, WidgetState,
+    BoundingBox, Canvas, MeasureSpec, Position, WidgetRenderer, WidgetState,
 };
 
 pub struct Button<I, D = NoData>
@@ -252,5 +252,16 @@ where
 
     fn update(&mut self) {
         self.data_holder.update(&mut self.widget);
+    }
+}
+
+impl<C, W, D> WidgetRenderer<C> for Button<W, D>
+where
+    W: Widget + WidgetRenderer<C>,
+    C: Canvas,
+    D: WidgetData,
+{
+    fn draw(&self, canvas: &mut C) -> Result<(), C::Error> {
+        self.inner.draw(canvas)
     }
 }

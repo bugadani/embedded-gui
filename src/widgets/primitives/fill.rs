@@ -1,7 +1,7 @@
 use crate::{
     input::event::InputEvent,
     widgets::{ParentHolder, Widget, WidgetStateHolder},
-    BoundingBox, MeasureConstraint, MeasureSpec, MeasuredSize, Position,
+    BoundingBox, Canvas, MeasureConstraint, MeasureSpec, MeasuredSize, Position, WidgetRenderer,
 };
 
 pub trait HorizontalAlignment {
@@ -275,5 +275,18 @@ where
 
     fn set_parent(&mut self, index: Option<usize>) {
         self.parent_index = index;
+    }
+}
+
+impl<C, W, FD, H, V> WidgetRenderer<C> for FillParent<W, FD, H, V>
+where
+    FD: FillDirection,
+    W: Widget + WidgetRenderer<C>,
+    C: Canvas,
+    H: HorizontalAlignment,
+    V: VerticalAlignment,
+{
+    fn draw(&self, canvas: &mut C) -> Result<(), C::Error> {
+        self.inner.draw(canvas)
     }
 }

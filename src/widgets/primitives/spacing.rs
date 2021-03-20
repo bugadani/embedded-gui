@@ -2,7 +2,7 @@ use crate::{
     data::{NoData, WidgetData},
     input::event::InputEvent,
     widgets::{ParentHolder, Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
-    BoundingBox, MeasureSpec, MeasuredSize, Position, WidgetState,
+    BoundingBox, Canvas, MeasureSpec, MeasuredSize, Position, WidgetRenderer, WidgetState,
 };
 
 #[derive(Default, Clone, Copy)]
@@ -195,5 +195,15 @@ where
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
         // We just relay whatever the child desires
         self.widget.inner.test_input(event).map(|i| i + 1)
+    }
+}
+
+impl<C, W> WidgetRenderer<C> for Spacing<W>
+where
+    W: Widget + WidgetRenderer<C>,
+    C: Canvas,
+{
+    fn draw(&self, canvas: &mut C) -> Result<(), C::Error> {
+        self.inner.draw(canvas)
     }
 }
