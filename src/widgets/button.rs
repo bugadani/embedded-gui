@@ -1,6 +1,9 @@
 use crate::{
     data::{NoData, WidgetData},
-    input::event::InputEvent,
+    input::{
+        controller::InputContext,
+        event::{InputEvent, PointerEvent},
+    },
     widgets::{ParentHolder, Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
     BoundingBox, MeasureSpec, Position, WidgetState,
 };
@@ -169,8 +172,81 @@ where
         }
     }
 
-    fn handle_input(&mut self, _event: InputEvent) -> bool {
-        // TODO
+    fn test_input(&mut self, event: InputEvent) -> Option<usize> {
+        match event {
+            InputEvent::PointerEvent(position, PointerEvent::Down) => {
+                if let Some(idx) = self.widget.inner.test_input(event) {
+                    // we give priority to our child
+                    Some(idx + 1)
+                } else if self.bounding_box().contains(position) {
+                    Some(0)
+                } else {
+                    None
+                }
+            }
+
+            InputEvent::PointerEvent(position, PointerEvent::Drag) => {
+                if self.bounding_box().contains(position) {
+                    if self.state.state() != Button::STATE_PRESSED {
+                        self.change_state(Button::STATE_HOVERED);
+                    }
+                    Some(0)
+                } else {
+                    // Drag outside = cancel
+                    self.change_state(Button::STATE_IDLE);
+                    None
+                }
+            }
+
+            // We only get Up if we handled Down
+            InputEvent::PointerEvent(_, PointerEvent::Up) => {
+                if self.state.state() == Button::STATE_PRESSED {
+                    Some(0)
+                } else {
+                    None
+                }
+            }
+
+            InputEvent::PointerEvent(position, PointerEvent::Hover) => {
+                if let Some(idx) = self.widget.inner.test_input(event) {
+                    // we give priority to our child
+                    self.change_state(Button::STATE_IDLE);
+                    Some(idx + 1)
+                } else if self.bounding_box().contains(position) {
+                    Some(0)
+                } else {
+                    // Make sure we reset our state if we don't handle the pointer event.
+                    // It's possible we were the target for the last one.
+                    self.change_state(Button::STATE_IDLE);
+                    None
+                }
+            }
+            InputEvent::KeyEvent(_) => {
+                // TODO we do care about some key events
+                None
+            }
+            InputEvent::ScrollEvent(_) => None,
+        }
+    }
+
+    fn handle_input(&mut self, _ctxt: InputContext, event: InputEvent) -> bool {
+        match event {
+            InputEvent::PointerEvent(_, pe) => match pe {
+                PointerEvent::Hover => self.change_state(Button::STATE_HOVERED),
+                PointerEvent::Down => {
+                    self.fire_on_pressed();
+                    self.change_state(Button::STATE_PRESSED);
+                }
+                PointerEvent::Drag => {}
+                PointerEvent::Up => {
+                    self.change_state(Button::STATE_HOVERED);
+                    self.fire_on_clicked();
+                }
+            },
+            _ => {
+                // TODO
+            }
+        }
         true
     }
 

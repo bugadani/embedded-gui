@@ -1,4 +1,5 @@
 use crate::{
+    input::event::InputEvent,
     widgets::{ParentHolder, Widget, WidgetStateHolder},
     BoundingBox, MeasureConstraint, MeasureSpec, MeasuredSize, Position,
 };
@@ -254,6 +255,11 @@ where
     }
 
     fn update(&mut self) {}
+
+    fn test_input(&mut self, event: InputEvent) -> Option<usize> {
+        // We just relay whatever the child desires
+        self.inner.test_input(event).map(|i| i + 1)
+    }
 }
 
 impl<W, D, H, V> ParentHolder for FillParent<W, D, H, V>

@@ -67,7 +67,7 @@ pub enum Modifier {
 #[derive(Copy, Clone, Debug)]
 pub enum InputEvent {
     KeyEvent(KeyEvent),
-    PointerEvent(PointerEvent),
+    PointerEvent(Position, PointerEvent),
     ScrollEvent(ScrollEvent),
 }
 
@@ -79,10 +79,10 @@ pub enum KeyEvent {
 
 #[derive(Copy, Clone, Debug)]
 pub enum PointerEvent {
-    PointerHover(Position),
-    PointerDown(Position),
-    PointerDrag(Position),
-    PointerUp(Position),
+    Hover,
+    Down,
+    Drag,
+    Up,
 }
 
 #[derive(Copy, Clone, Debug)]

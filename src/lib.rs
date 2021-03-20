@@ -38,7 +38,7 @@ pub struct BoundingBox {
 }
 
 impl BoundingBox {
-    pub fn hit_test(&self, position: Position) -> bool {
+    pub fn contains(&self, position: Position) -> bool {
         position.x >= self.position.x
             && position.y >= self.position.y
             && position.x <= self.position.x + self.size.width as i32

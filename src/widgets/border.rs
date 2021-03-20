@@ -84,7 +84,14 @@ where
             state: WidgetState::default(),
         }
     }
+}
 
+impl<W, P, D> WidgetWrapper<Border<W, P, D>, D>
+where
+    W: Widget,
+    P: BorderProperties,
+    D: WidgetData,
+{
     pub fn border_color(mut self, color: P::Color) -> Self {
         self.widget.border_color(color);
         self
@@ -185,7 +192,8 @@ where
         self.data_holder.update(&mut self.widget);
     }
 
-    fn handle_input(&mut self, _event: InputEvent) -> bool {
-        false
+    fn test_input(&mut self, event: InputEvent) -> Option<usize> {
+        // We just relay whatever the child desires
+        self.widget.inner.test_input(event).map(|i| i + 1)
     }
 }

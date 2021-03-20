@@ -4,11 +4,15 @@ pub trait InputController {
     fn input_event(&mut self, root: &mut impl Widget, event: InputEvent);
 }
 
-pub struct DefaultInputController {}
+pub struct InputContext {}
+
+pub struct DefaultInputController {
+    last_handler: Option<usize>,
+}
 
 impl DefaultInputController {
     pub fn new() -> Self {
-        Self {}
+        Self { last_handler: None }
     }
 
     fn get_mut_widget<'a>(
@@ -26,8 +30,34 @@ impl DefaultInputController {
 
 impl InputController for DefaultInputController {
     fn input_event(&mut self, root: &mut impl Widget, event: InputEvent) {
-        if let Some(handler) = root.test_input(event) {
-            self.get_mut_widget(root, handler).handle_input(event);
+        let handler = if let Some(last) = self.last_handler {
+            if let Some(handler) = self.get_mut_widget(root, last).test_input(event) {
+                // it's possible the widget wants to pass the event to it's child
+                Some(last + handler)
+            } else {
+                // the widget doesn't want to handle the event any more, find a new target
+                root.test_input(event)
+            }
+        } else {
+            root.test_input(event)
+        };
+
+        if let Some(mut handler) = handler {
+            let actual_handler = loop {
+                let widget = self.get_mut_widget(root, handler);
+                let context = InputContext {};
+                if widget.handle_input(context, event) {
+                    break Some(handler);
+                } else {
+                    if let Some(parent) = widget.parent_index() {
+                        handler = parent;
+                    } else {
+                        break None;
+                    }
+                }
+            };
+
+            self.last_handler = actual_handler;
         }
     }
 }

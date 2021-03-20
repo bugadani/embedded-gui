@@ -32,36 +32,38 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
                 point,
             } => {
                 MOUSE_DOWN = false;
-                Ok(InputEvent::PointerEvent(PointerEvent::PointerUp(
+                Ok(InputEvent::PointerEvent(
                     Position {
                         x: point.x,
                         y: point.y,
                     },
-                )))
+                    PointerEvent::Up,
+                ))
             }
             SimulatorEvent::MouseButtonDown {
                 mouse_btn: MouseButton::Left,
                 point,
             } => {
                 MOUSE_DOWN = true;
-                Ok(InputEvent::PointerEvent(PointerEvent::PointerDown(
+                Ok(InputEvent::PointerEvent(
                     Position {
                         x: point.x,
                         y: point.y,
                     },
-                )))
+                    PointerEvent::Down,
+                ))
             }
-            SimulatorEvent::MouseMove { point } => Ok(if MOUSE_DOWN {
-                InputEvent::PointerEvent(PointerEvent::PointerDrag(Position {
+            SimulatorEvent::MouseMove { point } => Ok(InputEvent::PointerEvent(
+                Position {
                     x: point.x,
                     y: point.y,
-                }))
-            } else {
-                InputEvent::PointerEvent(PointerEvent::PointerHover(Position {
-                    x: point.x,
-                    y: point.y,
-                }))
-            }),
+                },
+                if MOUSE_DOWN {
+                    PointerEvent::Drag
+                } else {
+                    PointerEvent::Hover
+                },
+            )),
             SimulatorEvent::Quit => Err(true),
             _ => Err(false),
         }

@@ -1,6 +1,6 @@
 use crate::{
     data::{NoData, WidgetData},
-    input::event::InputEvent,
+    input::{controller::InputContext, event::InputEvent},
     BoundingBox, MeasureSpec, MeasuredSize, Position, WidgetState,
 };
 
@@ -45,36 +45,13 @@ pub trait Widget: WidgetStateHolder + ParentHolder {
         self.bounding_box_mut().size = size;
     }
 
-    fn hit_test(&self, position: Position) -> Option<usize> {
-        if self.bounding_box().hit_test(position) {
-            if self.children() > 0 {
-                let mut index = 0;
-                for i in 0..self.children() {
-                    let child = self.get_child(i);
-                    if let Some(idx) = child.hit_test(position) {
-                        if idx != 0 || child.is_selectable() {
-                            return Some(index + idx);
-                        }
-                    }
-                    index += child.children();
-                }
-            }
-        }
-
-        if self.is_selectable() {
-            Some(0)
-        } else {
-            None
-        }
-    }
-
     fn update(&mut self) {}
 
     fn test_input(&mut self, _event: InputEvent) -> Option<usize> {
         None
     }
 
-    fn handle_input(&mut self, _event: InputEvent) -> bool {
+    fn handle_input(&mut self, _ctxt: InputContext, _event: InputEvent) -> bool {
         false
     }
 }
