@@ -4,12 +4,9 @@ use crate::{
     BoundingBox, MeasureSpec, MeasuredSize, Position, WidgetState,
 };
 
-pub mod background;
-pub mod border;
 pub mod button;
-pub mod fill;
 pub mod label;
-pub mod spacing;
+pub mod primitives;
 
 pub trait Widget: WidgetStateHolder + ParentHolder {
     fn attach(&mut self, parent: Option<usize>, _index: usize) {

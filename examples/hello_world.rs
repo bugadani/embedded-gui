@@ -1,6 +1,9 @@
 use std::{thread, time::Duration};
 
-use backend_embedded_graphics::{BackgroundStyle, BorderStyle, EgCanvas};
+use backend_embedded_graphics::{
+    widgets::primitives::{background::BackgroundStyle, border::BorderStyle},
+    EgCanvas,
+};
 use embedded_graphics::{
     draw_target::DrawTarget, pixelcolor::BinaryColor, prelude::Size as EgSize,
 };
@@ -12,12 +15,14 @@ use embedded_gui::{
     data::{BoundData, WidgetData},
     input::event::{InputEvent, PointerEvent},
     widgets::{
-        background::Background,
-        border::Border,
         button::Button,
-        fill::{Bottom, Center, FillParent},
         label::{Label, LabelConstructor},
-        spacing::Spacing,
+        primitives::{
+            background::Background,
+            border::Border,
+            fill::{Bottom, Center, FillParent},
+            spacing::Spacing,
+        },
         DataHolder, Widget,
     },
     Position, WidgetState, Window,
