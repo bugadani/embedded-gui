@@ -1,4 +1,4 @@
-//#![no_std]
+#![no_std]
 
 pub mod data;
 pub mod input;
@@ -149,7 +149,8 @@ where
     C: Canvas,
     W: Widget + WidgetRenderer<C>,
 {
-    pub fn new(canvas: C, root: W) -> Self {
+    pub fn new(canvas: C, mut root: W) -> Self {
+        root.attach(None, 0);
         Self {
             canvas,
             root,

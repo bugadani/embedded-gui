@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use crate::{
     data::{NoData, WidgetData},
-    widgets::{Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
+    widgets::{ParentHolder, Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
     BoundingBox, MeasureSpec, MeasuredSize, Position, WidgetState,
 };
 
@@ -76,6 +76,7 @@ where
         D: WidgetData,
     {
         WidgetWrapper {
+            parent_index: self.parent_index,
             widget: self.widget.bind::<D>(),
             data_holder: WidgetDataHolder::<Border<W, P, D>, NoData>::default().bind(data),
             on_state_changed: |_, _| (),
@@ -116,6 +117,11 @@ where
     P: BorderProperties,
     D: WidgetData,
 {
+    fn attach(&mut self, parent: Option<usize>, self_index: usize) {
+        self.set_parent(parent);
+        self.widget.inner.attach(Some(self_index), self_index + 1);
+    }
+
     fn arrange(&mut self, position: Position) {
         let bw = self.widget.border_properties.get_border_width();
 

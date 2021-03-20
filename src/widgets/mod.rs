@@ -10,7 +10,11 @@ pub mod fill;
 pub mod label;
 pub mod spacing;
 
-pub trait Widget: WidgetStateHolder {
+pub trait Widget: WidgetStateHolder + ParentHolder {
+    fn attach(&mut self, parent: Option<usize>, _index: usize) {
+        self.set_parent(parent);
+    }
+
     fn bounding_box(&self) -> BoundingBox;
 
     fn bounding_box_mut(&mut self) -> &mut BoundingBox;
@@ -150,6 +154,7 @@ pub struct WidgetWrapper<W, D>
 where
     D: WidgetData,
 {
+    pub parent_index: Option<usize>,
     pub widget: W,
     pub data_holder: WidgetDataHolder<W, D>,
     pub state: WidgetState,
@@ -159,6 +164,7 @@ where
 impl<W> WidgetWrapper<W, NoData> {
     pub fn new(widget: W) -> Self {
         WidgetWrapper {
+            parent_index: None,
             widget,
             data_holder: WidgetDataHolder::default(),
             on_state_changed: |_, _| (),
@@ -197,5 +203,23 @@ where
         Self: Sized,
     {
         &mut self.data_holder
+    }
+}
+
+pub trait ParentHolder {
+    fn parent_index(&self) -> Option<usize>;
+
+    fn set_parent(&mut self, index: Option<usize>);
+}
+
+impl<W, D> ParentHolder for WidgetWrapper<W, D>
+where
+    D: WidgetData,
+{
+    fn parent_index(&self) -> Option<usize> {
+        self.parent_index
+    }
+    fn set_parent(&mut self, index: Option<usize>) {
+        self.parent_index = index;
     }
 }

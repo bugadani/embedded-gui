@@ -58,6 +58,7 @@ where
         D: WidgetData,
     {
         WidgetWrapper {
+            parent_index: self.parent_index,
             widget: self.widget.bind::<D>(),
             data_holder: WidgetDataHolder::<Label<C, P, NoData>, NoData>::default().bind(data),
             on_state_changed: |_, _| (),

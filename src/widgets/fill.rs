@@ -1,6 +1,6 @@
 use crate::{
     input::InputEvent,
-    widgets::{Widget, WidgetStateHolder},
+    widgets::{ParentHolder, Widget, WidgetStateHolder},
     BoundingBox, InputCtxt, MeasureConstraint, MeasureSpec, MeasuredSize, Position,
 };
 
@@ -97,6 +97,7 @@ where
     H: HorizontalAlignment,
     V: VerticalAlignment,
 {
+    pub parent_index: Option<usize>,
     pub inner: W,
     pub direction: FD,
     pub bounds: BoundingBox,
@@ -110,6 +111,7 @@ where
 {
     pub fn horizontal(inner: W) -> FillParent<W, Horizontal, Center, Top> {
         FillParent {
+            parent_index: None,
             inner,
             direction: Horizontal,
             bounds: BoundingBox::default(),
@@ -120,6 +122,7 @@ where
 
     pub fn vertical(inner: W) -> FillParent<W, Vertical, Left, Center> {
         FillParent {
+            parent_index: None,
             inner,
             direction: Vertical,
             bounds: BoundingBox::default(),
@@ -130,6 +133,7 @@ where
 
     pub fn both(inner: W) -> FillParent<W, HorizontalAndVertical, Center, Center> {
         FillParent {
+            parent_index: None,
             inner,
             direction: HorizontalAndVertical,
             bounds: BoundingBox::default(),
@@ -151,6 +155,7 @@ where
         H2: HorizontalAlignment,
     {
         FillParent {
+            parent_index: self.parent_index,
             inner: self.inner,
             direction: self.direction,
             bounds: self.bounds,
@@ -163,6 +168,7 @@ where
         V2: VerticalAlignment,
     {
         FillParent {
+            parent_index: self.parent_index,
             inner: self.inner,
             direction: self.direction,
             bounds: self.bounds,
@@ -198,6 +204,11 @@ where
     H: HorizontalAlignment,
     V: VerticalAlignment,
 {
+    fn attach(&mut self, parent: Option<usize>, self_index: usize) {
+        self.set_parent(parent);
+        self.inner.attach(Some(self_index), self_index + 1);
+    }
+
     fn arrange(&mut self, position: Position) {
         self.bounds.position = position;
 
@@ -248,4 +259,20 @@ where
     }
 
     fn update(&mut self) {}
+}
+
+impl<W, D, H, V> ParentHolder for FillParent<W, D, H, V>
+where
+    W: Widget,
+    D: FillDirection,
+    H: HorizontalAlignment,
+    V: VerticalAlignment,
+{
+    fn parent_index(&self) -> Option<usize> {
+        self.parent_index
+    }
+
+    fn set_parent(&mut self, index: Option<usize>) {
+        self.parent_index = index;
+    }
 }

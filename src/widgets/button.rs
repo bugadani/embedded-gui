@@ -1,7 +1,7 @@
 use crate::{
     data::{NoData, WidgetData},
     input::{InputEvent, Key},
-    widgets::{Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
+    widgets::{ParentHolder, Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
     BoundingBox, InputCtxt, MeasureSpec, Position, WidgetState,
 };
 
@@ -63,6 +63,7 @@ where
         D: WidgetData,
     {
         WidgetWrapper {
+            parent_index: self.parent_index,
             widget: self.widget.bind::<D>(),
             data_holder: WidgetDataHolder::<Button<I, D>, NoData>::default().bind(data),
             on_state_changed: |_, _| (),
@@ -127,6 +128,11 @@ where
     I: Widget,
     D: WidgetData,
 {
+    fn attach(&mut self, parent: Option<usize>, self_index: usize) {
+        self.set_parent(parent);
+        self.widget.inner.attach(Some(self_index), self_index + 1);
+    }
+
     fn arrange(&mut self, position: Position) {
         self.widget.inner.arrange(position);
     }
