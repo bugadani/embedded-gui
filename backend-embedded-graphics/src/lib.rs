@@ -127,7 +127,7 @@ where
 }
 
 impl<F, C, D> LabelConstructor<EgCanvas<C, D>, LabelStyle<F>>
-    for Label<EgCanvas<C, D>, LabelStyle<F>, NoData>
+    for Label<EgCanvas<C, D>, LabelStyle<F>>
 where
     F: TextRenderer,
     C: PixelColor,
@@ -206,12 +206,11 @@ where
     }
 }
 
-impl<F, C, DT, D> WidgetRenderer<EgCanvas<C, DT>> for Label<EgCanvas<C, DT>, LabelStyle<F>, D>
+impl<F, C, DT> WidgetRenderer<EgCanvas<C, DT>> for Label<EgCanvas<C, DT>, LabelStyle<F>>
 where
     F: TextRenderer<Color = C>,
     C: PixelColor,
     DT: DrawTarget<Color = C>,
-    D: WidgetData,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
         self.label_properties

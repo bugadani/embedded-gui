@@ -11,31 +11,30 @@ pub trait LabelProperties<C: Canvas> {
 }
 
 pub trait LabelConstructor<C, P> {
-    fn new(text: &'static str) -> WidgetWrapper<Label<C, P, NoData>, NoData>
+    fn new(text: &'static str) -> WidgetWrapper<Label<C, P>, NoData>
     where
         C: Canvas,
         P: LabelProperties<C>;
 }
 
-pub struct Label<C, P, D>
+pub struct Label<C, P>
 where
     C: Canvas,
     P: LabelProperties<C>,
-    D: WidgetData,
 {
     // FIXME: use heapless::String
     pub text: &'static str,
     pub label_properties: P,
     pub bounds: BoundingBox,
-    pub _marker: PhantomData<(C, D)>,
+    pub _marker: PhantomData<C>,
 }
 
-impl<C, P> Label<C, P, NoData>
+impl<C, P> Label<C, P>
 where
     C: Canvas,
     P: LabelProperties<C>,
 {
-    pub fn bind<D>(self) -> Label<C, P, D>
+    pub fn bind<D>(self) -> Label<C, P>
     where
         D: WidgetData,
     {
@@ -48,26 +47,26 @@ where
     }
 }
 
-impl<C, P> WidgetWrapper<Label<C, P, NoData>, NoData>
+impl<C, P> WidgetWrapper<Label<C, P>, NoData>
 where
     C: Canvas,
     P: LabelProperties<C>,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Label<C, P, D>, D>
+    pub fn bind<D>(self, data: D) -> WidgetWrapper<Label<C, P>, D>
     where
         D: WidgetData,
     {
         WidgetWrapper {
             parent_index: self.parent_index,
-            widget: self.widget.bind::<D>(),
-            data_holder: WidgetDataHolder::<Label<C, P, NoData>, NoData>::default().bind(data),
+            widget: self.widget,
+            data_holder: WidgetDataHolder::<Label<C, P>, NoData>::default().bind(data),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }
     }
 }
 
-impl<C, P, D> WidgetStateHolder for WidgetWrapper<Label<C, P, D>, D>
+impl<C, P, D> WidgetStateHolder for WidgetWrapper<Label<C, P>, D>
 where
     C: Canvas,
     P: LabelProperties<C>,
@@ -92,7 +91,7 @@ where
     }
 }
 
-impl<C, P, D> Widget for WidgetWrapper<Label<C, P, D>, D>
+impl<C, P, D> Widget for WidgetWrapper<Label<C, P>, D>
 where
     C: Canvas,
     P: LabelProperties<C>,
