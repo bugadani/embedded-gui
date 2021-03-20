@@ -3,6 +3,7 @@ pub use object_chain::{Chain, ChainElement, Link};
 use crate::{widgets::Widget, Canvas, WidgetRenderer};
 
 pub mod column;
+pub mod row;
 
 // Cell is a container struct used by the Row/Column layouts.
 pub struct Cell<W>

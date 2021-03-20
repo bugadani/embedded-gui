@@ -94,6 +94,22 @@ impl MeasureConstraint {
             MeasureConstraint::Unspecified => MeasureConstraint::Unspecified,
         }
     }
+
+    pub fn apply_to_measured(self, measured: u32) -> u32 {
+        match self {
+            MeasureConstraint::AtMost(constraint) => constraint.min(measured),
+            MeasureConstraint::Exactly(constraint) => constraint,
+            MeasureConstraint::Unspecified => measured,
+        }
+    }
+
+    pub fn to_at_most(self) -> MeasureConstraint {
+        match self {
+            MeasureConstraint::AtMost(size) => MeasureConstraint::AtMost(size),
+            MeasureConstraint::Exactly(size) => MeasureConstraint::AtMost(size),
+            MeasureConstraint::Unspecified => MeasureConstraint::AtMost(u32::MAX),
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug)]

@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use crate::{
     data::{NoData, WidgetData},
     widgets::{Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
-    BoundingBox, Canvas, MeasureConstraint, MeasureSpec, MeasuredSize, WidgetState,
+    BoundingBox, Canvas, MeasureSpec, MeasuredSize, WidgetState,
 };
 
 pub trait LabelProperties<C: Canvas> {
@@ -108,17 +108,8 @@ where
     fn measure(&mut self, measure_spec: MeasureSpec) {
         let size = self.widget.label_properties.measure_text(self.widget.text);
 
-        let width = match measure_spec.width {
-            MeasureConstraint::AtMost(width) => width.min(size.width),
-            MeasureConstraint::Exactly(width) => width,
-            MeasureConstraint::Unspecified => size.width,
-        };
-
-        let height = match measure_spec.height {
-            MeasureConstraint::AtMost(height) => height.min(size.height),
-            MeasureConstraint::Exactly(height) => height,
-            MeasureConstraint::Unspecified => size.height,
-        };
+        let width = measure_spec.width.apply_to_measured(size.width);
+        let height = measure_spec.height.apply_to_measured(size.height);
 
         self.set_measured_size(MeasuredSize { width, height })
     }

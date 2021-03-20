@@ -229,7 +229,10 @@ where
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
-        self.inner.measure(measure_spec);
+        self.inner.measure(MeasureSpec {
+            width: measure_spec.width.to_at_most(),
+            height: measure_spec.height.to_at_most(),
+        });
 
         D::measure(self, self.inner.bounding_box().size, measure_spec);
     }

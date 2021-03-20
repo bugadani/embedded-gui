@@ -17,11 +17,11 @@ use embedded_gui::{
     widgets::{
         button::Button,
         label::{Label, LabelConstructor},
-        layouts::linear::{column::Column, Cell},
+        layouts::linear::{column::Column, row::Row, Cell},
         primitives::{
             background::Background,
             border::Border,
-            fill::{Bottom, Center, FillParent, HorizontalAndVertical},
+            fill::{Center, FillParent, HorizontalAndVertical},
             spacing::Spacing,
         },
         DataHolder, Widget, WidgetWrapper,
@@ -109,7 +109,7 @@ fn button_with_style<W: Widget>(
             Background<
                 WidgetWrapper<
                     Border<
-                        FillParent<W, HorizontalAndVertical, Center, Bottom>,
+                        FillParent<W, HorizontalAndVertical, Center, Center>,
                         BorderStyle<BinaryColor>,
                     >,
                 >,
@@ -123,7 +123,7 @@ fn button_with_style<W: Widget>(
             Border::new(
                 FillParent::both(inner)
                     .align_horizontal(Center)
-                    .align_vertical(Bottom),
+                    .align_vertical(Center),
             )
             .border_color(BinaryColor::Off)
             .on_state_changed(update_button_border),
@@ -142,7 +142,17 @@ fn main() {
 
     let mut gui = Window::new(
         EgCanvas::new(display),
-        Column::new(Cell::new(Label::new("Hello, world!"))).add(Cell::new(
+        Column::new(Cell::new(
+            Row::new(
+                Cell::new(FillParent::horizontal(Label::new("Hello,")).align_horizontal(Center))
+                    .weight(1),
+            )
+            .add(
+                Cell::new(FillParent::horizontal(Label::new("World!")).align_horizontal(Center))
+                    .weight(1),
+            ),
+        ))
+        .add(Cell::new(
             Spacing::new(
                 button_with_style(Label::new("Click me").bind(&flag).on_data_changed(
                     |widget, data| {
