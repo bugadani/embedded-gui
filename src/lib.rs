@@ -180,6 +180,7 @@ where
     pub fn update(&mut self) {
         let child_count = self.root.children();
 
+        // TODO it might be better to propagate this recursively
         self.root.update();
         for idx in 0..child_count {
             self.root.get_mut_child(idx).update();

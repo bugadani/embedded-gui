@@ -6,6 +6,7 @@ use crate::{
 
 pub mod button;
 pub mod label;
+pub mod layouts;
 pub mod primitives;
 
 pub trait Widget: WidgetStateHolder + ParentHolder {

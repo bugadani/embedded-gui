@@ -17,6 +17,7 @@ use embedded_gui::{
     widgets::{
         button::Button,
         label::{Label, LabelConstructor},
+        layouts::linear::{column::Column, Cell},
         primitives::{
             background::Background,
             border::Border,
@@ -133,7 +134,7 @@ fn button_with_style<W: Widget>(
 }
 
 fn main() {
-    let display = SimulatorDisplay::<BinaryColor>::new(EgSize::new(64, 32));
+    let display = SimulatorDisplay::<BinaryColor>::new(EgSize::new(128, 64));
 
     let flag = BoundData::new(true, |data| {
         println!("Data changed to {:?}", data);
@@ -141,19 +142,21 @@ fn main() {
 
     let mut gui = Window::new(
         EgCanvas::new(display),
-        Spacing::new(
-            button_with_style(Label::new("Click me").bind(&flag).on_data_changed(
-                |widget, data| {
-                    widget.text = if *data { "on" } else { "off" };
-                },
-            ))
-            .bind(&flag)
-            .on_clicked(|data| {
-                *data = !*data;
-                println!("Clicked!");
-            }),
-        )
-        .all(4),
+        Column::new(Cell::new(Label::new("Hello, world!"))).add(Cell::new(
+            Spacing::new(
+                button_with_style(Label::new("Click me").bind(&flag).on_data_changed(
+                    |widget, data| {
+                        widget.text = if *data { "on" } else { "off" };
+                    },
+                ))
+                .bind(&flag)
+                .on_clicked(|data| {
+                    *data = !*data;
+                    println!("Clicked!");
+                }),
+            )
+            .all(4),
+        )),
     );
 
     let output_settings = OutputSettingsBuilder::new()
