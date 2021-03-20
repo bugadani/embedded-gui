@@ -107,7 +107,7 @@ fn main() {
                 Background::new(
                     Border::new(
                         FillParent::both(Label::new("Click me").bind(&flag).on_data_changed(
-                            |mut widget, data| {
+                            |widget, data| {
                                 widget.text = if *data.get() { "on" } else { "off" };
                             },
                         ))
