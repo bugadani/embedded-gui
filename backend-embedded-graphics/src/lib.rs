@@ -144,19 +144,14 @@ where
     }
 }
 
-pub struct BorderStyle<W, C>
+pub struct BorderStyle<C>
 where
-    W: Widget,
     C: PixelColor,
 {
     style: PrimitiveStyle<C>,
-    _marker: PhantomData<W>,
 }
 
-impl<W> Default for BorderStyle<W, BinaryColor>
-where
-    W: Widget,
-{
+impl Default for BorderStyle<BinaryColor> {
     fn default() -> Self {
         Self {
             style: PrimitiveStyleBuilder::new()
@@ -164,14 +159,12 @@ where
                 .stroke_color(BinaryColor::On)
                 .stroke_width(1)
                 .build(),
-            _marker: PhantomData,
         }
     }
 }
 
-impl<W, C> BorderProperties for BorderStyle<W, C>
+impl<C> BorderProperties for BorderStyle<C>
 where
-    W: Widget,
     C: PixelColor,
 {
     type Color = C;
@@ -185,32 +178,25 @@ where
     }
 }
 
-pub struct BackgroundStyle<W, C>
+pub struct BackgroundStyle<C>
 where
-    W: Widget,
     C: PixelColor,
 {
     style: PrimitiveStyle<C>,
-    _marker: PhantomData<W>,
 }
 
-impl<W> Default for BackgroundStyle<W, BinaryColor>
-where
-    W: Widget,
-{
+impl Default for BackgroundStyle<BinaryColor> {
     fn default() -> Self {
         Self {
             style: PrimitiveStyleBuilder::new()
                 .fill_color(BinaryColor::On)
                 .build(),
-            _marker: PhantomData,
         }
     }
 }
 
-impl<W, C> BackgroundProperties for BackgroundStyle<W, C>
+impl<C> BackgroundProperties for BackgroundStyle<C>
 where
-    W: Widget,
     C: PixelColor,
 {
     type Color = C;
@@ -240,14 +226,13 @@ where
 }
 
 // TODO: draw target should be clipped to widget's bounds, so this can be restored to Border
-impl<W, C, DT, D> WidgetRenderer<EgCanvas<C, DT>>
-    for WidgetWrapper<Border<W, BorderStyle<W, C>, D>, D>
+impl<W, C, DT, D> WidgetRenderer<EgCanvas<C, DT>> for WidgetWrapper<Border<W, BorderStyle<C>, D>, D>
 where
     W: Widget + WidgetRenderer<EgCanvas<C, DT>>,
     C: PixelColor,
     DT: DrawTarget<Color = C>,
     D: WidgetData,
-    BorderStyle<W, C>: BorderProperties,
+    BorderStyle<C>: BorderProperties,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
         self.bounding_box()
@@ -261,13 +246,13 @@ where
 
 // TODO: draw target should be clipped to widget's bounds, so this can be restored to Background
 impl<W, C, DT, D> WidgetRenderer<EgCanvas<C, DT>>
-    for WidgetWrapper<Background<W, BackgroundStyle<W, C>, D>, D>
+    for WidgetWrapper<Background<W, BackgroundStyle<C>, D>, D>
 where
     W: Widget + WidgetRenderer<EgCanvas<C, DT>>,
     C: PixelColor,
     DT: DrawTarget<Color = C>,
     D: WidgetData,
-    BackgroundStyle<W, C>: BackgroundProperties,
+    BackgroundStyle<C>: BackgroundProperties,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
         self.bounding_box()

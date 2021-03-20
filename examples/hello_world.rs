@@ -1,6 +1,6 @@
 use std::{thread, time::Duration};
 
-use backend_embedded_graphics::EgCanvas;
+use backend_embedded_graphics::{BackgroundStyle, BorderStyle, EgCanvas};
 use embedded_graphics::{
     draw_target::DrawTarget, pixelcolor::BinaryColor, prelude::Size as EgSize,
 };
@@ -18,9 +18,9 @@ use embedded_gui::{
         fill::{Bottom, Center, FillParent},
         label::{Label, LabelConstructor},
         spacing::Spacing,
-        DataHolder,
+        DataHolder, Widget,
     },
-    Position, Window,
+    Position, WidgetState, Window,
 };
 
 fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
@@ -71,6 +71,28 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
     }
 }
 
+fn update_button_background<W: Widget, D: WidgetData>(
+    widget: &mut Background<W, BackgroundStyle<BinaryColor>, D>,
+    state: WidgetState,
+) {
+    match state.state() {
+        Button::STATE_HOVERED => widget.background_color(BinaryColor::Off),
+        Button::STATE_PRESSED => widget.background_color(BinaryColor::On),
+        _ => widget.background_color(BinaryColor::Off),
+    }
+}
+
+fn update_button_border<W: Widget, D: WidgetData>(
+    widget: &mut Border<W, BorderStyle<BinaryColor>, D>,
+    state: WidgetState,
+) {
+    match state.state() {
+        Button::STATE_HOVERED => widget.border_color(BinaryColor::On),
+        Button::STATE_PRESSED => widget.border_color(BinaryColor::Off),
+        _ => widget.border_color(BinaryColor::Off),
+    }
+}
+
 fn main() {
     let display = SimulatorDisplay::<BinaryColor>::new(EgSize::new(64, 32));
 
@@ -93,22 +115,15 @@ fn main() {
                         .align_vertical(Bottom),
                     )
                     .border_color(BinaryColor::Off)
-                    .on_state_changed(|widget, state| match state.state() {
-                        Button::STATE_HOVERED => widget.border_color(BinaryColor::On),
-                        Button::STATE_PRESSED => widget.border_color(BinaryColor::Off),
-                        _ => widget.border_color(BinaryColor::Off),
-                    }),
+                    .on_state_changed(update_button_border),
                 )
                 .background_color(BinaryColor::Off)
-                .on_state_changed(|widget, state| match state.state() {
-                    Button::STATE_HOVERED => widget.background_color(BinaryColor::Off),
-                    Button::STATE_PRESSED => widget.background_color(BinaryColor::On),
-                    _ => widget.background_color(BinaryColor::Off),
-                }),
+                .on_state_changed(update_button_background),
             )
             .bind(&flag)
             .on_clicked(|data| {
                 data.update(|mut data| *data = !*data);
+                println!("Clicked!");
             }),
         )
         .all(4),
