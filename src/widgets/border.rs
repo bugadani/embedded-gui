@@ -30,16 +30,11 @@ where
     P: BorderProperties + Default,
 {
     pub fn new(inner: I) -> WidgetWrapper<Border<I, P, NoData>, NoData> {
-        WidgetWrapper {
-            widget: Border {
-                border_properties: P::default(),
-                inner,
-                _marker: PhantomData,
-            },
-            data_holder: WidgetDataHolder::default(),
-            on_state_changed: |_, _| (),
-            state: WidgetState::default(),
-        }
+        WidgetWrapper::new(Border {
+            border_properties: P::default(),
+            inner,
+            _marker: PhantomData,
+        })
     }
 }
 
@@ -82,7 +77,7 @@ where
     {
         WidgetWrapper {
             widget: self.widget.bind::<D>(),
-            data_holder: self.data_holder.bind(data),
+            data_holder: WidgetDataHolder::<Border<W, P, D>, NoData>::default().bind(data),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }

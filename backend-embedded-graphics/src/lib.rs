@@ -19,9 +19,9 @@ use embedded_gui::{
         fill::{FillDirection, FillParent, HorizontalAlignment, VerticalAlignment},
         label::{Label, LabelConstructor, LabelProperties},
         spacing::Spacing,
-        Widget, WidgetDataHolder, WidgetWrapper,
+        Widget, WidgetWrapper,
     },
-    BoundingBox, Canvas, MeasuredSize, WidgetRenderer, WidgetState,
+    BoundingBox, Canvas, MeasuredSize, WidgetRenderer,
 };
 
 trait ToRectangle {
@@ -134,17 +134,12 @@ where
     D: DrawTarget<Color = C>,
 {
     fn new(text: &'static str) -> WidgetWrapper<Self, NoData> {
-        WidgetWrapper {
-            widget: Label {
-                text,
-                label_properties: LabelStyle::default(),
-                bounds: BoundingBox::default(),
-                _marker: PhantomData,
-            },
-            data_holder: WidgetDataHolder::default(),
-            on_state_changed: |_, _| (),
-            state: WidgetState::default(),
-        }
+        WidgetWrapper::new(Label {
+            text,
+            label_properties: LabelStyle::default(),
+            bounds: BoundingBox::default(),
+            _marker: PhantomData,
+        })
     }
 }
 

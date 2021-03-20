@@ -28,16 +28,11 @@ where
     W: Widget,
 {
     pub fn new(inner: W) -> WidgetWrapper<Spacing<W, NoData>, NoData> {
-        WidgetWrapper {
-            widget: Spacing {
-                spacing: SpacingSpec::default(),
-                inner,
-                _marker: PhantomData,
-            },
-            data_holder: WidgetDataHolder::default(),
-            on_state_changed: |_, _| (),
-            state: WidgetState::default(),
-        }
+        WidgetWrapper::new(Spacing {
+            spacing: SpacingSpec::default(),
+            inner,
+            _marker: PhantomData,
+        })
     }
 }
 
@@ -86,7 +81,7 @@ where
     {
         WidgetWrapper {
             widget: self.widget.bind::<D>(),
-            data_holder: self.data_holder.bind(data),
+            data_holder: WidgetDataHolder::<Spacing<W, NoData>, NoData>::default().bind(data),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }

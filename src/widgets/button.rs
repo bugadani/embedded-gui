@@ -24,15 +24,10 @@ where
     I: Widget,
 {
     pub fn new(inner: I) -> WidgetWrapper<Self, NoData> {
-        WidgetWrapper {
-            widget: Self {
-                inner,
-                on_clicked: |_| (),
-            },
-            data_holder: WidgetDataHolder::default(),
-            on_state_changed: |_, _| (),
-            state: WidgetState::default(),
-        }
+        WidgetWrapper::new(Button {
+            inner,
+            on_clicked: |_| (),
+        })
     }
 
     pub fn bind<D>(self) -> Button<I, D>
@@ -51,12 +46,11 @@ where
     I: Widget,
     D: WidgetData,
 {
-    pub fn on_clicked(mut self, callback: fn(&mut D)) -> Self
+    pub fn on_clicked(&mut self, callback: fn(&mut D))
     where
         D: WidgetData,
     {
         self.on_clicked = callback;
-        self
     }
 }
 
@@ -70,7 +64,7 @@ where
     {
         WidgetWrapper {
             widget: self.widget.bind::<D>(),
-            data_holder: self.data_holder.bind(data),
+            data_holder: WidgetDataHolder::<Button<I, D>, NoData>::default().bind(data),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }
@@ -82,16 +76,12 @@ where
     I: Widget,
     D: WidgetData,
 {
-    pub fn on_clicked(self, callback: fn(&mut D)) -> Self
+    pub fn on_clicked(mut self, callback: fn(&mut D)) -> Self
     where
         Self: Sized,
     {
-        WidgetWrapper {
-            widget: self.widget.on_clicked(callback),
-            data_holder: self.data_holder,
-            on_state_changed: self.on_state_changed,
-            state: self.state,
-        }
+        self.apply(|widget| widget.on_clicked(callback));
+        self
     }
 
     fn fire_on_pressed(&mut self) {}

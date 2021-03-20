@@ -156,6 +156,17 @@ where
     pub on_state_changed: fn(&mut W, WidgetState),
 }
 
+impl<W> WidgetWrapper<W, NoData> {
+    pub fn new(widget: W) -> Self {
+        WidgetWrapper {
+            widget,
+            data_holder: WidgetDataHolder::default(),
+            on_state_changed: |_, _| (),
+            state: WidgetState::default(),
+        }
+    }
+}
+
 impl<W, D> WidgetWrapper<W, D>
 where
     D: WidgetData,
@@ -166,6 +177,10 @@ where
     {
         self.on_state_changed = callback;
         self
+    }
+
+    pub fn apply(&mut self, func: impl FnOnce(&mut W)) {
+        func(&mut self.widget);
     }
 }
 
