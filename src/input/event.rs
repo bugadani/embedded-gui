@@ -66,12 +66,27 @@ pub enum Modifier {
 
 #[derive(Copy, Clone, Debug)]
 pub enum InputEvent {
+    KeyEvent(KeyEvent),
+    PointerEvent(PointerEvent),
+    ScrollEvent(ScrollEvent),
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum KeyEvent {
     KeyDown(Key, Modifier, u32),
     KeyUp(Key, Modifier),
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum PointerEvent {
     PointerHover(Position),
     PointerDown(Position),
-    PointerMove(Position),
+    PointerDrag(Position),
     PointerUp(Position),
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum ScrollEvent {
     HorizontalScroll(i32),
     VerticalScroll(i32),
 }
@@ -80,14 +95,4 @@ pub enum SelectionModifier {
     None,
     GrabSelection(Position),
     TempSelection(Position),
-}
-
-impl InputEvent {
-    pub fn selection_modifier(self) -> SelectionModifier {
-        match self {
-            InputEvent::PointerDown(pos) => SelectionModifier::GrabSelection(pos),
-            InputEvent::PointerHover(pos) => SelectionModifier::TempSelection(pos),
-            _ => SelectionModifier::None,
-        }
-    }
 }

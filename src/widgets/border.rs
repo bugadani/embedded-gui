@@ -2,6 +2,7 @@ use core::marker::PhantomData;
 
 use crate::{
     data::{NoData, WidgetData},
+    input::event::InputEvent,
     widgets::{ParentHolder, Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
     BoundingBox, MeasureSpec, MeasuredSize, Position, WidgetState,
 };
@@ -182,5 +183,9 @@ where
 
     fn update(&mut self) {
         self.data_holder.update(&mut self.widget);
+    }
+
+    fn handle_input(&mut self, _event: InputEvent) -> bool {
+        false
     }
 }

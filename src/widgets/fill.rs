@@ -1,7 +1,6 @@
 use crate::{
-    input::InputEvent,
     widgets::{ParentHolder, Widget, WidgetStateHolder},
-    BoundingBox, InputCtxt, MeasureConstraint, MeasureSpec, MeasuredSize, Position,
+    BoundingBox, MeasureConstraint, MeasureSpec, MeasuredSize, Position,
 };
 
 pub trait HorizontalAlignment {
@@ -252,10 +251,6 @@ where
         } else {
             self.inner.get_mut_child(idx - 1)
         }
-    }
-
-    fn handle_input(&mut self, ctxt: &mut InputCtxt, event: InputEvent) -> bool {
-        self.inner.handle_input(ctxt, event)
     }
 
     fn update(&mut self) {}

@@ -1,8 +1,8 @@
 use crate::{
     data::{NoData, WidgetData},
-    input::{InputEvent, Key},
+    input::event::InputEvent,
     widgets::{ParentHolder, Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
-    BoundingBox, InputCtxt, MeasureSpec, Position, WidgetState,
+    BoundingBox, MeasureSpec, Position, WidgetState,
 };
 
 pub struct Button<I, D>
@@ -169,41 +169,8 @@ where
         }
     }
 
-    fn handle_input(&mut self, ctxt: &mut InputCtxt, event: InputEvent) -> bool {
-        match event {
-            InputEvent::KeyUp(Key::Space, _) => self.fire_on_clicked(),
-            InputEvent::KeyUp(Key::Tab, _) => ctxt.select_next_widget(),
-            InputEvent::PointerHover(pos) => {
-                if self.bounding_box().hit_test(pos) {
-                    self.change_state(Button::STATE_HOVERED);
-                } else {
-                    self.change_state(Button::STATE_IDLE);
-                }
-            }
-            InputEvent::PointerDown(pos) => {
-                if self.bounding_box().hit_test(pos) {
-                    self.change_state(Button::STATE_PRESSED);
-                    self.fire_on_pressed();
-                } else {
-                    self.change_state(Button::STATE_IDLE);
-                }
-            }
-            InputEvent::PointerMove(pos) => {
-                if !self.bounding_box().hit_test(pos) {
-                    self.change_state(Button::STATE_IDLE);
-                }
-            }
-            InputEvent::PointerUp(pos) => {
-                if self.bounding_box().hit_test(pos) {
-                    self.change_state(Button::STATE_HOVERED);
-                    self.fire_on_clicked();
-                } else {
-                    self.change_state(Button::STATE_IDLE);
-                }
-            }
-            _ => return false,
-        }
-
+    fn handle_input(&mut self, _event: InputEvent) -> bool {
+        // TODO
         true
     }
 

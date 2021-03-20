@@ -10,7 +10,7 @@ use embedded_graphics_simulator::{
 };
 use embedded_gui::{
     data::{BoundData, WidgetData},
-    input::InputEvent,
+    input::event::{InputEvent, PointerEvent},
     widgets::{
         border::Border,
         button::Button,
@@ -32,31 +32,35 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
                 point,
             } => {
                 MOUSE_DOWN = false;
-                Ok(InputEvent::PointerUp(Position {
-                    x: point.x,
-                    y: point.y,
-                }))
+                Ok(InputEvent::PointerEvent(PointerEvent::PointerUp(
+                    Position {
+                        x: point.x,
+                        y: point.y,
+                    },
+                )))
             }
             SimulatorEvent::MouseButtonDown {
                 mouse_btn: MouseButton::Left,
                 point,
             } => {
                 MOUSE_DOWN = true;
-                Ok(InputEvent::PointerDown(Position {
+                Ok(InputEvent::PointerEvent(PointerEvent::PointerDown(
+                    Position {
+                        x: point.x,
+                        y: point.y,
+                    },
+                )))
+            }
+            SimulatorEvent::MouseMove { point } => Ok(if MOUSE_DOWN {
+                InputEvent::PointerEvent(PointerEvent::PointerDrag(Position {
                     x: point.x,
                     y: point.y,
                 }))
-            }
-            SimulatorEvent::MouseMove { point } => Ok(if MOUSE_DOWN {
-                InputEvent::PointerMove(Position {
-                    x: point.x,
-                    y: point.y,
-                })
             } else {
-                InputEvent::PointerHover(Position {
+                InputEvent::PointerEvent(PointerEvent::PointerHover(Position {
                     x: point.x,
                     y: point.y,
-                })
+                }))
             }),
             SimulatorEvent::Quit => Err(true),
             _ => Err(false),

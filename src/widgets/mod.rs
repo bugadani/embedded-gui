@@ -1,7 +1,7 @@
 use crate::{
     data::{NoData, WidgetData},
-    input::{InputEvent, Key},
-    BoundingBox, InputCtxt, MeasureSpec, MeasuredSize, Position, WidgetState,
+    input::event::InputEvent,
+    BoundingBox, MeasureSpec, MeasuredSize, Position, WidgetState,
 };
 
 pub mod border;
@@ -45,15 +45,6 @@ pub trait Widget: WidgetStateHolder + ParentHolder {
         self.bounding_box_mut().size = size;
     }
 
-    fn handle_input(&mut self, ctxt: &mut InputCtxt, event: InputEvent) -> bool {
-        if matches!(event, InputEvent::KeyDown(Key::Tab, _, _)) {
-            ctxt.select_next_widget();
-            true
-        } else {
-            false
-        }
-    }
-
     fn hit_test(&self, position: Position) -> Option<usize> {
         if self.bounding_box().hit_test(position) {
             if self.children() > 0 {
@@ -78,6 +69,14 @@ pub trait Widget: WidgetStateHolder + ParentHolder {
     }
 
     fn update(&mut self) {}
+
+    fn test_input(&mut self, _event: InputEvent) -> Option<usize> {
+        None
+    }
+
+    fn handle_input(&mut self, _event: InputEvent) -> bool {
+        false
+    }
 }
 
 pub struct WidgetDataHolder<W, D>

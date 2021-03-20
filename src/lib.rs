@@ -4,11 +4,12 @@ pub mod data;
 pub mod input;
 pub mod widgets;
 
-use input::SelectionModifier;
-
 use crate::{
     data::WidgetData,
-    input::InputEvent,
+    input::{
+        controller::{DefaultInputController, InputController},
+        event::InputEvent,
+    },
     widgets::{Widget, WidgetWrapper},
 };
 
@@ -133,29 +134,46 @@ impl WidgetState {
     }
 }
 
-pub struct Window<C, W>
+pub struct Window<C, W, I>
 where
     C: Canvas,
     W: Widget + WidgetRenderer<C>,
+    I: InputController,
 {
     pub canvas: C,
     pub root: W,
-    pub selected_index: Option<usize>,
-    pub temp_selected_index: Option<usize>,
+    pub input_controller: I,
 }
 
-impl<C, W> Window<C, W>
+impl<C, W> Window<C, W, DefaultInputController>
 where
     C: Canvas,
     W: Widget + WidgetRenderer<C>,
 {
     pub fn new(canvas: C, mut root: W) -> Self {
         root.attach(None, 0);
-        Self {
+        Window {
             canvas,
             root,
-            selected_index: None,
-            temp_selected_index: None,
+            input_controller: DefaultInputController::new(),
+        }
+    }
+}
+
+impl<C, W, I> Window<C, W, I>
+where
+    C: Canvas,
+    W: Widget + WidgetRenderer<C>,
+    I: InputController,
+{
+    pub fn with_input_controller<I2>(self, input_controller: I2) -> Window<C, W, I2>
+    where
+        I2: InputController,
+    {
+        Window {
+            canvas: self.canvas,
+            root: self.root,
+            input_controller,
         }
     }
 
@@ -183,130 +201,7 @@ where
         self.root.draw(&mut self.canvas)
     }
 
-    fn change_selected_widget(&mut self, selected: Option<usize>) {
-        if self.selected_index != selected {
-            if self.selected_index != self.temp_selected_index {
-                self.selected_index
-                    .map(|idx| self.get_mut_widget(idx).change_selection(false));
-            }
-            selected.map(|idx| self.get_mut_widget(idx).change_selection(true));
-
-            self.selected_index = selected;
-        }
-    }
-
-    fn change_temp_selected_widget(&mut self, selected: Option<usize>) {
-        if self.temp_selected_index != selected {
-            if self.temp_selected_index != self.selected_index {
-                self.temp_selected_index
-                    .map(|idx| self.get_mut_widget(idx).change_selection(false));
-            }
-            selected.map(|idx| self.get_mut_widget(idx).change_selection(true));
-
-            self.temp_selected_index = selected;
-        }
-    }
-
-    fn get_mut_widget(&mut self, idx: usize) -> &mut dyn Widget {
-        if idx == 0 {
-            &mut self.root
-        } else {
-            self.root.get_mut_child(idx - 1)
-        }
-    }
-
-    fn get_widget(&mut self, idx: usize) -> &dyn Widget {
-        if idx == 0 {
-            &self.root
-        } else {
-            self.root.get_child(idx - 1)
-        }
-    }
-
     pub fn input_event(&mut self, event: InputEvent) {
-        // TODO: button's click shouldn't grab selection - inputcontext should have a method to grab
-        // a temp selection.
-        // Click out of a widget should clear selection.
-        let selected_idx = match event.selection_modifier() {
-            SelectionModifier::None => self.selected_index,
-            SelectionModifier::GrabSelection(position) => {
-                let res = self.hit_test(position);
-                self.change_selected_widget(res);
-
-                res
-            }
-            SelectionModifier::TempSelection(position) => {
-                let res = self.hit_test(position);
-                self.change_temp_selected_widget(res);
-
-                res
-            }
-        };
-
-        if let Some(idx) = selected_idx {
-            // TODO: this needs to be redone.
-            let mut input_ctxt = InputCtxt {
-                child_count: self.root.children(),
-                selected_index: selected_idx,
-                select_next: false,
-                clear_selection: false,
-            };
-
-            let widget = self.get_mut_widget(idx);
-            widget.handle_input(&mut input_ctxt, event);
-
-            if input_ctxt.clear_selection {
-                self.change_selected_widget(None);
-            } else if input_ctxt.select_next {
-                let old_selected = self.selected_index;
-
-                // It's possible the tree doesn't contain selectable widgets at all.
-                loop {
-                    let new_selected = match self.selected_index {
-                        None => 0,
-                        Some(idx) if idx == self.root.children() => {
-                            if old_selected == None {
-                                self.change_selected_widget(None);
-                                break;
-                            }
-                            0
-                        }
-                        Some(idx) => {
-                            if Some(idx + 1) == old_selected {
-                                self.change_selected_widget(None);
-                                break;
-                            }
-                            idx + 1
-                        }
-                    };
-
-                    if self.get_widget(new_selected).is_selectable() {
-                        self.change_selected_widget(Some(new_selected));
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    fn hit_test(&self, position: Position) -> Option<usize> {
-        self.root.hit_test(position)
-    }
-}
-
-pub struct InputCtxt {
-    pub child_count: usize,
-    pub selected_index: Option<usize>,
-    pub select_next: bool,
-    pub clear_selection: bool,
-}
-
-impl InputCtxt {
-    pub fn select_next_widget(&mut self) {
-        self.select_next = true;
-    }
-
-    pub fn clear_selection(&mut self) {
-        self.clear_selection = true;
+        self.input_controller.input_event(&mut self.root, event);
     }
 }
