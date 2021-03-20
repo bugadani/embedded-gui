@@ -14,6 +14,7 @@ use embedded_graphics::{
 use embedded_gui::{
     data::{NoData, WidgetData},
     widgets::{
+        background::{Background, BackgroundProperties},
         border::{Border, BorderProperties},
         button::Button,
         fill::{FillDirection, FillParent, HorizontalAlignment, VerticalAlignment},
@@ -184,6 +185,41 @@ where
     }
 }
 
+pub struct BackgroundStyle<W, C>
+where
+    W: Widget,
+    C: PixelColor,
+{
+    style: PrimitiveStyle<C>,
+    _marker: PhantomData<W>,
+}
+
+impl<W> Default for BackgroundStyle<W, BinaryColor>
+where
+    W: Widget,
+{
+    fn default() -> Self {
+        Self {
+            style: PrimitiveStyleBuilder::new()
+                .fill_color(BinaryColor::On)
+                .build(),
+            _marker: PhantomData,
+        }
+    }
+}
+
+impl<W, C> BackgroundProperties for BackgroundStyle<W, C>
+where
+    W: Widget,
+    C: PixelColor,
+{
+    type Color = C;
+
+    fn background_color(&mut self, color: Self::Color) {
+        self.style.fill_color = Some(color);
+    }
+}
+
 impl<F, C, DT, D> WidgetRenderer<EgCanvas<C, DT>> for Label<EgCanvas<C, DT>, LabelStyle<F>, D>
 where
     F: TextRenderer<Color = C>,
@@ -214,13 +250,32 @@ where
     BorderStyle<W, C>: BorderProperties,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
-        let bounds = self.bounding_box();
-        let border = bounds
+        self.bounding_box()
             .to_rectangle()
-            .into_styled(self.widget.border_properties.style);
+            .into_styled(self.widget.border_properties.style)
+            .draw(&mut canvas.target)?;
 
-        self.widget.inner.draw(canvas)?;
-        border.draw(&mut canvas.target)
+        self.widget.inner.draw(canvas)
+    }
+}
+
+// TODO: draw target should be clipped to widget's bounds, so this can be restored to Background
+impl<W, C, DT, D> WidgetRenderer<EgCanvas<C, DT>>
+    for WidgetWrapper<Background<W, BackgroundStyle<W, C>, D>, D>
+where
+    W: Widget + WidgetRenderer<EgCanvas<C, DT>>,
+    C: PixelColor,
+    DT: DrawTarget<Color = C>,
+    D: WidgetData,
+    BackgroundStyle<W, C>: BackgroundProperties,
+{
+    fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
+        self.bounding_box()
+            .to_rectangle()
+            .into_styled(self.widget.background_properties.style)
+            .draw(&mut canvas.target)?;
+
+        self.widget.inner.draw(canvas)
     }
 }
 

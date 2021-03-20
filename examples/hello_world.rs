@@ -12,6 +12,7 @@ use embedded_gui::{
     data::{BoundData, WidgetData},
     input::event::{InputEvent, PointerEvent},
     widgets::{
+        background::Background,
         border::Border,
         button::Button,
         fill::{Bottom, Center, FillParent},
@@ -81,20 +82,28 @@ fn main() {
         EgCanvas::new(display),
         Spacing::new(
             Button::new(
-                Border::new(
-                    FillParent::both(Label::new("Click me").bind(&flag).on_data_changed(
-                        |mut widget, data| {
-                            widget.text = if *data.get() { "on" } else { "off" };
-                        },
-                    ))
-                    .align_horizontal(Center)
-                    .align_vertical(Bottom),
+                Background::new(
+                    Border::new(
+                        FillParent::both(Label::new("Click me").bind(&flag).on_data_changed(
+                            |mut widget, data| {
+                                widget.text = if *data.get() { "on" } else { "off" };
+                            },
+                        ))
+                        .align_horizontal(Center)
+                        .align_vertical(Bottom),
+                    )
+                    .border_color(BinaryColor::Off)
+                    .on_state_changed(|widget, state| match state.state() {
+                        Button::STATE_HOVERED => widget.border_color(BinaryColor::On),
+                        Button::STATE_PRESSED => widget.border_color(BinaryColor::Off),
+                        _ => widget.border_color(BinaryColor::Off),
+                    }),
                 )
-                .border_color(BinaryColor::Off)
+                .background_color(BinaryColor::Off)
                 .on_state_changed(|widget, state| match state.state() {
-                    Button::STATE_HOVERED => widget.border_color(BinaryColor::On),
-                    Button::STATE_PRESSED => widget.border_color(BinaryColor::Off),
-                    _ => widget.border_color(BinaryColor::Off),
+                    Button::STATE_HOVERED => widget.background_color(BinaryColor::Off),
+                    Button::STATE_PRESSED => widget.background_color(BinaryColor::On),
+                    _ => widget.background_color(BinaryColor::Off),
                 }),
             )
             .bind(&flag)

@@ -4,6 +4,7 @@ use crate::{
     BoundingBox, MeasureSpec, MeasuredSize, Position, WidgetState,
 };
 
+pub mod background;
 pub mod border;
 pub mod button;
 pub mod fill;
