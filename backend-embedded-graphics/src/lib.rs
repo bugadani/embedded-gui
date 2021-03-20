@@ -275,12 +275,11 @@ where
     }
 }
 
-impl<C, DT, I, D> WidgetRenderer<EgCanvas<C, DT>> for Spacing<I, D>
+impl<C, DT, I> WidgetRenderer<EgCanvas<C, DT>> for Spacing<I>
 where
     I: Widget + WidgetRenderer<EgCanvas<C, DT>>,
     C: PixelColor,
     DT: DrawTarget<Color = C>,
-    D: WidgetData,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
         self.inner.draw(canvas)

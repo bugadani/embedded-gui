@@ -1,5 +1,3 @@
-use core::marker::PhantomData;
-
 use crate::{
     data::{NoData, WidgetData},
     input::event::InputEvent,
@@ -15,33 +13,24 @@ pub struct SpacingSpec {
     pub left: u32,
 }
 
-pub struct Spacing<W, D>
-where
-    D: WidgetData,
-{
+pub struct Spacing<W> {
     pub inner: W,
     pub spacing: SpacingSpec,
-    pub _marker: PhantomData<D>,
 }
 
-impl<W> Spacing<W, NoData>
+impl<W> Spacing<W>
 where
     W: Widget,
 {
-    pub fn new(inner: W) -> WidgetWrapper<Spacing<W, NoData>, NoData> {
+    pub fn new(inner: W) -> WidgetWrapper<Spacing<W>, NoData> {
         WidgetWrapper::new(Spacing {
             spacing: SpacingSpec::default(),
             inner,
-            _marker: PhantomData,
         })
     }
 }
 
-impl<W, D> Spacing<W, D>
-where
-    W: Widget,
-    D: WidgetData,
-{
+impl<W> Spacing<W> {
     pub fn set_left(&mut self, space: u32) {
         self.spacing.left = space;
     }
@@ -56,41 +45,25 @@ where
     }
 }
 
-impl<W> Spacing<W, NoData>
+impl<W> WidgetWrapper<Spacing<W>, NoData>
 where
     W: Widget,
 {
-    pub fn bind<D>(self) -> Spacing<W, D>
-    where
-        D: WidgetData,
-    {
-        Spacing {
-            inner: self.inner,
-            spacing: self.spacing,
-            _marker: PhantomData,
-        }
-    }
-}
-
-impl<W> WidgetWrapper<Spacing<W, NoData>, NoData>
-where
-    W: Widget,
-{
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Spacing<W, D>, D>
+    pub fn bind<D>(self, data: D) -> WidgetWrapper<Spacing<W>, D>
     where
         D: WidgetData,
     {
         WidgetWrapper {
             parent_index: self.parent_index,
-            widget: self.widget.bind::<D>(),
-            data_holder: WidgetDataHolder::<Spacing<W, NoData>, NoData>::default().bind(data),
+            widget: self.widget,
+            data_holder: WidgetDataHolder::<Spacing<W>, NoData>::default().bind(data),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }
     }
 }
 
-impl<W, D> WidgetWrapper<Spacing<W, D>, D>
+impl<W, D> WidgetWrapper<Spacing<W>, D>
 where
     W: Widget,
     D: WidgetData,
@@ -125,7 +98,7 @@ where
     }
 }
 
-impl<W, D> WidgetStateHolder for WidgetWrapper<Spacing<W, D>, D>
+impl<W, D> WidgetStateHolder for WidgetWrapper<Spacing<W>, D>
 where
     W: Widget,
     D: WidgetData,
@@ -147,7 +120,7 @@ where
     }
 }
 
-impl<W, D> Widget for WidgetWrapper<Spacing<W, D>, D>
+impl<W, D> Widget for WidgetWrapper<Spacing<W>, D>
 where
     W: Widget,
     D: WidgetData,
