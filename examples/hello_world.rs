@@ -12,7 +12,7 @@ use embedded_graphics_simulator::{
     Window as SimWindow,
 };
 use embedded_gui::{
-    data::{BoundData, WidgetData},
+    data::BoundData,
     input::event::{InputEvent, PointerEvent},
     widgets::{
         button::Button,
@@ -144,12 +144,12 @@ fn main() {
         Spacing::new(
             button_with_style(Label::new("Click me").bind(&flag).on_data_changed(
                 |widget, data| {
-                    widget.text = if *data.get() { "on" } else { "off" };
+                    widget.text = if *data { "on" } else { "off" };
                 },
             ))
             .bind(&flag)
             .on_clicked(|data| {
-                data.update(|mut data| *data = !*data);
+                *data = !*data;
                 println!("Clicked!");
             }),
         )

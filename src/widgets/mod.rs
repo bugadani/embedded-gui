@@ -60,7 +60,7 @@ where
 {
     pub data: D,
     pub last_version: usize,
-    pub on_data_changed: fn(&mut W, &D),
+    pub on_data_changed: fn(&mut W, &D::Data),
 }
 
 impl<W> Default for WidgetDataHolder<W, NoData> {
@@ -96,7 +96,7 @@ where
             self.last_version = current_version;
 
             let callback = self.on_data_changed;
-            callback(widget, &self.data);
+            callback(widget, &self.data.read());
         }
     }
 }
@@ -107,7 +107,10 @@ pub trait DataHolder: Widget {
 
     fn data_holder(&mut self) -> &mut WidgetDataHolder<Self::Widget, Self::Data>;
 
-    fn on_data_changed(mut self, callback: fn(&mut Self::Widget, &Self::Data)) -> Self
+    fn on_data_changed(
+        mut self,
+        callback: fn(&mut Self::Widget, &<Self::Data as WidgetData>::Data),
+    ) -> Self
     where
         Self: Sized,
     {

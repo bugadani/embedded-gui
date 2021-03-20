@@ -13,7 +13,7 @@ where
     D: WidgetData,
 {
     pub inner: I,
-    pub on_clicked: fn(&mut D),
+    pub on_clicked: fn(&mut D::Data),
 }
 
 impl Button<(), NoData> {
@@ -49,7 +49,7 @@ where
     I: Widget,
     D: WidgetData,
 {
-    pub fn on_clicked(&mut self, callback: fn(&mut D))
+    pub fn on_clicked(&mut self, callback: fn(&mut D::Data))
     where
         D: WidgetData,
     {
@@ -80,7 +80,7 @@ where
     I: Widget,
     D: WidgetData,
 {
-    pub fn on_clicked(mut self, callback: fn(&mut D)) -> Self
+    pub fn on_clicked(mut self, callback: fn(&mut D::Data)) -> Self
     where
         Self: Sized,
     {
@@ -91,7 +91,7 @@ where
     fn fire_on_pressed(&mut self) {}
     fn fire_on_clicked(&mut self) {
         let callback = self.widget.on_clicked;
-        callback(&mut self.data_holder.data)
+        self.data_holder.data.update(callback);
     }
 }
 
