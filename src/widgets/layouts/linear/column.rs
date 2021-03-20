@@ -54,6 +54,22 @@ where
             _marker: PhantomData,
         }
     }
+
+    fn locate(&self, mut idx: usize) -> Option<(usize, usize)> {
+        let children = self.widgets.len();
+
+        for i in 0..children {
+            let child = self.widgets.at(i).widget();
+            let grandchildren = child.children();
+            if idx <= grandchildren {
+                return Some((i, idx));
+            }
+
+            idx -= grandchildren;
+        }
+
+        None
+    }
 }
 
 impl<C, CE> Widget for Column<C, CE>
@@ -124,17 +140,16 @@ where
                     max_width = max_width.max(widget.bounding_box().size.width);
                 }
             }
-
-            self.set_measured_size(MeasuredSize {
-                height: max_height,
-                width: measure_spec.width.apply_to_measured(max_width),
-            })
-        } else {
-            self.set_measured_size(MeasuredSize {
-                height: fixed_heights,
-                width: measure_spec.width.apply_to_measured(max_width),
-            })
         }
+
+        self.set_measured_size(MeasuredSize {
+            height: if self.total_weight == 0 {
+                fixed_heights
+            } else {
+                max_height
+            },
+            width: measure_spec.width.apply_to_measured(max_width),
+        })
     }
 
     fn arrange(&mut self, mut position: Position) {
@@ -165,25 +180,13 @@ where
         if idx == 0 {
             self
         } else {
-            let mut index = idx - 1;
-            let children = self.children();
-            let mut child_idx = None;
-            for i in 0..children {
-                let child = self.widgets.at(i).widget();
-                let grandchildren = child.children();
-                if index < grandchildren {
-                    child_idx = Some(i);
-                    break;
-                }
+            let (child, grandchild) = self.locate(idx - 1).unwrap();
 
-                index -= grandchildren - 1;
-            }
-
-            let widget = self.widgets.at(child_idx.unwrap()).widget();
-            if index == 0 {
+            let widget = self.widgets.at(child).widget();
+            if grandchild == 0 {
                 widget
             } else {
-                widget.get_child(index - 1)
+                widget.get_child(grandchild - 1)
             }
         }
     }
@@ -192,25 +195,13 @@ where
         if idx == 0 {
             self
         } else {
-            let mut index = idx - 1;
-            let children = self.children();
-            let mut child_idx = None;
-            for i in 0..children {
-                let child = self.widgets.at(i).widget();
-                let grandchildren = child.children();
-                if index <= grandchildren {
-                    child_idx = Some(i);
-                    break;
-                }
+            let (child, grandchild) = self.locate(idx - 1).unwrap();
 
-                index -= grandchildren;
-            }
-
-            let widget = self.widgets.at_mut(child_idx.unwrap()).widget_mut();
-            if index == 0 {
+            let widget = self.widgets.at_mut(child).widget_mut();
+            if grandchild == 0 {
                 widget
             } else {
-                widget.get_mut_child(index - 1)
+                widget.get_mut_child(grandchild - 1)
             }
         }
     }
