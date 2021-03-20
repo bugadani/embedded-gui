@@ -71,8 +71,8 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
     }
 }
 
-fn update_button_background<W: Widget, D: WidgetData>(
-    widget: &mut Background<W, BackgroundStyle<BinaryColor>, D>,
+fn update_button_background<W: Widget>(
+    widget: &mut Background<W, BackgroundStyle<BinaryColor>>,
     state: WidgetState,
 ) {
     match state.state() {
@@ -82,8 +82,8 @@ fn update_button_background<W: Widget, D: WidgetData>(
     }
 }
 
-fn update_button_border<W: Widget, D: WidgetData>(
-    widget: &mut Border<W, BorderStyle<BinaryColor>, D>,
+fn update_button_border<W: Widget>(
+    widget: &mut Border<W, BorderStyle<BinaryColor>>,
     state: WidgetState,
 ) {
     match state.state() {

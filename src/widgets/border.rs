@@ -1,5 +1,3 @@
-use core::marker::PhantomData;
-
 use crate::{
     data::{NoData, WidgetData},
     input::event::InputEvent,
@@ -15,78 +13,57 @@ pub trait BorderProperties {
     fn get_border_width(&self) -> u32;
 }
 
-pub struct Border<I, P, D>
+pub struct Border<I, P>
 where
     P: BorderProperties,
-    D: WidgetData,
 {
     pub inner: I,
     pub border_properties: P,
-    pub _marker: PhantomData<D>,
 }
 
-impl<I, P> Border<I, P, NoData>
+impl<I, P> Border<I, P>
 where
     I: Widget,
     P: BorderProperties + Default,
 {
-    pub fn new(inner: I) -> WidgetWrapper<Border<I, P, NoData>, NoData> {
+    pub fn new(inner: I) -> WidgetWrapper<Border<I, P>, NoData> {
         WidgetWrapper::new(Border {
             border_properties: P::default(),
             inner,
-            _marker: PhantomData,
         })
     }
 }
 
-impl<W, P> Border<W, P, NoData>
+impl<W, P> Border<W, P>
 where
     W: Widget,
     P: BorderProperties,
-{
-    pub fn bind<D>(self) -> Border<W, P, D>
-    where
-        D: WidgetData,
-    {
-        Border {
-            inner: self.inner,
-            border_properties: self.border_properties,
-            _marker: PhantomData,
-        }
-    }
-}
-
-impl<W, P, D> Border<W, P, D>
-where
-    W: Widget,
-    P: BorderProperties,
-    D: WidgetData,
 {
     pub fn border_color(&mut self, color: P::Color) {
         self.border_properties.border_color(color);
     }
 }
 
-impl<W, P> WidgetWrapper<Border<W, P, NoData>, NoData>
+impl<W, P> WidgetWrapper<Border<W, P>, NoData>
 where
     W: Widget,
     P: BorderProperties,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Border<W, P, D>, D>
+    pub fn bind<D>(self, data: D) -> WidgetWrapper<Border<W, P>, D>
     where
         D: WidgetData,
     {
         WidgetWrapper {
             parent_index: self.parent_index,
-            widget: self.widget.bind::<D>(),
-            data_holder: WidgetDataHolder::<Border<W, P, D>, NoData>::default().bind(data),
+            widget: self.widget,
+            data_holder: WidgetDataHolder::<Border<W, P>, NoData>::default().bind(data),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }
     }
 }
 
-impl<W, P, D> WidgetWrapper<Border<W, P, D>, D>
+impl<W, P, D> WidgetWrapper<Border<W, P>, D>
 where
     W: Widget,
     P: BorderProperties,
@@ -98,7 +75,7 @@ where
     }
 }
 
-impl<W, P, D> WidgetStateHolder for WidgetWrapper<Border<W, P, D>, D>
+impl<W, P, D> WidgetStateHolder for WidgetWrapper<Border<W, P>, D>
 where
     W: Widget,
     P: BorderProperties,
@@ -119,7 +96,7 @@ where
     }
 }
 
-impl<W, P, D> Widget for WidgetWrapper<Border<W, P, D>, D>
+impl<W, P, D> Widget for WidgetWrapper<Border<W, P>, D>
 where
     W: Widget,
     P: BorderProperties,

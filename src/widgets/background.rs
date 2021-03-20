@@ -1,5 +1,3 @@
-use core::marker::PhantomData;
-
 use crate::{
     data::{NoData, WidgetData},
     input::event::InputEvent,
@@ -13,78 +11,57 @@ pub trait BackgroundProperties {
     fn background_color(&mut self, color: Self::Color);
 }
 
-pub struct Background<I, P, D>
+pub struct Background<I, P>
 where
     P: BackgroundProperties,
-    D: WidgetData,
 {
     pub inner: I,
     pub background_properties: P,
-    pub _marker: PhantomData<D>,
 }
 
-impl<I, P> Background<I, P, NoData>
+impl<I, P> Background<I, P>
 where
     I: Widget,
     P: BackgroundProperties + Default,
 {
-    pub fn new(inner: I) -> WidgetWrapper<Background<I, P, NoData>, NoData> {
+    pub fn new(inner: I) -> WidgetWrapper<Background<I, P>, NoData> {
         WidgetWrapper::new(Background {
             background_properties: P::default(),
             inner,
-            _marker: PhantomData,
         })
     }
 }
 
-impl<W, P> Background<W, P, NoData>
+impl<W, P> Background<W, P>
 where
     W: Widget,
     P: BackgroundProperties,
-{
-    pub fn bind<D>(self) -> Background<W, P, D>
-    where
-        D: WidgetData,
-    {
-        Background {
-            inner: self.inner,
-            background_properties: self.background_properties,
-            _marker: PhantomData,
-        }
-    }
-}
-
-impl<W, P, D> Background<W, P, D>
-where
-    W: Widget,
-    P: BackgroundProperties,
-    D: WidgetData,
 {
     pub fn background_color(&mut self, color: P::Color) {
         self.background_properties.background_color(color);
     }
 }
 
-impl<W, P> WidgetWrapper<Background<W, P, NoData>, NoData>
+impl<W, P> WidgetWrapper<Background<W, P>, NoData>
 where
     W: Widget,
     P: BackgroundProperties,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Background<W, P, D>, D>
+    pub fn bind<D>(self, data: D) -> WidgetWrapper<Background<W, P>, D>
     where
         D: WidgetData,
     {
         WidgetWrapper {
             parent_index: self.parent_index,
-            widget: self.widget.bind::<D>(),
-            data_holder: WidgetDataHolder::<Background<W, P, D>, NoData>::default().bind(data),
+            widget: self.widget,
+            data_holder: WidgetDataHolder::<Background<W, P>, NoData>::default().bind(data),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }
     }
 }
 
-impl<W, P, D> WidgetWrapper<Background<W, P, D>, D>
+impl<W, P, D> WidgetWrapper<Background<W, P>, D>
 where
     W: Widget,
     P: BackgroundProperties,
@@ -96,7 +73,7 @@ where
     }
 }
 
-impl<W, P, D> WidgetStateHolder for WidgetWrapper<Background<W, P, D>, D>
+impl<W, P, D> WidgetStateHolder for WidgetWrapper<Background<W, P>, D>
 where
     W: Widget,
     P: BackgroundProperties,
@@ -117,7 +94,7 @@ where
     }
 }
 
-impl<W, P, D> Widget for WidgetWrapper<Background<W, P, D>, D>
+impl<W, P, D> Widget for WidgetWrapper<Background<W, P>, D>
 where
     W: Widget,
     P: BackgroundProperties,

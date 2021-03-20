@@ -226,7 +226,7 @@ where
 }
 
 // TODO: draw target should be clipped to widget's bounds, so this can be restored to Border
-impl<W, C, DT, D> WidgetRenderer<EgCanvas<C, DT>> for WidgetWrapper<Border<W, BorderStyle<C>, D>, D>
+impl<W, C, DT, D> WidgetRenderer<EgCanvas<C, DT>> for WidgetWrapper<Border<W, BorderStyle<C>>, D>
 where
     W: Widget + WidgetRenderer<EgCanvas<C, DT>>,
     C: PixelColor,
@@ -246,7 +246,7 @@ where
 
 // TODO: draw target should be clipped to widget's bounds, so this can be restored to Background
 impl<W, C, DT, D> WidgetRenderer<EgCanvas<C, DT>>
-    for WidgetWrapper<Background<W, BackgroundStyle<C>, D>, D>
+    for WidgetWrapper<Background<W, BackgroundStyle<C>>, D>
 where
     W: Widget + WidgetRenderer<EgCanvas<C, DT>>,
     C: PixelColor,
