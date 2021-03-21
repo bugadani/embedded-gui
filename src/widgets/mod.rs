@@ -99,7 +99,7 @@ where
     }
 }
 
-pub trait DataHolder: Widget {
+pub trait DataHolder {
     type Data: WidgetData;
     type Widget;
 
@@ -172,7 +172,6 @@ where
 impl<W, D> DataHolder for WidgetWrapper<W, D>
 where
     D: WidgetData,
-    WidgetWrapper<W, D>: Widget,
 {
     type Data = D;
     type Widget = W;
