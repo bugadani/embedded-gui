@@ -1,7 +1,10 @@
 use std::{thread, time::Duration};
 
 use backend_embedded_graphics::{
-    widgets::primitives::{background::BackgroundStyle, border::BorderStyle},
+    widgets::{
+        label::LabelConstructor,
+        primitives::{background::BackgroundStyle, border::BorderStyle},
+    },
     EgCanvas,
 };
 use embedded_graphics::{
@@ -16,7 +19,7 @@ use embedded_gui::{
     input::event::{InputEvent, PointerEvent},
     widgets::{
         button::Button,
-        label::{Label, LabelConstructor},
+        label::Label,
         layouts::linear::{column::Column, row::Row, Cell},
         primitives::{
             background::Background,

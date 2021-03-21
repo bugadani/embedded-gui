@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use crate::{
     data::{NoData, WidgetData},
     input::event::InputEvent,
@@ -13,24 +15,27 @@ pub struct SpacingSpec {
     pub left: u32,
 }
 
-pub struct Spacing<W> {
+pub struct Spacing<W, C> {
     pub inner: W,
     pub spacing: SpacingSpec,
+    _marker: PhantomData<C>,
 }
 
-impl<W> Spacing<W>
+impl<W, C> Spacing<W, C>
 where
-    W: Widget,
+    W: Widget + WidgetRenderer<C>,
+    C: Canvas,
 {
-    pub fn new(inner: W) -> WidgetWrapper<Spacing<W>, NoData> {
+    pub fn new(inner: W) -> WidgetWrapper<Spacing<W, C>, NoData> {
         WidgetWrapper::new(Spacing {
             spacing: SpacingSpec::default(),
             inner,
+            _marker: PhantomData,
         })
     }
 }
 
-impl<W> Spacing<W> {
+impl<W, C> Spacing<W, C> {
     pub fn set_left(&mut self, space: u32) {
         self.spacing.left = space;
     }
@@ -45,25 +50,25 @@ impl<W> Spacing<W> {
     }
 }
 
-impl<W> WidgetWrapper<Spacing<W>, NoData>
+impl<W, C> WidgetWrapper<Spacing<W, C>, NoData>
 where
     W: Widget,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Spacing<W>, D>
+    pub fn bind<D>(self, data: D) -> WidgetWrapper<Spacing<W, C>, D>
     where
         D: WidgetData,
     {
         WidgetWrapper {
             parent_index: self.parent_index,
             widget: self.widget,
-            data_holder: WidgetDataHolder::<Spacing<W>, NoData>::default().bind(data),
+            data_holder: WidgetDataHolder::<Spacing<W, C>, NoData>::default().bind(data),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }
     }
 }
 
-impl<W, D> WidgetWrapper<Spacing<W>, D>
+impl<W, C, D> WidgetWrapper<Spacing<W, C>, D>
 where
     W: Widget,
     D: WidgetData,
@@ -98,7 +103,7 @@ where
     }
 }
 
-impl<W, D> WidgetStateHolder for WidgetWrapper<Spacing<W>, D>
+impl<W, C, D> WidgetStateHolder for WidgetWrapper<Spacing<W, C>, D>
 where
     W: Widget,
     D: WidgetData,
@@ -120,7 +125,7 @@ where
     }
 }
 
-impl<W, D> Widget for WidgetWrapper<Spacing<W>, D>
+impl<W, C, D> Widget for WidgetWrapper<Spacing<W, C>, D>
 where
     W: Widget,
     D: WidgetData,
@@ -198,7 +203,7 @@ where
     }
 }
 
-impl<C, W> WidgetRenderer<C> for Spacing<W>
+impl<C, W> WidgetRenderer<C> for Spacing<W, C>
 where
     W: Widget + WidgetRenderer<C>,
     C: Canvas,

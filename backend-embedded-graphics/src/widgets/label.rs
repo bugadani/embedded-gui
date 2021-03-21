@@ -8,14 +8,13 @@ use embedded_graphics::{
     text::TextRenderer,
 };
 use embedded_gui::{
-    data::NoData,
+    data::{NoData, WidgetData},
     widgets::{
-        label::{Label, LabelConstructor, LabelProperties},
+        label::{Label, LabelProperties},
         WidgetWrapper,
     },
     BoundingBox, MeasuredSize, WidgetRenderer,
 };
-use heapless::{ArrayLength, String};
 
 use crate::EgCanvas;
 
@@ -43,11 +42,10 @@ where
     C: PixelColor,
 {
     /// Customize the text color
-    pub fn text_color(mut self, text_color: C) -> Self {
+    pub fn text_color(&mut self, text_color: C) {
         self.renderer = MonoTextStyleBuilder::from(&self.renderer)
             .text_color(text_color)
             .build();
-        self
     }
 
     /// Customize the font
@@ -76,15 +74,25 @@ where
     }
 }
 
-impl<F, C, D> LabelConstructor<&'static str, EgCanvas<C, D>, LabelStyle<F>>
-    for Label<&'static str, EgCanvas<C, D>, LabelStyle<F>>
+pub trait LabelConstructor<S, P, C, D> {
+    fn new(text: S) -> WidgetWrapper<Label<S, EgCanvas<C, D>, P>, NoData>
+    where
+        C: PixelColor,
+        D: DrawTarget<Color = C>,
+        S: AsRef<str>,
+        P: LabelProperties<EgCanvas<C, D>>;
+}
+
+impl<F, C, D, S> LabelConstructor<S, LabelStyle<F>, C, D>
+    for Label<S, EgCanvas<C, D>, LabelStyle<F>>
 where
+    S: AsRef<str>,
     F: TextRenderer,
     C: PixelColor,
     LabelStyle<F>: Default,
     D: DrawTarget<Color = C>,
 {
-    fn new(text: &'static str) -> WidgetWrapper<Self, NoData> {
+    fn new(text: S) -> WidgetWrapper<Self, NoData> {
         WidgetWrapper::new(Label {
             text,
             label_properties: LabelStyle::default(),
@@ -94,22 +102,26 @@ where
     }
 }
 
-impl<F, C, D, L> LabelConstructor<String<L>, EgCanvas<C, D>, LabelStyle<F>>
-    for Label<String<L>, EgCanvas<C, D>, LabelStyle<F>>
+pub trait LabelStyling: Sized {
+    type Color;
+    fn text_color(self, color: Self::Color) -> Self;
+}
+
+impl<F, C, D, S, WD> LabelStyling
+    for WidgetWrapper<Label<S, EgCanvas<C, D>, LabelStyle<MonoTextStyle<C, F>>>, WD>
 where
-    L: ArrayLength<u8>,
-    F: TextRenderer,
+    S: AsRef<str>,
+    F: MonoFont,
     C: PixelColor,
-    LabelStyle<F>: Default,
+    LabelStyle<MonoTextStyle<C, F>>: Default,
     D: DrawTarget<Color = C>,
+    WD: WidgetData,
 {
-    fn new(text: String<L>) -> WidgetWrapper<Self, NoData> {
-        WidgetWrapper::new(Label {
-            text,
-            label_properties: LabelStyle::default(),
-            bounds: BoundingBox::default(),
-            _marker: PhantomData,
-        })
+    type Color = C;
+
+    fn text_color(mut self, color: Self::Color) -> Self {
+        self.widget.label_properties.text_color(color);
+        self
     }
 }
 

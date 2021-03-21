@@ -10,14 +10,6 @@ pub trait LabelProperties<C: Canvas> {
     fn measure_text(&self, text: &str) -> MeasuredSize;
 }
 
-pub trait LabelConstructor<S, C, P> {
-    fn new(text: S) -> WidgetWrapper<Label<S, C, P>, NoData>
-    where
-        S: AsRef<str>,
-        C: Canvas,
-        P: LabelProperties<C>;
-}
-
 pub struct Label<S, C, P>
 where
     S: AsRef<str>,
@@ -111,7 +103,10 @@ where
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
-        let size = self.widget.label_properties.measure_text(self.widget.text.as_ref());
+        let size = self
+            .widget
+            .label_properties
+            .measure_text(self.widget.text.as_ref());
 
         let width = measure_spec.width.apply_to_measured(size.width);
         let height = measure_spec.height.apply_to_measured(size.height);
