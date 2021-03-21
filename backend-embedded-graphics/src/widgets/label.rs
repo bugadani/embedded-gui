@@ -15,6 +15,7 @@ use embedded_gui::{
     },
     BoundingBox, MeasuredSize, WidgetRenderer,
 };
+use heapless::{ArrayLength, String};
 
 use crate::EgCanvas;
 
@@ -75,8 +76,8 @@ where
     }
 }
 
-impl<F, C, D> LabelConstructor<EgCanvas<C, D>, LabelStyle<F>>
-    for Label<EgCanvas<C, D>, LabelStyle<F>>
+impl<F, C, D> LabelConstructor<&'static str, EgCanvas<C, D>, LabelStyle<F>>
+    for Label<&'static str, EgCanvas<C, D>, LabelStyle<F>>
 where
     F: TextRenderer,
     C: PixelColor,
@@ -93,8 +94,28 @@ where
     }
 }
 
-impl<F, C, DT> WidgetRenderer<EgCanvas<C, DT>> for Label<EgCanvas<C, DT>, LabelStyle<F>>
+impl<F, C, D, L> LabelConstructor<String<L>, EgCanvas<C, D>, LabelStyle<F>>
+    for Label<String<L>, EgCanvas<C, D>, LabelStyle<F>>
 where
+    L: ArrayLength<u8>,
+    F: TextRenderer,
+    C: PixelColor,
+    LabelStyle<F>: Default,
+    D: DrawTarget<Color = C>,
+{
+    fn new(text: String<L>) -> WidgetWrapper<Self, NoData> {
+        WidgetWrapper::new(Label {
+            text,
+            label_properties: LabelStyle::default(),
+            bounds: BoundingBox::default(),
+            _marker: PhantomData,
+        })
+    }
+}
+
+impl<S, F, C, DT> WidgetRenderer<EgCanvas<C, DT>> for Label<S, EgCanvas<C, DT>, LabelStyle<F>>
+where
+    S: AsRef<str>,
     F: TextRenderer<Color = C>,
     C: PixelColor,
     DT: DrawTarget<Color = C>,
@@ -103,7 +124,7 @@ where
         self.label_properties
             .renderer
             .draw_string(
-                self.text,
+                self.text.as_ref(),
                 Point::new(self.bounds.position.x, self.bounds.position.y),
                 &mut canvas.target,
             )

@@ -10,31 +10,33 @@ pub trait LabelProperties<C: Canvas> {
     fn measure_text(&self, text: &str) -> MeasuredSize;
 }
 
-pub trait LabelConstructor<C, P> {
-    fn new(text: &'static str) -> WidgetWrapper<Label<C, P>, NoData>
+pub trait LabelConstructor<S, C, P> {
+    fn new(text: S) -> WidgetWrapper<Label<S, C, P>, NoData>
     where
+        S: AsRef<str>,
         C: Canvas,
         P: LabelProperties<C>;
 }
 
-pub struct Label<C, P>
+pub struct Label<S, C, P>
 where
+    S: AsRef<str>,
     C: Canvas,
     P: LabelProperties<C>,
 {
-    // FIXME: use heapless::String
-    pub text: &'static str,
+    pub text: S,
     pub label_properties: P,
     pub bounds: BoundingBox,
     pub _marker: PhantomData<C>,
 }
 
-impl<C, P> Label<C, P>
+impl<S, C, P> Label<S, C, P>
 where
+    S: AsRef<str>,
     C: Canvas,
     P: LabelProperties<C>,
 {
-    pub fn bind<D>(self) -> Label<C, P>
+    pub fn bind<D>(self) -> Label<S, C, P>
     where
         D: WidgetData,
     {
@@ -47,27 +49,29 @@ where
     }
 }
 
-impl<C, P> WidgetWrapper<Label<C, P>, NoData>
+impl<S, C, P> WidgetWrapper<Label<S, C, P>, NoData>
 where
+    S: AsRef<str>,
     C: Canvas,
     P: LabelProperties<C>,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Label<C, P>, D>
+    pub fn bind<D>(self, data: D) -> WidgetWrapper<Label<S, C, P>, D>
     where
         D: WidgetData,
     {
         WidgetWrapper {
             parent_index: self.parent_index,
             widget: self.widget,
-            data_holder: WidgetDataHolder::<Label<C, P>, NoData>::default().bind(data),
+            data_holder: WidgetDataHolder::<Label<S, C, P>, NoData>::default().bind(data),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }
     }
 }
 
-impl<C, P, D> WidgetStateHolder for WidgetWrapper<Label<C, P>, D>
+impl<S, C, P, D> WidgetStateHolder for WidgetWrapper<Label<S, C, P>, D>
 where
+    S: AsRef<str>,
     C: Canvas,
     P: LabelProperties<C>,
     D: WidgetData,
@@ -91,8 +95,9 @@ where
     }
 }
 
-impl<C, P, D> Widget for WidgetWrapper<Label<C, P>, D>
+impl<S, C, P, D> Widget for WidgetWrapper<Label<S, C, P>, D>
 where
+    S: AsRef<str>,
     C: Canvas,
     P: LabelProperties<C>,
     D: WidgetData,
@@ -106,7 +111,7 @@ where
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
-        let size = self.widget.label_properties.measure_text(self.widget.text);
+        let size = self.widget.label_properties.measure_text(self.widget.text.as_ref());
 
         let width = measure_spec.width.apply_to_measured(size.width);
         let height = measure_spec.height.apply_to_measured(size.height);
