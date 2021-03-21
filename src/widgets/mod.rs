@@ -1,3 +1,5 @@
+use core::marker::PhantomData;
+
 use crate::{
     data::{NoData, WidgetData},
     input::{controller::InputContext, event::InputEvent},
@@ -55,26 +57,21 @@ pub trait Widget: WidgetStateHolder + ParentHolder {
     }
 }
 
-pub struct WidgetDataHolder<W, D = NoData>
-where
-    D: WidgetData,
-{
-    pub data: D,
-    pub last_version: usize,
-    pub on_data_changed: fn(&mut W, &D::Data),
+pub struct NoDataHolder<W> {
+    _marker: PhantomData<W>,
+    _no_data: NoData,
 }
 
-impl<W> Default for WidgetDataHolder<W, NoData> {
+impl<W> Default for NoDataHolder<W> {
     fn default() -> Self {
         Self {
-            data: NoData::default(),
-            last_version: 0,
-            on_data_changed: |_, _| (),
+            _marker: PhantomData,
+            _no_data: NoData::default(),
         }
     }
 }
 
-impl<W> WidgetDataHolder<W, NoData> {
+impl<W> NoDataHolder<W> {
     pub fn bind<W2, D>(self, data: D) -> WidgetDataHolder<W2, D>
     where
         D: WidgetData,
@@ -87,11 +84,57 @@ impl<W> WidgetDataHolder<W, NoData> {
     }
 }
 
-impl<W, D> WidgetDataHolder<W, D>
+impl<W> WidgetDataHolderTrait for NoDataHolder<W> {
+    type Owner = W;
+    type Data = NoData;
+
+    fn data_mut(&mut self) -> &mut Self::Data {
+        &mut self._no_data
+    }
+    fn update(&mut self, _widget: &mut Self::Owner) {}
+    fn on_data_changed(
+        &mut self,
+        _callback: fn(&mut Self::Owner, &<Self::Data as WidgetData>::Data),
+    ) {
+    }
+}
+
+pub trait WidgetDataHolderTrait {
+    type Owner;
+    type Data: WidgetData;
+
+    fn data_mut(&mut self) -> &mut Self::Data;
+
+    fn update(&mut self, widget: &mut Self::Owner);
+
+    fn on_data_changed(
+        &mut self,
+        _callback: fn(&mut Self::Owner, &<Self::Data as WidgetData>::Data),
+    ) {
+    }
+}
+
+pub struct WidgetDataHolder<W, D>
 where
     D: WidgetData,
 {
-    fn update(&mut self, widget: &mut W) {
+    pub data: D,
+    pub last_version: usize,
+    pub on_data_changed: fn(&mut W, &D::Data),
+}
+
+impl<W, D> WidgetDataHolderTrait for WidgetDataHolder<W, D>
+where
+    D: WidgetData,
+{
+    type Owner = W;
+    type Data = D;
+
+    fn data_mut(&mut self) -> &mut Self::Data {
+        &mut self.data
+    }
+
+    fn update(&mut self, widget: &mut Self::Owner) {
         let current_version = self.data.version();
         if current_version != self.last_version {
             self.last_version = current_version;
@@ -99,24 +142,25 @@ where
             self.data.read(widget, self.on_data_changed);
         }
     }
+
+    fn on_data_changed(
+        &mut self,
+        callback: fn(&mut Self::Owner, &<Self::Data as WidgetData>::Data),
+    ) {
+        self.on_data_changed = callback;
+    }
 }
 
 pub trait DataHolder: Widget {
     type Data: WidgetData;
     type Widget;
 
-    fn data_holder(&mut self) -> &mut WidgetDataHolder<Self::Widget, Self::Data>;
-
     fn on_data_changed(
-        mut self,
+        self,
         callback: fn(&mut Self::Widget, &<Self::Data as WidgetData>::Data),
     ) -> Self
     where
-        Self: Sized,
-    {
-        self.data_holder().on_data_changed = callback;
-        self
-    }
+        Self: Sized;
 }
 
 pub trait WidgetStateHolder {
@@ -127,23 +171,23 @@ pub trait WidgetStateHolder {
     }
 }
 
-pub struct WidgetWrapper<W, D = NoData>
+pub struct WidgetWrapper<W, D = NoDataHolder<W>>
 where
-    D: WidgetData,
+    D: WidgetDataHolderTrait<Owner = W>,
 {
     pub parent_index: usize,
     pub widget: W,
-    pub data_holder: WidgetDataHolder<W, D>,
+    pub data_holder: D,
     pub state: WidgetState,
     pub on_state_changed: fn(&mut W, WidgetState),
 }
 
-impl<W> WidgetWrapper<W, NoData> {
+impl<W> WidgetWrapper<W, NoDataHolder<W>> {
     pub fn new(widget: W) -> Self {
         WidgetWrapper {
             parent_index: 0,
             widget,
-            data_holder: WidgetDataHolder::default(),
+            data_holder: NoDataHolder::<W>::default(),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }
@@ -152,7 +196,7 @@ impl<W> WidgetWrapper<W, NoData> {
 
 impl<W, D> WidgetWrapper<W, D>
 where
-    D: WidgetData,
+    D: WidgetDataHolderTrait<Owner = W>,
 {
     pub fn on_state_changed(mut self, callback: fn(&mut W, WidgetState)) -> Self
     where
@@ -167,19 +211,24 @@ where
     }
 }
 
-impl<W, D> DataHolder for WidgetWrapper<W, D>
+impl<W, D, DH> DataHolder for WidgetWrapper<W, DH>
 where
+    DH: WidgetDataHolderTrait<Data = D, Owner = W>,
     D: WidgetData,
-    WidgetWrapper<W, D>: Widget,
+    WidgetWrapper<W, DH>: Widget,
 {
     type Data = D;
     type Widget = W;
 
-    fn data_holder(&mut self) -> &mut WidgetDataHolder<Self::Widget, Self::Data>
+    fn on_data_changed(
+        mut self,
+        callback: fn(&mut Self::Widget, &<Self::Data as WidgetData>::Data),
+    ) -> Self
     where
         Self: Sized,
     {
-        &mut self.data_holder
+        self.data_holder.on_data_changed(callback);
+        self
     }
 }
 
@@ -191,7 +240,7 @@ pub trait ParentHolder {
 
 impl<W, D> ParentHolder for WidgetWrapper<W, D>
 where
-    D: WidgetData,
+    D: WidgetDataHolderTrait<Owner = W>,
 {
     fn parent_index(&self) -> usize {
         self.parent_index

@@ -1,9 +1,12 @@
 use core::marker::PhantomData;
 
 use crate::{
-    data::{NoData, WidgetData},
+    data::WidgetData,
     input::event::InputEvent,
-    widgets::{ParentHolder, Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
+    widgets::{
+        NoDataHolder, ParentHolder, Widget, WidgetDataHolder, WidgetDataHolderTrait,
+        WidgetStateHolder, WidgetWrapper,
+    },
     BoundingBox, Canvas, MeasureSpec, MeasuredSize, Position, WidgetRenderer, WidgetState,
 };
 
@@ -26,7 +29,7 @@ where
     W: Widget + WidgetRenderer<C>,
     C: Canvas,
 {
-    pub fn new(inner: W) -> WidgetWrapper<Spacing<W, C>, NoData> {
+    pub fn new(inner: W) -> WidgetWrapper<Self, NoDataHolder<Self>> {
         WidgetWrapper::new(Spacing {
             spacing: SpacingSpec::default(),
             inner,
@@ -50,28 +53,32 @@ impl<W, C> Spacing<W, C> {
     }
 }
 
-impl<W, C> WidgetWrapper<Spacing<W, C>, NoData>
+impl<W, C> WidgetWrapper<Spacing<W, C>, NoDataHolder<Spacing<W, C>>>
 where
     W: Widget,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Spacing<W, C>, D>
+    pub fn bind<D>(
+        self,
+        data: D,
+    ) -> WidgetWrapper<Spacing<W, C>, WidgetDataHolder<Spacing<W, C>, D>>
     where
         D: WidgetData,
     {
         WidgetWrapper {
             parent_index: self.parent_index,
             widget: self.widget,
-            data_holder: WidgetDataHolder::<Spacing<W, C>, NoData>::default().bind(data),
+            data_holder: NoDataHolder::<Spacing<W, C>>::default().bind(data),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }
     }
 }
 
-impl<W, C, D> WidgetWrapper<Spacing<W, C>, D>
+impl<W, C, D, DH> WidgetWrapper<Spacing<W, C>, DH>
 where
     W: Widget,
     D: WidgetData,
+    DH: WidgetDataHolderTrait<Data = D, Owner = Spacing<W, C>>,
 {
     pub fn left(mut self, space: u32) -> Self {
         self.widget.set_left(space);
@@ -103,10 +110,11 @@ where
     }
 }
 
-impl<W, C, D> WidgetStateHolder for WidgetWrapper<Spacing<W, C>, D>
+impl<W, C, D, DH> WidgetStateHolder for WidgetWrapper<Spacing<W, C>, DH>
 where
     W: Widget,
     D: WidgetData,
+    DH: WidgetDataHolderTrait<Data = D, Owner = Spacing<W, C>>,
 {
     fn change_state(&mut self, state: u32) {
         // propagate state to child widget
@@ -125,10 +133,11 @@ where
     }
 }
 
-impl<W, C, D> Widget for WidgetWrapper<Spacing<W, C>, D>
+impl<W, C, D, DH> Widget for WidgetWrapper<Spacing<W, C>, DH>
 where
     W: Widget,
     D: WidgetData,
+    DH: WidgetDataHolderTrait<Data = D, Owner = Spacing<W, C>>,
 {
     fn attach(&mut self, parent: usize, self_index: usize) {
         self.set_parent(parent);

@@ -1,8 +1,11 @@
 use core::marker::PhantomData;
 
 use crate::{
-    data::{NoData, WidgetData},
-    widgets::{Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
+    data::WidgetData,
+    widgets::{
+        NoDataHolder, Widget, WidgetDataHolder, WidgetDataHolderTrait, WidgetStateHolder,
+        WidgetWrapper,
+    },
     BoundingBox, Canvas, MeasureSpec, MeasuredSize, WidgetState,
 };
 
@@ -41,32 +44,36 @@ where
     }
 }
 
-impl<S, C, P> WidgetWrapper<Label<S, C, P>, NoData>
+impl<S, C, P> WidgetWrapper<Label<S, C, P>, NoDataHolder<Label<S, C, P>>>
 where
     S: AsRef<str>,
     C: Canvas,
     P: LabelProperties<C>,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Label<S, C, P>, D>
+    pub fn bind<D>(
+        self,
+        data: D,
+    ) -> WidgetWrapper<Label<S, C, P>, WidgetDataHolder<Label<S, C, P>, D>>
     where
         D: WidgetData,
     {
         WidgetWrapper {
             parent_index: self.parent_index,
             widget: self.widget,
-            data_holder: WidgetDataHolder::<Label<S, C, P>, NoData>::default().bind(data),
+            data_holder: NoDataHolder::<Label<S, C, P>>::default().bind(data),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }
     }
 }
 
-impl<S, C, P, D> WidgetStateHolder for WidgetWrapper<Label<S, C, P>, D>
+impl<S, C, P, D, DH> WidgetStateHolder for WidgetWrapper<Label<S, C, P>, DH>
 where
     S: AsRef<str>,
     C: Canvas,
     P: LabelProperties<C>,
     D: WidgetData,
+    DH: WidgetDataHolderTrait<Data = D, Owner = Label<S, C, P>>,
 {
     fn change_state(&mut self, state: u32) {
         // apply state
@@ -87,12 +94,13 @@ where
     }
 }
 
-impl<S, C, P, D> Widget for WidgetWrapper<Label<S, C, P>, D>
+impl<S, C, P, D, DH> Widget for WidgetWrapper<Label<S, C, P>, DH>
 where
     S: AsRef<str>,
     C: Canvas,
     P: LabelProperties<C>,
     D: WidgetData,
+    DH: WidgetDataHolderTrait<Data = D, Owner = Label<S, C, P>>,
 {
     fn bounding_box(&self) -> BoundingBox {
         self.widget.bounds
