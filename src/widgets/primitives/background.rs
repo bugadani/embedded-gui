@@ -1,7 +1,10 @@
 use crate::{
-    data::{NoData, WidgetData},
+    data::WidgetData,
     input::event::InputEvent,
-    widgets::{ParentHolder, Widget, WidgetStateHolder, WidgetWrapper},
+    widgets::{
+        NoDataHolder, ParentHolder, Widget, WidgetDataHolder, WidgetDataHolderTrait,
+        WidgetStateHolder, WidgetWrapper,
+    },
     BoundingBox, MeasureSpec, Position, WidgetState,
 };
 
@@ -24,7 +27,7 @@ where
     I: Widget,
     P: BackgroundProperties + Default,
 {
-    pub fn new(inner: I) -> WidgetWrapper<Background<I, P>, NoData> {
+    pub fn new(inner: I) -> WidgetWrapper<Self, NoDataHolder<Self>> {
         WidgetWrapper::new(Background {
             background_properties: P::default(),
             inner,
@@ -42,12 +45,15 @@ where
     }
 }
 
-impl<W, P> WidgetWrapper<Background<W, P>, NoData>
+impl<W, P> WidgetWrapper<Background<W, P>, NoDataHolder<Background<W, P>>>
 where
     W: Widget,
     P: BackgroundProperties,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Background<W, P>, D>
+    pub fn bind<D>(
+        self,
+        data: D,
+    ) -> WidgetWrapper<Background<W, P>, WidgetDataHolder<Background<W, P>, D>>
     where
         D: WidgetData,
     {
@@ -61,11 +67,12 @@ where
     }
 }
 
-impl<W, P, D> WidgetWrapper<Background<W, P>, D>
+impl<W, P, D, DH> WidgetWrapper<Background<W, P>, DH>
 where
     W: Widget,
     P: BackgroundProperties,
     D: WidgetData,
+    DH: WidgetDataHolderTrait<Data = D, Owner = Background<W, P>>,
 {
     pub fn background_color(mut self, color: P::Color) -> Self {
         self.widget.background_color(color);
@@ -73,11 +80,12 @@ where
     }
 }
 
-impl<W, P, D> WidgetStateHolder for WidgetWrapper<Background<W, P>, D>
+impl<W, P, D, DH> WidgetStateHolder for WidgetWrapper<Background<W, P>, DH>
 where
     W: Widget,
     P: BackgroundProperties,
     D: WidgetData,
+    DH: WidgetDataHolderTrait<Data = D, Owner = Background<W, P>>,
 {
     fn change_state(&mut self, state: u32) {
         // propagate state to child widget
@@ -94,11 +102,12 @@ where
     }
 }
 
-impl<W, P, D> Widget for WidgetWrapper<Background<W, P>, D>
+impl<W, P, D, DH> Widget for WidgetWrapper<Background<W, P>, DH>
 where
     W: Widget,
     P: BackgroundProperties,
     D: WidgetData,
+    DH: WidgetDataHolderTrait<Data = D, Owner = Background<W, P>>,
 {
     fn attach(&mut self, parent: usize, self_index: usize) {
         self.set_parent(parent);

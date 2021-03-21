@@ -1,7 +1,10 @@
 use crate::{
-    data::{NoData, WidgetData},
+    data::WidgetData,
     input::event::InputEvent,
-    widgets::{ParentHolder, Widget, WidgetStateHolder, WidgetWrapper},
+    widgets::{
+        NoDataHolder, ParentHolder, Widget, WidgetDataHolder, WidgetDataHolderTrait,
+        WidgetStateHolder, WidgetWrapper,
+    },
     BoundingBox, MeasureSpec, MeasuredSize, Position, WidgetState,
 };
 
@@ -13,20 +16,20 @@ pub trait BorderProperties {
     fn get_border_width(&self) -> u32;
 }
 
-pub struct Border<I, P>
+pub struct Border<W, P>
 where
     P: BorderProperties,
 {
-    pub inner: I,
+    pub inner: W,
     pub border_properties: P,
 }
 
-impl<I, P> Border<I, P>
+impl<W, P> Border<W, P>
 where
-    I: Widget,
+    W: Widget,
     P: BorderProperties + Default,
 {
-    pub fn new(inner: I) -> WidgetWrapper<Border<I, P>, NoData> {
+    pub fn new(inner: W) -> WidgetWrapper<Self, NoDataHolder<Self>> {
         WidgetWrapper::new(Border {
             border_properties: P::default(),
             inner,
@@ -44,12 +47,12 @@ where
     }
 }
 
-impl<W, P> WidgetWrapper<Border<W, P>, NoData>
+impl<W, P> WidgetWrapper<Border<W, P>, NoDataHolder<Border<W, P>>>
 where
     W: Widget,
     P: BorderProperties,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Border<W, P>, D>
+    pub fn bind<D>(self, data: D) -> WidgetWrapper<Border<W, P>, WidgetDataHolder<Border<W, P>, D>>
     where
         D: WidgetData,
     {
@@ -63,11 +66,11 @@ where
     }
 }
 
-impl<W, P, D> WidgetWrapper<Border<W, P>, D>
+impl<W, P, DH> WidgetWrapper<Border<W, P>, DH>
 where
     W: Widget,
     P: BorderProperties,
-    D: WidgetData,
+    DH: WidgetDataHolderTrait<Owner = Border<W, P>>,
 {
     pub fn border_color(mut self, color: P::Color) -> Self {
         self.widget.border_color(color);
@@ -75,11 +78,11 @@ where
     }
 }
 
-impl<W, P, D> WidgetStateHolder for WidgetWrapper<Border<W, P>, D>
+impl<W, P, DH> WidgetStateHolder for WidgetWrapper<Border<W, P>, DH>
 where
     W: Widget,
     P: BorderProperties,
-    D: WidgetData,
+    DH: WidgetDataHolderTrait<Owner = Border<W, P>>,
 {
     fn change_state(&mut self, state: u32) {
         // propagate state to child widget
@@ -96,11 +99,11 @@ where
     }
 }
 
-impl<W, P, D> Widget for WidgetWrapper<Border<W, P>, D>
+impl<W, P, DH> Widget for WidgetWrapper<Border<W, P>, DH>
 where
     W: Widget,
     P: BorderProperties,
-    D: WidgetData,
+    DH: WidgetDataHolderTrait<Owner = Border<W, P>>,
 {
     fn attach(&mut self, parent: usize, self_index: usize) {
         self.set_parent(parent);

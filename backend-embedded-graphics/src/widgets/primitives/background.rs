@@ -6,10 +6,9 @@ use embedded_graphics::{
     Drawable,
 };
 use embedded_gui::{
-    data::WidgetData,
     widgets::{
         primitives::background::{Background, BackgroundProperties},
-        Widget, WidgetWrapper,
+        Widget, WidgetDataHolderTrait, WidgetWrapper,
     },
     WidgetRenderer,
 };
@@ -52,13 +51,13 @@ where
 }
 
 // TODO: draw target should be clipped to widget's bounds, so this can be restored to Background
-impl<W, C, DT, D> WidgetRenderer<EgCanvas<C, DT>>
-    for WidgetWrapper<Background<W, BackgroundStyle<C>>, D>
+impl<W, C, DT, DH> WidgetRenderer<EgCanvas<C, DT>>
+    for WidgetWrapper<Background<W, BackgroundStyle<C>>, DH>
 where
     W: Widget + WidgetRenderer<EgCanvas<C, DT>>,
     C: PixelColor,
     DT: DrawTarget<Color = C>,
-    D: WidgetData,
+    DH: WidgetDataHolderTrait<Owner = Background<W, BackgroundStyle<C>>>,
     BackgroundStyle<C>: BackgroundProperties,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {

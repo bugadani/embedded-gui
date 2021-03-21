@@ -1,8 +1,11 @@
 use core::marker::PhantomData;
 
 use crate::{
-    data::{NoData, WidgetData},
-    widgets::{Widget, WidgetStateHolder, WidgetWrapper},
+    data::WidgetData,
+    widgets::{
+        NoDataHolder, Widget, WidgetDataHolder, WidgetDataHolderTrait, WidgetStateHolder,
+        WidgetWrapper,
+    },
     BoundingBox, Canvas, MeasureSpec, MeasuredSize, WidgetState,
 };
 
@@ -41,13 +44,16 @@ where
     }
 }
 
-impl<S, C, P> WidgetWrapper<Label<S, C, P>, NoData>
+impl<S, C, P> WidgetWrapper<Label<S, C, P>, NoDataHolder<Label<S, C, P>>>
 where
     S: AsRef<str>,
     C: Canvas,
     P: LabelProperties<C>,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Label<S, C, P>, D>
+    pub fn bind<D>(
+        self,
+        data: D,
+    ) -> WidgetWrapper<Label<S, C, P>, WidgetDataHolder<Label<S, C, P>, D>>
     where
         D: WidgetData,
     {
@@ -61,12 +67,12 @@ where
     }
 }
 
-impl<S, C, P, D> WidgetStateHolder for WidgetWrapper<Label<S, C, P>, D>
+impl<S, C, P, DH> WidgetStateHolder for WidgetWrapper<Label<S, C, P>, DH>
 where
     S: AsRef<str>,
     C: Canvas,
     P: LabelProperties<C>,
-    D: WidgetData,
+    DH: WidgetDataHolderTrait<Owner = Label<S, C, P>>,
 {
     fn change_state(&mut self, state: u32) {
         // apply state
@@ -87,12 +93,12 @@ where
     }
 }
 
-impl<S, C, P, D> Widget for WidgetWrapper<Label<S, C, P>, D>
+impl<S, C, P, DH> Widget for WidgetWrapper<Label<S, C, P>, DH>
 where
     S: AsRef<str>,
     C: Canvas,
     P: LabelProperties<C>,
-    D: WidgetData,
+    DH: WidgetDataHolderTrait<Owner = Label<S, C, P>>,
 {
     fn bounding_box(&self) -> BoundingBox {
         self.widget.bounds

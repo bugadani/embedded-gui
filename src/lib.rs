@@ -5,12 +5,11 @@ pub mod input;
 pub mod widgets;
 
 use crate::{
-    data::WidgetData,
     input::{
         controller::{DefaultInputController, InputController},
         event::InputEvent,
     },
-    widgets::{Widget, WidgetWrapper},
+    widgets::{Widget, WidgetDataHolderTrait, WidgetWrapper},
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -62,10 +61,10 @@ pub trait WidgetRenderer<C: Canvas> {
     fn draw(&self, canvas: &mut C) -> Result<(), C::Error>;
 }
 
-impl<C, W, D> WidgetRenderer<C> for WidgetWrapper<W, D>
+impl<C, W, DH> WidgetRenderer<C> for WidgetWrapper<W, DH>
 where
     C: Canvas,
-    D: WidgetData,
+    DH: WidgetDataHolderTrait<Owner = W>,
     W: WidgetRenderer<C>,
 {
     fn draw(&self, canvas: &mut C) -> Result<(), C::Error> {

@@ -10,7 +10,7 @@ use embedded_graphics::{
 use embedded_gui::{
     widgets::{
         label::{Label, LabelProperties},
-        WidgetDataHolder, WidgetWrapper,
+        NoDataHolder, WidgetWrapper,
     },
     BoundingBox, MeasuredSize, WidgetRenderer,
 };
@@ -73,17 +73,21 @@ where
     }
 }
 
-pub trait LabelConstructor<S, P, C, D> {
-    fn new(text: S) -> WidgetWrapper<Label<S, EgCanvas<C, D>, P>>
+pub trait LabelConstructor<S, F, C, D> {
+    fn new(
+        text: S,
+    ) -> WidgetWrapper<
+        Label<S, EgCanvas<C, D>, LabelStyle<F>>,
+        NoDataHolder<Label<S, EgCanvas<C, D>, LabelStyle<F>>>,
+    >
     where
         C: PixelColor,
+        F: TextRenderer,
         D: DrawTarget<Color = C>,
-        S: AsRef<str>,
-        P: LabelProperties<EgCanvas<C, D>>;
+        S: AsRef<str>;
 }
 
-impl<F, C, D, S> LabelConstructor<S, LabelStyle<F>, C, D>
-    for Label<S, EgCanvas<C, D>, LabelStyle<F>>
+impl<F, C, D, S> LabelConstructor<S, F, C, D> for Label<S, EgCanvas<C, D>, LabelStyle<F>>
 where
     S: AsRef<str>,
     F: TextRenderer,
@@ -91,7 +95,12 @@ where
     LabelStyle<F>: Default,
     D: DrawTarget<Color = C>,
 {
-    fn new(text: S) -> WidgetWrapper<Self> {
+    fn new(
+        text: S,
+    ) -> WidgetWrapper<
+        Label<S, EgCanvas<C, D>, LabelStyle<F>>,
+        NoDataHolder<Label<S, EgCanvas<C, D>, LabelStyle<F>>>,
+    > {
         WidgetWrapper::new(Label {
             text,
             label_properties: LabelStyle::default(),
@@ -150,7 +159,7 @@ where
                 label_properties,
                 _marker: PhantomData,
             },
-            data_holder: WidgetDataHolder::default(),
+            data_holder: NoDataHolder::default(),
             state: self.state,
             on_state_changed: |_, _| (),
         }

@@ -4,7 +4,10 @@ use crate::{
         controller::InputContext,
         event::{InputEvent, PointerEvent},
     },
-    widgets::{ParentHolder, Widget, WidgetStateHolder, WidgetWrapper},
+    widgets::{
+        NoDataHolder, ParentHolder, Widget, WidgetDataHolder, WidgetDataHolderTrait,
+        WidgetStateHolder, WidgetWrapper,
+    },
     BoundingBox, Canvas, MeasureSpec, Position, WidgetRenderer, WidgetState,
 };
 
@@ -22,18 +25,18 @@ impl Button<(), NoData> {
     pub const STATE_PRESSED: u32 = 2;
 }
 
-impl<I> Button<I, NoData>
+impl<W> Button<W, NoData>
 where
-    I: Widget,
+    W: Widget,
 {
-    pub fn new(inner: I) -> WidgetWrapper<Self> {
+    pub fn new(inner: W) -> WidgetWrapper<Self> {
         WidgetWrapper::new(Button {
             inner,
             on_clicked: |_| (),
         })
     }
 
-    pub fn bind<D>(self) -> Button<I, D>
+    pub fn bind<D>(self) -> Button<W, D>
     where
         D: WidgetData,
     {
@@ -44,9 +47,9 @@ where
     }
 }
 
-impl<I, D> Button<I, D>
+impl<W, D> Button<W, D>
 where
-    I: Widget,
+    W: Widget,
     D: WidgetData,
 {
     pub fn on_clicked(&mut self, callback: fn(&mut D::Data))
@@ -57,11 +60,11 @@ where
     }
 }
 
-impl<I> WidgetWrapper<Button<I>, NoData>
+impl<W> WidgetWrapper<Button<W>, NoDataHolder<Button<W>>>
 where
-    I: Widget,
+    W: Widget,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Button<I, D>, D>
+    pub fn bind<D>(self, data: D) -> WidgetWrapper<Button<W, D>, WidgetDataHolder<Button<W, D>, D>>
     where
         D: WidgetData,
     {
@@ -75,15 +78,13 @@ where
     }
 }
 
-impl<I, D> WidgetWrapper<Button<I, D>, D>
+impl<W, D, DH> WidgetWrapper<Button<W, D>, DH>
 where
-    I: Widget,
+    W: Widget,
     D: WidgetData,
+    DH: WidgetDataHolderTrait<Data = D, Owner = Button<W, D>>,
 {
-    pub fn on_clicked(mut self, callback: fn(&mut D::Data)) -> Self
-    where
-        Self: Sized,
-    {
+    pub fn on_clicked(mut self, callback: fn(&mut D::Data)) -> Self {
         self.apply(|widget| widget.on_clicked(callback));
         self
     }
@@ -91,14 +92,15 @@ where
     fn fire_on_pressed(&mut self) {}
     fn fire_on_clicked(&mut self) {
         let callback = self.widget.on_clicked;
-        self.data_holder.data.update(callback);
+        self.data_holder.data_mut().update(callback);
     }
 }
 
-impl<I, D> WidgetStateHolder for WidgetWrapper<Button<I, D>, D>
+impl<W, D, DH> WidgetStateHolder for WidgetWrapper<Button<W, D>, DH>
 where
-    I: Widget,
+    W: Widget,
     D: WidgetData,
+    DH: WidgetDataHolderTrait<Data = D, Owner = Button<W, D>>,
 {
     fn change_state(&mut self, state: u32) {
         // propagate state to child widget
@@ -126,10 +128,11 @@ where
     }
 }
 
-impl<I, D> Widget for WidgetWrapper<Button<I, D>, D>
+impl<W, D, DH> Widget for WidgetWrapper<Button<W, D>, DH>
 where
-    I: Widget,
+    W: Widget,
     D: WidgetData,
+    DH: WidgetDataHolderTrait<Data = D, Owner = Button<W, D>>,
 {
     fn attach(&mut self, parent: usize, self_index: usize) {
         self.set_parent(parent);
