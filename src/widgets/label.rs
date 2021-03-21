@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use crate::{
     data::{NoData, WidgetData},
-    widgets::{Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
+    widgets::{Widget, WidgetStateHolder, WidgetWrapper},
     BoundingBox, Canvas, MeasureSpec, MeasuredSize, WidgetState,
 };
 
@@ -54,7 +54,7 @@ where
         WidgetWrapper {
             parent_index: self.parent_index,
             widget: self.widget,
-            data_holder: WidgetDataHolder::<Label<S, C, P>, NoData>::default().bind(data),
+            data_holder: self.data_holder.bind(data),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }

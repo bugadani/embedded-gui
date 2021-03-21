@@ -1,7 +1,7 @@
 use crate::{
     data::{NoData, WidgetData},
     input::event::InputEvent,
-    widgets::{ParentHolder, Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
+    widgets::{ParentHolder, Widget, WidgetStateHolder, WidgetWrapper},
     BoundingBox, MeasureSpec, Position, WidgetState,
 };
 
@@ -54,7 +54,7 @@ where
         WidgetWrapper {
             parent_index: self.parent_index,
             widget: self.widget,
-            data_holder: WidgetDataHolder::<Background<W, P>, NoData>::default().bind(data),
+            data_holder: self.data_holder.bind(data),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }

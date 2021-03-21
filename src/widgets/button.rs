@@ -4,7 +4,7 @@ use crate::{
         controller::InputContext,
         event::{InputEvent, PointerEvent},
     },
-    widgets::{ParentHolder, Widget, WidgetDataHolder, WidgetStateHolder, WidgetWrapper},
+    widgets::{ParentHolder, Widget, WidgetStateHolder, WidgetWrapper},
     BoundingBox, Canvas, MeasureSpec, Position, WidgetRenderer, WidgetState,
 };
 
@@ -68,7 +68,7 @@ where
         WidgetWrapper {
             parent_index: self.parent_index,
             widget: self.widget.bind::<D>(),
-            data_holder: WidgetDataHolder::<Button<I, D>>::default().bind(data),
+            data_holder: self.data_holder.bind(data),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }
