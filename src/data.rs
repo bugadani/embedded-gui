@@ -1,5 +1,5 @@
 use core::{
-    cell::{Ref, RefCell, RefMut},
+    cell::{RefCell, RefMut},
     ops::Deref,
 };
 
@@ -8,7 +8,7 @@ pub trait WidgetData {
 
     fn update(&self, _f: impl Fn(&mut Self::Data));
 
-    fn read(&self) -> Ref<Self::Data>;
+    fn read<W>(&self, widget: &mut W, callback: fn(&mut W, &Self::Data));
 
     fn version(&self) -> usize;
 }
@@ -23,8 +23,8 @@ where
         (*self).update(f)
     }
 
-    fn read(&self) -> Ref<Self::Data> {
-        (*self).read()
+    fn read<W>(&self, widget: &mut W, callback: fn(&mut W, &Self::Data)) {
+        (*self).read(widget, callback);
     }
 
     fn version(&self) -> usize {
@@ -32,15 +32,11 @@ where
     }
 }
 
-pub struct NoData {
-    cell: RefCell<()>,
-}
+pub struct NoData;
 
 impl Default for NoData {
     fn default() -> Self {
-        Self {
-            cell: RefCell::new(()),
-        }
+        Self
     }
 }
 
@@ -49,8 +45,8 @@ impl WidgetData for NoData {
 
     fn update(&self, _f: impl Fn(&mut Self::Data)) {}
 
-    fn read(&self) -> Ref<Self::Data> {
-        self.cell.borrow()
+    fn read<W>(&self, widget: &mut W, callback: fn(&mut W, &Self::Data)) {
+        callback(widget, &());
     }
 
     fn version(&self) -> usize {
@@ -108,10 +104,9 @@ where
         on_changed(data.deref());
     }
 
-    fn read(&self) -> Ref<Self::Data> {
+    fn read<W>(&self, widget: &mut W, callback: fn(&mut W, &Self::Data)) {
         let borrow = self.inner.borrow();
-
-        Ref::map(borrow, |f| &f.data)
+        callback(widget, &borrow.data);
     }
 
     fn version(&self) -> usize {

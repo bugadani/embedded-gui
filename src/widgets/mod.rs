@@ -96,8 +96,7 @@ where
         if current_version != self.last_version {
             self.last_version = current_version;
 
-            let callback = self.on_data_changed;
-            callback(widget, &self.data.read());
+            self.data.read(widget, self.on_data_changed);
         }
     }
 }
