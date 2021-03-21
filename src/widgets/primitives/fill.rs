@@ -97,7 +97,7 @@ where
     H: HorizontalAlignment,
     V: VerticalAlignment,
 {
-    pub parent_index: Option<usize>,
+    pub parent_index: usize,
     pub inner: W,
     pub direction: FD,
     pub bounds: BoundingBox,
@@ -111,7 +111,7 @@ where
 {
     pub fn horizontal(inner: W) -> FillParent<W, Horizontal, Center, Top> {
         FillParent {
-            parent_index: None,
+            parent_index: 0,
             inner,
             direction: Horizontal,
             bounds: BoundingBox::default(),
@@ -122,7 +122,7 @@ where
 
     pub fn vertical(inner: W) -> FillParent<W, Vertical, Left, Center> {
         FillParent {
-            parent_index: None,
+            parent_index: 0,
             inner,
             direction: Vertical,
             bounds: BoundingBox::default(),
@@ -133,7 +133,7 @@ where
 
     pub fn both(inner: W) -> FillParent<W, HorizontalAndVertical, Center, Center> {
         FillParent {
-            parent_index: None,
+            parent_index: 0,
             inner,
             direction: HorizontalAndVertical,
             bounds: BoundingBox::default(),
@@ -204,9 +204,9 @@ where
     H: HorizontalAlignment,
     V: VerticalAlignment,
 {
-    fn attach(&mut self, parent: Option<usize>, self_index: usize) {
+    fn attach(&mut self, parent: usize, self_index: usize) {
         self.set_parent(parent);
-        self.inner.attach(Some(self_index), self_index + 1);
+        self.inner.attach(self_index, self_index + 1);
     }
 
     fn arrange(&mut self, position: Position) {
@@ -272,11 +272,11 @@ where
     H: HorizontalAlignment,
     V: VerticalAlignment,
 {
-    fn parent_index(&self) -> Option<usize> {
+    fn parent_index(&self) -> usize {
         self.parent_index
     }
 
-    fn set_parent(&mut self, index: Option<usize>) {
+    fn set_parent(&mut self, index: usize) {
         self.parent_index = index;
     }
 }

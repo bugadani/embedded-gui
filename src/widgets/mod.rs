@@ -10,7 +10,7 @@ pub mod layouts;
 pub mod primitives;
 
 pub trait Widget: WidgetStateHolder + ParentHolder {
-    fn attach(&mut self, parent: Option<usize>, _index: usize) {
+    fn attach(&mut self, parent: usize, _index: usize) {
         self.set_parent(parent);
     }
 
@@ -131,7 +131,7 @@ pub struct WidgetWrapper<W, D = NoData>
 where
     D: WidgetData,
 {
-    pub parent_index: Option<usize>,
+    pub parent_index: usize,
     pub widget: W,
     pub data_holder: WidgetDataHolder<W, D>,
     pub state: WidgetState,
@@ -141,7 +141,7 @@ where
 impl<W> WidgetWrapper<W, NoData> {
     pub fn new(widget: W) -> Self {
         WidgetWrapper {
-            parent_index: None,
+            parent_index: 0,
             widget,
             data_holder: WidgetDataHolder::default(),
             on_state_changed: |_, _| (),
@@ -184,19 +184,19 @@ where
 }
 
 pub trait ParentHolder {
-    fn parent_index(&self) -> Option<usize>;
+    fn parent_index(&self) -> usize;
 
-    fn set_parent(&mut self, index: Option<usize>);
+    fn set_parent(&mut self, index: usize);
 }
 
 impl<W, D> ParentHolder for WidgetWrapper<W, D>
 where
     D: WidgetData,
 {
-    fn parent_index(&self) -> Option<usize> {
+    fn parent_index(&self) -> usize {
         self.parent_index
     }
-    fn set_parent(&mut self, index: Option<usize>) {
+    fn set_parent(&mut self, index: usize) {
         self.parent_index = index;
     }
 }

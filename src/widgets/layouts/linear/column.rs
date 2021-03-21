@@ -12,7 +12,7 @@ use crate::{
 };
 
 pub struct Column<C, CE> {
-    parent_index: Option<usize>,
+    parent_index: usize,
     bounds: BoundingBox,
     widgets: CE,
     _marker: PhantomData<C>,
@@ -28,7 +28,7 @@ where
         CW: CellWeight,
     {
         Column {
-            parent_index: None,
+            parent_index: 0,
             bounds: BoundingBox::default(),
             widgets: Chain::new(widget),
             _marker: PhantomData,
@@ -224,11 +224,11 @@ impl<C, CE> ParentHolder for Column<C, CE>
 where
     C: Canvas,
 {
-    fn parent_index(&self) -> Option<usize> {
+    fn parent_index(&self) -> usize {
         self.parent_index
     }
 
-    fn set_parent(&mut self, index: Option<usize>) {
+    fn set_parent(&mut self, index: usize) {
         self.parent_index = index;
     }
 }

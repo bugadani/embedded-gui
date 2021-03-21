@@ -49,10 +49,12 @@ impl InputController for DefaultInputController {
                 if widget.handle_input(context, event) {
                     break Some(handler);
                 } else {
-                    if let Some(parent) = widget.parent_index() {
-                        handler = parent;
-                    } else {
+                    let parent = widget.parent_index();
+                    if parent == 0 && handler == 0 {
+                        // I am Root
                         break None;
+                    } else {
+                        handler = parent;
                     }
                 }
             };

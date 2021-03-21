@@ -100,9 +100,9 @@ where
     P: BackgroundProperties,
     D: WidgetData,
 {
-    fn attach(&mut self, parent: Option<usize>, self_index: usize) {
+    fn attach(&mut self, parent: usize, self_index: usize) {
         self.set_parent(parent);
-        self.widget.inner.attach(Some(self_index), self_index + 1);
+        self.widget.inner.attach(self_index, self_index + 1);
     }
 
     fn arrange(&mut self, position: Position) {

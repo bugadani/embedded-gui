@@ -167,7 +167,7 @@ where
     W: Widget + WidgetRenderer<C>,
 {
     pub fn new(canvas: C, mut root: W) -> Self {
-        root.attach(None, 0);
+        root.attach(0, 0);
         Window {
             canvas,
             root,
