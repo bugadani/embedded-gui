@@ -9,7 +9,10 @@ use backend_embedded_graphics::{
 };
 use embedded_graphics::{
     draw_target::DrawTarget,
-    mono_font::{ascii::Font6x10, MonoFont, MonoTextStyle},
+    mono_font::{
+        ascii::{Font10x20, Font6x10},
+        MonoFont, MonoTextStyle,
+    },
     pixelcolor::BinaryColor,
     prelude::Size as EgSize,
 };
@@ -347,7 +350,7 @@ impl Calculator {
 }
 
 fn main() {
-    let display = SimulatorDisplay::<BinaryColor>::new(EgSize::new(128, 64));
+    let display = SimulatorDisplay::<BinaryColor>::new(EgSize::new(96, 96));
 
     let calculator = BoundData::new(Calculator::new(), |_data| {});
 
@@ -357,6 +360,7 @@ fn main() {
             Column::new(Cell::new(
                 FillParent::horizontal(
                     Label::new(String::<U11>::from("0"))
+                        .font(Font10x20)
                         .bind(&calculator)
                         .on_data_changed(|label, calc| {
                             label.text.clear();

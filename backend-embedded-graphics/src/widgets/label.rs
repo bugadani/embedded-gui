@@ -8,10 +8,9 @@ use embedded_graphics::{
     text::TextRenderer,
 };
 use embedded_gui::{
-    data::WidgetData,
     widgets::{
         label::{Label, LabelProperties},
-        WidgetWrapper,
+        WidgetDataHolder, WidgetWrapper,
     },
     BoundingBox, MeasuredSize, WidgetRenderer,
 };
@@ -102,26 +101,59 @@ where
     }
 }
 
-pub trait LabelStyling: Sized {
+pub trait LabelStyling<F, C, D, S>: Sized
+where
+    S: AsRef<str>,
+    F: MonoFont,
+    C: PixelColor,
+    D: DrawTarget<Color = C>,
+{
     type Color;
+    type Font;
+
     fn text_color(self, color: Self::Color) -> Self;
+
+    fn font<F2: MonoFont>(
+        self,
+        font: F2,
+    ) -> WidgetWrapper<Label<S, EgCanvas<C, D>, LabelStyle<MonoTextStyle<C, F2>>>>;
 }
 
-impl<F, C, D, S, WD> LabelStyling
-    for WidgetWrapper<Label<S, EgCanvas<C, D>, LabelStyle<MonoTextStyle<C, F>>>, WD>
+impl<F, C, D, S> LabelStyling<F, C, D, S>
+    for WidgetWrapper<Label<S, EgCanvas<C, D>, LabelStyle<MonoTextStyle<C, F>>>>
 where
     S: AsRef<str>,
     F: MonoFont,
     C: PixelColor,
     LabelStyle<MonoTextStyle<C, F>>: Default,
     D: DrawTarget<Color = C>,
-    WD: WidgetData,
 {
     type Color = C;
+    type Font = F;
 
     fn text_color(mut self, color: Self::Color) -> Self {
         self.widget.label_properties.text_color(color);
         self
+    }
+
+    fn font<F2: MonoFont>(
+        self,
+        font: F2,
+    ) -> WidgetWrapper<Label<S, EgCanvas<C, D>, LabelStyle<MonoTextStyle<C, F2>>>> {
+        let label_properties = self.widget.label_properties.font(font);
+
+        WidgetWrapper {
+            parent_index: self.parent_index,
+            widget: Label {
+                text: self.widget.text,
+                bounds: self.widget.bounds,
+                label_properties,
+                _marker: PhantomData,
+            },
+            data_holder: WidgetDataHolder::default(),
+            state: self.state,
+            on_state_changed: |_, _| (),
+        }
     }
 }
 
