@@ -9,7 +9,7 @@ pub mod label;
 pub mod layouts;
 pub mod primitives;
 
-pub trait Widget: WidgetStateHolder + ParentHolder {
+pub trait Widget: WidgetStateHolder + ParentHolder + UpdateHandler {
     fn attach(&mut self, parent: usize, _index: usize) {
         self.set_parent(parent);
     }
@@ -43,8 +43,6 @@ pub trait Widget: WidgetStateHolder + ParentHolder {
     fn set_measured_size(&mut self, size: MeasuredSize) {
         self.bounding_box_mut().size = size;
     }
-
-    fn update(&mut self) {}
 
     fn test_input(&mut self, _event: InputEvent) -> Option<usize> {
         None
@@ -150,6 +148,10 @@ impl<W> WidgetWrapper<W, NoData> {
     }
 }
 
+pub trait UpdateHandler {
+    fn update(&mut self) {}
+}
+
 impl<W, D> WidgetWrapper<W, D>
 where
     D: WidgetData,
@@ -180,6 +182,16 @@ where
         Self: Sized,
     {
         &mut self.data_holder
+    }
+}
+
+impl<W, D> UpdateHandler for WidgetWrapper<W, D>
+where
+    D: WidgetData,
+    WidgetWrapper<W, D>: Widget,
+{
+    fn update(&mut self) {
+        self.data_holder.update(&mut self.widget);
     }
 }
 

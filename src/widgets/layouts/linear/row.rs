@@ -6,7 +6,7 @@ use crate::{
     input::event::InputEvent,
     widgets::{
         layouts::linear::{Cell, CellWeight, LinearLayoutChainElement},
-        ParentHolder, Widget, WidgetStateHolder,
+        ParentHolder, UpdateHandler, Widget, WidgetStateHolder,
     },
     BoundingBox, Canvas, MeasureConstraint, MeasureSpec, MeasuredSize, Position, WidgetRenderer,
 };
@@ -241,6 +241,8 @@ where
 
     fn change_selection(&mut self, _state: bool) {}
 }
+
+impl<C, CE> UpdateHandler for Row<C, CE> where C: Canvas {}
 
 impl<C, CE> WidgetRenderer<C> for Row<C, CE>
 where

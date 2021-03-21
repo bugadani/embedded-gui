@@ -193,10 +193,6 @@ where
         }
     }
 
-    fn update(&mut self) {
-        self.data_holder.update(&mut self.widget);
-    }
-
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
         // We just relay whatever the child desires
         self.widget.inner.test_input(event).map(|i| i + 1)

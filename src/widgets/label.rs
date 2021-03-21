@@ -113,8 +113,4 @@ where
 
         self.set_measured_size(MeasuredSize { width, height })
     }
-
-    fn update(&mut self) {
-        self.data_holder.update(&mut self.widget);
-    }
 }

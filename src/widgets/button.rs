@@ -249,10 +249,6 @@ where
         }
         true
     }
-
-    fn update(&mut self) {
-        self.data_holder.update(&mut self.widget);
-    }
 }
 
 impl<C, W, D> WidgetRenderer<C> for Button<W, D>

@@ -1,6 +1,6 @@
 use crate::{
     input::event::InputEvent,
-    widgets::{ParentHolder, Widget, WidgetStateHolder},
+    widgets::{ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
     BoundingBox, Canvas, MeasureConstraint, MeasureSpec, MeasuredSize, Position, WidgetRenderer,
 };
 
@@ -257,8 +257,6 @@ where
         }
     }
 
-    fn update(&mut self) {}
-
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
         // We just relay whatever the child desires
         self.inner.test_input(event).map(|i| i + 1)
@@ -279,6 +277,15 @@ where
     fn set_parent(&mut self, index: usize) {
         self.parent_index = index;
     }
+}
+
+impl<W, D, H, V> UpdateHandler for FillParent<W, D, H, V>
+where
+    W: Widget,
+    D: FillDirection,
+    H: HorizontalAlignment,
+    V: VerticalAlignment,
+{
 }
 
 impl<C, W, FD, H, V> WidgetRenderer<C> for FillParent<W, FD, H, V>
