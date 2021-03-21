@@ -8,7 +8,7 @@ use embedded_graphics::{
     text::TextRenderer,
 };
 use embedded_gui::{
-    data::{NoData, WidgetData},
+    data::WidgetData,
     widgets::{
         label::{Label, LabelProperties},
         WidgetWrapper,
@@ -75,7 +75,7 @@ where
 }
 
 pub trait LabelConstructor<S, P, C, D> {
-    fn new(text: S) -> WidgetWrapper<Label<S, EgCanvas<C, D>, P>, NoData>
+    fn new(text: S) -> WidgetWrapper<Label<S, EgCanvas<C, D>, P>>
     where
         C: PixelColor,
         D: DrawTarget<Color = C>,
@@ -92,7 +92,7 @@ where
     LabelStyle<F>: Default,
     D: DrawTarget<Color = C>,
 {
-    fn new(text: S) -> WidgetWrapper<Self, NoData> {
+    fn new(text: S) -> WidgetWrapper<Self> {
         WidgetWrapper::new(Label {
             text,
             label_properties: LabelStyle::default(),
