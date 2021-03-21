@@ -65,7 +65,7 @@ where
                 return Some((i, idx));
             }
 
-            idx -= grandchildren;
+            idx -= grandchildren + 1;
         }
 
         None
@@ -177,32 +177,24 @@ where
     }
 
     fn get_child(&self, idx: usize) -> &dyn Widget {
-        if idx == 0 {
-            self
-        } else {
-            let (child, grandchild) = self.locate(idx - 1).unwrap();
+        let (child, grandchild) = self.locate(idx).unwrap();
 
-            let widget = self.widgets.at(child).widget();
-            if grandchild == 0 {
-                widget
-            } else {
-                widget.get_child(grandchild - 1)
-            }
+        let widget = self.widgets.at(child).widget();
+        if grandchild == 0 {
+            widget
+        } else {
+            widget.get_child(grandchild - 1)
         }
     }
 
     fn get_mut_child(&mut self, idx: usize) -> &mut dyn Widget {
-        if idx == 0 {
-            self
-        } else {
-            let (child, grandchild) = self.locate(idx - 1).unwrap();
+        let (child, grandchild) = self.locate(idx).unwrap();
 
-            let widget = self.widgets.at_mut(child).widget_mut();
-            if grandchild == 0 {
-                widget
-            } else {
-                widget.get_mut_child(grandchild - 1)
-            }
+        let widget = self.widgets.at_mut(child).widget_mut();
+        if grandchild == 0 {
+            widget
+        } else {
+            widget.get_mut_child(grandchild - 1)
         }
     }
 
