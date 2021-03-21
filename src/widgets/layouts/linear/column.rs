@@ -5,7 +5,7 @@ use object_chain::{Chain, ChainElement, Link};
 use crate::{
     input::event::InputEvent,
     widgets::{
-        layouts::linear::{Cell, LinearLayoutChainElement},
+        layouts::linear::{Cell, CellWeight, LinearLayoutChainElement},
         ParentHolder, Widget, WidgetStateHolder,
     },
     BoundingBox, Canvas, MeasureConstraint, MeasureSpec, MeasuredSize, Position, WidgetRenderer,
@@ -14,7 +14,6 @@ use crate::{
 pub struct Column<C, CE> {
     parent_index: Option<usize>,
     bounds: BoundingBox,
-    total_weight: u32,
     widgets: CE,
     _marker: PhantomData<C>,
 }
@@ -23,14 +22,14 @@ impl<C> Column<C, ()>
 where
     C: Canvas,
 {
-    pub fn new<W>(widget: Cell<W>) -> Column<C, Chain<Cell<W>>>
+    pub fn new<W, CW>(widget: Cell<W, CW>) -> Column<C, Chain<Cell<W, CW>>>
     where
         W: Widget,
+        CW: CellWeight,
     {
         Column {
             parent_index: None,
             bounds: BoundingBox::default(),
-            total_weight: widget.weight.unwrap_or(0),
             widgets: Chain::new(widget),
             _marker: PhantomData,
         }
@@ -42,14 +41,14 @@ where
     C: Canvas,
     CE: LinearLayoutChainElement<C> + ChainElement,
 {
-    pub fn add<W>(self, widget: Cell<W>) -> Column<C, Link<Cell<W>, CE>>
+    pub fn add<W, CW>(self, widget: Cell<W, CW>) -> Column<C, Link<Cell<W, CW>, CE>>
     where
         W: Widget,
+        CW: CellWeight,
     {
         Column {
             parent_index: self.parent_index,
             bounds: self.bounds,
-            total_weight: self.total_weight + widget.weight.unwrap_or(0),
             widgets: self.widgets.append(widget),
             _marker: PhantomData,
         }
@@ -101,11 +100,13 @@ where
         let count = self.widgets.len();
         let mut fixed_heights = 0;
         let mut max_width = 0;
+        let mut total_weight = 0;
 
         // Count the height of the widgets that don't have a weight
         for i in 0..count {
             let cell = self.widgets.at_mut(i);
-            if cell.weight().is_none() {
+            let weight = cell.weight();
+            if weight == 0 {
                 let spec = MeasureSpec {
                     width: measure_spec.width,
                     height: MeasureConstraint::AtMost(max_height - fixed_heights),
@@ -115,19 +116,22 @@ where
                 widget.measure(spec);
                 fixed_heights += widget.bounding_box().size.height;
                 max_width = max_width.max(widget.bounding_box().size.width);
+            } else {
+                total_weight += weight;
             }
         }
 
         // Divide the rest of the space among the weighted widgets
-        if self.total_weight != 0 {
+        if total_weight != 0 {
             let remaining_space = max_height - fixed_heights;
-            let height_per_weight_unit = remaining_space / self.total_weight;
+            let height_per_weight_unit = remaining_space / total_weight;
             // in case we have some stray pixels, divide them up evenly
-            let remainder = remaining_space % self.total_weight;
+            let remainder = remaining_space % total_weight;
 
             for i in 0..count {
                 let cell = self.widgets.at_mut(i);
-                if let Some(weight) = cell.weight() {
+                let weight = cell.weight();
+                if weight != 0 {
                     let spec = MeasureSpec {
                         width: measure_spec.width,
                         height: MeasureConstraint::Exactly(
@@ -143,7 +147,7 @@ where
         }
 
         self.set_measured_size(MeasuredSize {
-            height: if self.total_weight == 0 {
+            height: if total_weight == 0 {
                 fixed_heights
             } else {
                 max_height

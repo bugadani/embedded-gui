@@ -530,6 +530,8 @@ fn main() {
         .all(2),
     );
 
+    println!("Size of struct: {}", std::mem::size_of_val(&gui.root));
+
     let output_settings = OutputSettingsBuilder::new()
         .theme(BinaryColorTheme::OledBlue)
         .build();
