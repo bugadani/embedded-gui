@@ -20,17 +20,28 @@ pub struct BorderStyle<C>
 where
     C: PixelColor,
 {
-    style: PrimitiveStyle<C>,
+    color: C,
+    width: u32,
+}
+
+impl<C> BorderStyle<C>
+where
+    C: PixelColor,
+{
+    fn build_style(&self) -> PrimitiveStyle<C> {
+        PrimitiveStyleBuilder::new()
+            .stroke_alignment(StrokeAlignment::Inside)
+            .stroke_color(self.color)
+            .stroke_width(self.width)
+            .build()
+    }
 }
 
 impl Default for BorderStyle<BinaryColor> {
     fn default() -> Self {
         Self {
-            style: PrimitiveStyleBuilder::new()
-                .stroke_alignment(StrokeAlignment::Inside)
-                .stroke_color(BinaryColor::On)
-                .stroke_width(1)
-                .build(),
+            color: BinaryColor::On,
+            width: 1,
         }
     }
 }
@@ -42,11 +53,11 @@ where
     type Color = C;
 
     fn get_border_width(&self) -> u32 {
-        self.style.stroke_width
+        self.width
     }
 
     fn border_color(&mut self, color: Self::Color) {
-        self.style.stroke_color = Some(color);
+        self.color = color;
     }
 }
 
@@ -60,9 +71,11 @@ where
     BorderStyle<C>: BorderProperties,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
+        let style = self.widget.border_properties.build_style();
+
         self.bounding_box()
             .to_rectangle()
-            .into_styled(self.widget.border_properties.style)
+            .into_styled(style)
             .draw(&mut canvas.target)?;
 
         self.widget.inner.draw(canvas)

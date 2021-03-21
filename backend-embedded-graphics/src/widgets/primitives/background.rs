@@ -20,15 +20,22 @@ pub struct BackgroundStyle<C>
 where
     C: PixelColor,
 {
-    style: PrimitiveStyle<C>,
+    color: C,
+}
+
+impl<C> BackgroundStyle<C>
+where
+    C: PixelColor,
+{
+    fn build_style(&self) -> PrimitiveStyle<C> {
+        PrimitiveStyleBuilder::new().fill_color(self.color).build()
+    }
 }
 
 impl Default for BackgroundStyle<BinaryColor> {
     fn default() -> Self {
         Self {
-            style: PrimitiveStyleBuilder::new()
-                .fill_color(BinaryColor::On)
-                .build(),
+            color: BinaryColor::On,
         }
     }
 }
@@ -40,7 +47,7 @@ where
     type Color = C;
 
     fn background_color(&mut self, color: Self::Color) {
-        self.style.fill_color = Some(color);
+        self.color = color;
     }
 }
 
@@ -55,9 +62,11 @@ where
     BackgroundStyle<C>: BackgroundProperties,
 {
     fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
+        let style = self.widget.background_properties.build_style();
+
         self.bounding_box()
             .to_rectangle()
-            .into_styled(self.widget.background_properties.style)
+            .into_styled(style)
             .draw(&mut canvas.target)?;
 
         self.widget.inner.draw(canvas)
