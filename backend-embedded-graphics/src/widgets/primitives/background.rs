@@ -53,16 +53,15 @@ where
 }
 
 // TODO: draw target should be clipped to widget's bounds, so this can be restored to Background
-impl<W, C, DT, D> WidgetRenderer<EgCanvas<C, DT>>
-    for Container<Background<W, BackgroundStyle<C>>, D>
+impl<W, C, DT, D> WidgetRenderer<EgCanvas<DT>> for Container<Background<W, BackgroundStyle<C>>, D>
 where
-    W: Widget + WidgetRenderer<EgCanvas<C, DT>>,
+    W: Widget + WidgetRenderer<EgCanvas<DT>>,
     C: PixelColor,
     DT: DrawTarget<Color = C>,
     D: WidgetData,
     BackgroundStyle<C>: BackgroundProperties,
 {
-    fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
+    fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
         let style = self.widget.background_properties.build_style();
 
         self.bounding_box()

@@ -58,7 +58,7 @@ where
     }
 }
 
-impl<F, C, D> LabelProperties<EgCanvas<C, D>> for LabelStyle<F>
+impl<F, C, D> LabelProperties<EgCanvas<D>> for LabelStyle<F>
 where
     F: TextRenderer,
     C: PixelColor,
@@ -75,16 +75,15 @@ where
 }
 
 pub trait LabelConstructor<S, P, C, D> {
-    fn new(text: S) -> Container<Label<S, EgCanvas<C, D>, P>>
+    fn new(text: S) -> Container<Label<S, EgCanvas<D>, P>>
     where
         C: PixelColor,
         D: DrawTarget<Color = C>,
         S: AsRef<str>,
-        P: LabelProperties<EgCanvas<C, D>>;
+        P: LabelProperties<EgCanvas<D>>;
 }
 
-impl<F, C, D, S> LabelConstructor<S, LabelStyle<F>, C, D>
-    for Label<S, EgCanvas<C, D>, LabelStyle<F>>
+impl<F, C, D, S> LabelConstructor<S, LabelStyle<F>, C, D> for Label<S, EgCanvas<D>, LabelStyle<F>>
 where
     S: AsRef<str>,
     F: TextRenderer,
@@ -117,11 +116,11 @@ where
     fn font<F2: MonoFont>(
         self,
         font: F2,
-    ) -> Container<Label<S, EgCanvas<C, D>, LabelStyle<MonoTextStyle<C, F2>>>>;
+    ) -> Container<Label<S, EgCanvas<D>, LabelStyle<MonoTextStyle<C, F2>>>>;
 }
 
 impl<F, C, D, S> LabelStyling<F, C, D, S>
-    for Container<Label<S, EgCanvas<C, D>, LabelStyle<MonoTextStyle<C, F>>>>
+    for Container<Label<S, EgCanvas<D>, LabelStyle<MonoTextStyle<C, F>>>>
 where
     S: AsRef<str>,
     F: MonoFont,
@@ -140,7 +139,7 @@ where
     fn font<F2: MonoFont>(
         self,
         font: F2,
-    ) -> Container<Label<S, EgCanvas<C, D>, LabelStyle<MonoTextStyle<C, F2>>>> {
+    ) -> Container<Label<S, EgCanvas<D>, LabelStyle<MonoTextStyle<C, F2>>>> {
         let label_properties = self.widget.label_properties.font(font);
 
         Container {
@@ -158,14 +157,14 @@ where
     }
 }
 
-impl<S, F, C, DT> WidgetRenderer<EgCanvas<C, DT>> for Label<S, EgCanvas<C, DT>, LabelStyle<F>>
+impl<S, F, C, DT> WidgetRenderer<EgCanvas<DT>> for Label<S, EgCanvas<DT>, LabelStyle<F>>
 where
     S: AsRef<str>,
     F: TextRenderer<Color = C>,
     C: PixelColor,
     DT: DrawTarget<Color = C>,
 {
-    fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
+    fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
         self.label_properties
             .renderer
             .draw_string(

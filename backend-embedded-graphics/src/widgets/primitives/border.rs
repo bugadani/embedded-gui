@@ -63,15 +63,15 @@ where
 }
 
 // TODO: draw target should be clipped to widget's bounds, so this can be restored to Border
-impl<W, C, DT, D> WidgetRenderer<EgCanvas<C, DT>> for Container<Border<W, BorderStyle<C>>, D>
+impl<W, C, DT, D> WidgetRenderer<EgCanvas<DT>> for Container<Border<W, BorderStyle<C>>, D>
 where
-    W: Widget + WidgetRenderer<EgCanvas<C, DT>>,
+    W: Widget + WidgetRenderer<EgCanvas<DT>>,
     C: PixelColor,
     DT: DrawTarget<Color = C>,
     D: WidgetData,
     BorderStyle<C>: BorderProperties,
 {
-    fn draw(&self, canvas: &mut EgCanvas<C, DT>) -> Result<(), DT::Error> {
+    fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
         let style = self.widget.border_properties.build_style();
 
         self.bounding_box()

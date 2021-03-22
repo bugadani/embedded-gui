@@ -156,7 +156,7 @@ fn update_op_button_background<W: Widget>(
 }
 
 fn update_op_label<S, D, F>(
-    widget: &mut Label<S, EgCanvas<BinaryColor, D>, LabelStyle<MonoTextStyle<BinaryColor, F>>>,
+    widget: &mut Label<S, EgCanvas<D>, LabelStyle<MonoTextStyle<BinaryColor, F>>>,
     state: WidgetState,
 ) where
     S: AsRef<str>,
@@ -186,7 +186,7 @@ fn op_button<D: DrawTarget<Color = BinaryColor>>(
                                     Container<
                                         Label<
                                             &'static str,
-                                            EgCanvas<BinaryColor, D>,
+                                            EgCanvas<D>,
                                             LabelStyle<MonoTextStyle<BinaryColor, Font6x10>>,
                                         >,
                                     >,
@@ -200,7 +200,7 @@ fn op_button<D: DrawTarget<Color = BinaryColor>>(
                         BackgroundStyle<BinaryColor>,
                     >,
                 >,
-                EgCanvas<BinaryColor, D>,
+                EgCanvas<D>,
             >,
         >,
     >,
@@ -211,7 +211,7 @@ fn op_button<D: DrawTarget<Color = BinaryColor>>(
                 Border::new(
                     FillParent::both(
                         // here we have to help the compiler a bit
-                        Label::<_, EgCanvas<BinaryColor, D>, _>::new(label)
+                        Label::<_, EgCanvas<D>, _>::new(label)
                             .text_color(BinaryColor::Off)
                             .on_state_changed(update_op_label),
                     )

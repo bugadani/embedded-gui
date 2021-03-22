@@ -4,7 +4,6 @@ pub mod widgets;
 
 use embedded_graphics::{
     draw_target::DrawTarget,
-    pixelcolor::PixelColor,
     prelude::{Point, Size},
     primitives::Rectangle,
 };
@@ -23,25 +22,23 @@ impl ToRectangle for BoundingBox {
     }
 }
 
-pub struct EgCanvas<C, D>
+pub struct EgCanvas<D>
 where
-    C: PixelColor,
-    D: DrawTarget<Color = C>,
+    D: DrawTarget,
 {
     pub target: D,
 }
 
-impl<C, D> EgCanvas<C, D>
+impl<D> EgCanvas<D>
 where
-    C: PixelColor,
-    D: DrawTarget<Color = C>,
+    D: DrawTarget,
 {
     pub fn new(target: D) -> Self {
         Self { target }
     }
 }
 
-impl<C: PixelColor, D: DrawTarget<Color = C>> Canvas for EgCanvas<C, D> {
+impl<D: DrawTarget> Canvas for EgCanvas<D> {
     type Error = <D as DrawTarget>::Error;
 
     fn size(&self) -> MeasuredSize {
