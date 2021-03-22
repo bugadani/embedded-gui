@@ -1,5 +1,3 @@
-use core::marker::PhantomData;
-
 use object_chain::{Chain, ChainElement, Link};
 
 use crate::{
@@ -11,18 +9,14 @@ use crate::{
     BoundingBox, Canvas, MeasureConstraint, MeasureSpec, MeasuredSize, Position, WidgetRenderer,
 };
 
-pub struct Column<C, CE> {
+pub struct Column<CE> {
     parent_index: usize,
     bounds: BoundingBox,
     widgets: CE,
-    _marker: PhantomData<C>,
 }
 
-impl<C> Column<C, ()>
-where
-    C: Canvas,
-{
-    pub fn new<W, CW>(widget: Cell<W, CW>) -> Column<C, Chain<Cell<W, CW>>>
+impl Column<()> {
+    pub fn new<W, CW>(widget: Cell<W, CW>) -> Column<Chain<Cell<W, CW>>>
     where
         W: Widget,
         CW: CellWeight,
@@ -31,17 +25,15 @@ where
             parent_index: 0,
             bounds: BoundingBox::default(),
             widgets: Chain::new(widget),
-            _marker: PhantomData,
         }
     }
 }
 
-impl<C, CE> Column<C, CE>
+impl<CE> Column<CE>
 where
-    C: Canvas,
-    CE: LinearLayoutChainElement<C> + ChainElement,
+    CE: LinearLayoutChainElement + ChainElement,
 {
-    pub fn add<W, CW>(self, widget: Cell<W, CW>) -> Column<C, Link<Cell<W, CW>, CE>>
+    pub fn add<W, CW>(self, widget: Cell<W, CW>) -> Column<Link<Cell<W, CW>, CE>>
     where
         W: Widget,
         CW: CellWeight,
@@ -50,7 +42,6 @@ where
             parent_index: self.parent_index,
             bounds: self.bounds,
             widgets: self.widgets.append(widget),
-            _marker: PhantomData,
         }
     }
 
@@ -71,10 +62,9 @@ where
     }
 }
 
-impl<C, CE> Widget for Column<C, CE>
+impl<CE> Widget for Column<CE>
 where
-    C: Canvas,
-    CE: LinearLayoutChainElement<C> + ChainElement,
+    CE: LinearLayoutChainElement + ChainElement,
 {
     fn bounding_box(&self) -> BoundingBox {
         self.bounds
@@ -220,10 +210,7 @@ where
     }
 }
 
-impl<C, CE> ParentHolder for Column<C, CE>
-where
-    C: Canvas,
-{
+impl<CE> ParentHolder for Column<CE> {
     fn parent_index(&self) -> usize {
         self.parent_index
     }
@@ -233,27 +220,20 @@ where
     }
 }
 
-impl<C, CE> WidgetStateHolder for Column<C, CE>
-where
-    C: Canvas,
-{
+impl<CE> WidgetStateHolder for Column<CE> {
     fn change_state(&mut self, _state: u32) {}
 
     fn change_selection(&mut self, _state: bool) {}
 }
 
-impl<C, CE> UpdateHandler for Column<C, CE> where C: Canvas {}
+impl<CE> UpdateHandler for Column<CE> {}
 
-impl<C, CE> WidgetRenderer<C> for Column<C, CE>
+impl<C, CE> WidgetRenderer<C> for Column<CE>
 where
-    CE: LinearLayoutChainElement<C> + ChainElement,
+    CE: LinearLayoutChainElement + ChainElement + WidgetRenderer<C>,
     C: Canvas,
 {
     fn draw(&self, canvas: &mut C) -> Result<(), C::Error> {
-        let count = self.widgets.len();
-        for i in 0..count {
-            self.widgets.at(i).draw(canvas)?;
-        }
-        Ok(())
+        self.widgets.draw(canvas)
     }
 }

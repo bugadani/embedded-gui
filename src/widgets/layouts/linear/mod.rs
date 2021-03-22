@@ -70,19 +70,13 @@ where
     }
 }
 
-pub trait LinearLayoutChainElement<C>
-where
-    C: Canvas,
-{
-    fn at(&self, index: usize) -> &dyn LinearLayoutCell<C>;
+pub trait LinearLayoutChainElement {
+    fn at(&self, index: usize) -> &dyn LinearLayoutCell;
 
-    fn at_mut(&mut self, index: usize) -> &mut dyn LinearLayoutCell<C>;
+    fn at_mut(&mut self, index: usize) -> &mut dyn LinearLayoutCell;
 }
 
-pub trait LinearLayoutCell<C>: WidgetRenderer<C>
-where
-    C: Canvas,
-{
+pub trait LinearLayoutCell {
     fn weight(&self) -> u32;
 
     fn widget(&self) -> &dyn Widget;
@@ -90,10 +84,9 @@ where
     fn widget_mut(&mut self) -> &mut dyn Widget;
 }
 
-impl<C, W, CW> LinearLayoutCell<C> for Cell<W, CW>
+impl<W, CW> LinearLayoutCell for Cell<W, CW>
 where
-    C: Canvas,
-    W: Widget + WidgetRenderer<C>,
+    W: Widget,
     CW: CellWeight,
 {
     fn weight(&self) -> u32 {
@@ -109,33 +102,31 @@ where
     }
 }
 
-impl<C, W, CW> LinearLayoutChainElement<C> for Chain<Cell<W, CW>>
+impl<W, CW> LinearLayoutChainElement for Chain<Cell<W, CW>>
 where
-    C: Canvas,
-    W: Widget + WidgetRenderer<C>,
+    W: Widget,
     CW: CellWeight,
 {
-    fn at(&self, index: usize) -> &dyn LinearLayoutCell<C> {
+    fn at(&self, index: usize) -> &dyn LinearLayoutCell {
         assert!(index == 0);
 
         &self.object
     }
 
-    fn at_mut(&mut self, index: usize) -> &mut dyn LinearLayoutCell<C> {
+    fn at_mut(&mut self, index: usize) -> &mut dyn LinearLayoutCell {
         assert!(index == 0);
 
         &mut self.object
     }
 }
 
-impl<C, W, CE, CW> LinearLayoutChainElement<C> for Link<Cell<W, CW>, CE>
+impl<W, CE, CW> LinearLayoutChainElement for Link<Cell<W, CW>, CE>
 where
-    C: Canvas,
-    W: Widget + WidgetRenderer<C>,
-    CE: LinearLayoutChainElement<C> + ChainElement,
+    W: Widget,
+    CE: LinearLayoutChainElement + ChainElement,
     CW: CellWeight,
 {
-    fn at(&self, index: usize) -> &dyn LinearLayoutCell<C> {
+    fn at(&self, index: usize) -> &dyn LinearLayoutCell {
         if index == Link::len(self) - 1 {
             return &self.object;
         }
@@ -143,7 +134,7 @@ where
         return self.parent.at(index);
     }
 
-    fn at_mut(&mut self, index: usize) -> &mut dyn LinearLayoutCell<C> {
+    fn at_mut(&mut self, index: usize) -> &mut dyn LinearLayoutCell {
         if index == Link::len(self) - 1 {
             return &mut self.object;
         }
@@ -166,11 +157,12 @@ where
 impl<C, W, CE, CW> WidgetRenderer<C> for Link<Cell<W, CW>, CE>
 where
     W: Widget,
-    CE: LinearLayoutChainElement<C> + ChainElement,
+    CE: LinearLayoutChainElement + ChainElement + WidgetRenderer<C>,
     Cell<W, CW>: WidgetRenderer<C>,
     C: Canvas,
 {
     fn draw(&self, canvas: &mut C) -> Result<(), C::Error> {
+        self.parent.draw(canvas)?;
         self.object.draw(canvas)
     }
 }
