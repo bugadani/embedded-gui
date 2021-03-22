@@ -59,7 +59,7 @@ where
     D: WidgetData,
 {
     pub data: D,
-    pub last_version: usize,
+    pub last_version: D::Version,
     pub on_data_changed: fn(&mut W, &D::Data),
 }
 
@@ -67,7 +67,7 @@ impl<W> Default for WidgetDataHolder<W, NoData> {
     fn default() -> Self {
         Self {
             data: NoData::default(),
-            last_version: 0,
+            last_version: (),
             on_data_changed: |_, _| (),
         }
     }
@@ -80,7 +80,7 @@ impl<W> WidgetDataHolder<W, NoData> {
     {
         WidgetDataHolder {
             data,
-            last_version: 0,
+            last_version: D::Version::default(),
             on_data_changed: |_, _| (),
         }
     }

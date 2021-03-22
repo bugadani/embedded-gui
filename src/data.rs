@@ -5,12 +5,13 @@ use core::{
 
 pub trait WidgetData {
     type Data;
+    type Version: PartialEq + Default;
 
     fn update(&self, _f: impl Fn(&mut Self::Data));
 
     fn read<W>(&self, widget: &mut W, callback: fn(&mut W, &Self::Data));
 
-    fn version(&self) -> usize;
+    fn version(&self) -> Self::Version;
 }
 
 impl<T> WidgetData for &T
@@ -18,6 +19,7 @@ where
     T: WidgetData,
 {
     type Data = T::Data;
+    type Version = T::Version;
 
     fn update(&self, f: impl Fn(&mut Self::Data)) {
         (*self).update(f)
@@ -27,7 +29,7 @@ where
         (*self).read(widget, callback);
     }
 
-    fn version(&self) -> usize {
+    fn version(&self) -> Self::Version {
         (*self).version()
     }
 }
@@ -42,6 +44,7 @@ impl Default for NoData {
 
 impl WidgetData for NoData {
     type Data = ();
+    type Version = ();
 
     fn update(&self, _f: impl Fn(&mut Self::Data)) {}
 
@@ -49,9 +52,7 @@ impl WidgetData for NoData {
         callback(widget, &());
     }
 
-    fn version(&self) -> usize {
-        0
-    }
+    fn version(&self) -> () {}
 }
 
 struct BoundDataInner<D, F>
@@ -91,6 +92,7 @@ where
     F: FnMut(&D),
 {
     type Data = D;
+    type Version = usize;
 
     fn update(&self, updater: impl Fn(&mut Self::Data)) {
         let mut borrow = self.inner.borrow_mut();
