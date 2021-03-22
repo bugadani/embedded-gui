@@ -9,8 +9,9 @@ use embedded_graphics::{
 };
 use embedded_gui::{
     widgets::{
+        container::Container,
         label::{Label, LabelProperties},
-        Container, WidgetDataHolder,
+        WidgetDataHolder,
     },
     BoundingBox, MeasuredSize, WidgetRenderer,
 };

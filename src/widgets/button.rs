@@ -4,7 +4,7 @@ use crate::{
         controller::InputContext,
         event::{InputEvent, PointerEvent},
     },
-    widgets::{Container, ParentHolder, Widget, WidgetStateHolder},
+    widgets::{container::Container, ParentHolder, Widget, WidgetStateHolder},
     BoundingBox, Canvas, MeasureSpec, Position, WidgetRenderer, WidgetState,
 };
 

@@ -8,8 +8,9 @@ use embedded_graphics::{
 use embedded_gui::{
     data::WidgetData,
     widgets::{
+        container::Container,
         primitives::background::{Background, BackgroundProperties},
-        Container, Widget,
+        Widget,
     },
     WidgetRenderer,
 };

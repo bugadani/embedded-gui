@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use crate::{
     data::{NoData, WidgetData},
-    widgets::{Container, Widget, WidgetStateHolder},
+    widgets::{container::Container, Widget, WidgetStateHolder},
     BoundingBox, Canvas, MeasureSpec, MeasuredSize, WidgetState,
 };
 

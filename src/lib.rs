@@ -10,7 +10,7 @@ use crate::{
         controller::{DefaultInputController, InputController},
         event::InputEvent,
     },
-    widgets::{Container, Widget},
+    widgets::{container::Container, Widget},
 };
 
 #[derive(Clone, Copy, Debug)]

@@ -25,6 +25,7 @@ use embedded_gui::{
     input::event::{InputEvent, PointerEvent},
     widgets::{
         button::Button,
+        container::Container,
         label::Label,
         layouts::linear::{column::Column, row::Row, Cell},
         primitives::{
@@ -33,7 +34,7 @@ use embedded_gui::{
             fill::{Center, FillParent, HorizontalAndVertical, Right},
             spacing::Spacing,
         },
-        Container, Widget,
+        Widget,
     },
     Position, WidgetState, Window,
 };

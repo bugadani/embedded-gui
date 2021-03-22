@@ -1,10 +1,11 @@
 use crate::{
     data::{NoData, WidgetData},
     input::{controller::InputContext, event::InputEvent},
-    BoundingBox, MeasureSpec, MeasuredSize, Position, WidgetState,
+    BoundingBox, MeasureSpec, MeasuredSize, Position,
 };
 
 pub mod button;
+pub mod container;
 pub mod label;
 pub mod layouts;
 pub mod primitives;
@@ -107,72 +108,12 @@ pub trait WidgetStateHolder {
     }
 }
 
-pub struct Container<W, D = NoData>
-where
-    D: WidgetData,
-{
-    pub parent_index: usize,
-    pub widget: W,
-    pub data_holder: WidgetDataHolder<W, D>,
-    pub state: WidgetState,
-    pub on_state_changed: fn(&mut W, WidgetState),
-}
-
-impl<W> Container<W, NoData> {
-    pub fn new(widget: W) -> Self {
-        Container {
-            parent_index: 0,
-            widget,
-            data_holder: WidgetDataHolder::default(),
-            on_state_changed: |_, _| (),
-            state: WidgetState::default(),
-        }
-    }
-}
-
 pub trait UpdateHandler {
     fn update(&mut self) {}
-}
-
-impl<W, D> Container<W, D>
-where
-    D: WidgetData,
-{
-    pub fn on_state_changed(mut self, callback: fn(&mut W, WidgetState)) -> Self {
-        self.on_state_changed = callback;
-        self
-    }
-
-    pub fn on_data_changed(mut self, callback: fn(&mut W, &D::Data)) -> Self {
-        self.data_holder.on_data_changed = callback;
-        self
-    }
-}
-
-impl<W, D> UpdateHandler for Container<W, D>
-where
-    D: WidgetData,
-    Container<W, D>: Widget,
-{
-    fn update(&mut self) {
-        self.data_holder.update(&mut self.widget);
-    }
 }
 
 pub trait ParentHolder {
     fn parent_index(&self) -> usize;
 
     fn set_parent(&mut self, index: usize);
-}
-
-impl<W, D> ParentHolder for Container<W, D>
-where
-    D: WidgetData,
-{
-    fn parent_index(&self) -> usize {
-        self.parent_index
-    }
-    fn set_parent(&mut self, index: usize) {
-        self.parent_index = index;
-    }
 }

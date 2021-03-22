@@ -1,7 +1,7 @@
 use crate::{
     data::{NoData, WidgetData},
     input::event::InputEvent,
-    widgets::{Container, ParentHolder, Widget, WidgetStateHolder},
+    widgets::{container::Container, ParentHolder, Widget, WidgetStateHolder},
     BoundingBox, MeasureSpec, MeasuredSize, Position, WidgetState,
 };
 
