@@ -84,7 +84,7 @@ where
     where
         Self: Sized,
     {
-        self.apply(|widget| widget.on_clicked(callback));
+        self.widget.on_clicked(callback);
         self
     }
 

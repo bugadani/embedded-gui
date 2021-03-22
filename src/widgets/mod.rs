@@ -143,10 +143,6 @@ where
         self
     }
 
-    pub fn apply(&mut self, func: impl FnOnce(&mut W)) {
-        func(&mut self.widget);
-    }
-
     pub fn on_data_changed(mut self, callback: fn(&mut W, &D::Data)) -> Self {
         self.data_holder.on_data_changed = callback;
         self
