@@ -99,24 +99,6 @@ where
     }
 }
 
-pub trait DataHolder {
-    type Data: WidgetData;
-    type Widget;
-
-    fn data_holder(&mut self) -> &mut WidgetDataHolder<Self::Widget, Self::Data>;
-
-    fn on_data_changed(
-        mut self,
-        callback: fn(&mut Self::Widget, &<Self::Data as WidgetData>::Data),
-    ) -> Self
-    where
-        Self: Sized,
-    {
-        self.data_holder().on_data_changed = callback;
-        self
-    }
-}
-
 pub trait WidgetStateHolder {
     fn change_state(&mut self, state: u32);
     fn change_selection(&mut self, state: bool);
@@ -156,10 +138,7 @@ impl<W, D> WidgetWrapper<W, D>
 where
     D: WidgetData,
 {
-    pub fn on_state_changed(mut self, callback: fn(&mut W, WidgetState)) -> Self
-    where
-        Self: Sized,
-    {
+    pub fn on_state_changed(mut self, callback: fn(&mut W, WidgetState)) -> Self {
         self.on_state_changed = callback;
         self
     }
@@ -167,20 +146,10 @@ where
     pub fn apply(&mut self, func: impl FnOnce(&mut W)) {
         func(&mut self.widget);
     }
-}
 
-impl<W, D> DataHolder for WidgetWrapper<W, D>
-where
-    D: WidgetData,
-{
-    type Data = D;
-    type Widget = W;
-
-    fn data_holder(&mut self) -> &mut WidgetDataHolder<Self::Widget, Self::Data>
-    where
-        Self: Sized,
-    {
-        &mut self.data_holder
+    pub fn on_data_changed(mut self, callback: fn(&mut W, &D::Data)) -> Self {
+        self.data_holder.on_data_changed = callback;
+        self
     }
 }
 

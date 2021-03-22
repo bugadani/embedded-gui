@@ -27,7 +27,7 @@ use embedded_gui::{
             fill::{Center, FillParent, HorizontalAndVertical},
             spacing::Spacing,
         },
-        DataHolder, Widget, WidgetWrapper,
+        Widget, WidgetWrapper,
     },
     Position, WidgetState, Window,
 };
