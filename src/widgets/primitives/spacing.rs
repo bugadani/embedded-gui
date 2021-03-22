@@ -1,5 +1,3 @@
-use core::marker::PhantomData;
-
 use crate::{
     data::{NoData, WidgetData},
     input::event::InputEvent,
@@ -15,27 +13,24 @@ pub struct SpacingSpec {
     pub left: u32,
 }
 
-pub struct Spacing<W, C> {
+pub struct Spacing<W> {
     pub inner: W,
     pub spacing: SpacingSpec,
-    _marker: PhantomData<C>,
 }
 
-impl<W, C> Spacing<W, C>
+impl<W> Spacing<W>
 where
-    W: Widget + WidgetRenderer<C>,
-    C: Canvas,
+    W: Widget,
 {
-    pub fn new(inner: W) -> Container<Spacing<W, C>, NoData> {
+    pub fn new(inner: W) -> Container<Spacing<W>, NoData> {
         Container::new(Spacing {
             spacing: SpacingSpec::default(),
             inner,
-            _marker: PhantomData,
         })
     }
 }
 
-impl<W, C> Spacing<W, C> {
+impl<W> Spacing<W> {
     pub fn set_left(&mut self, space: u32) {
         self.spacing.left = space;
     }
@@ -50,11 +45,11 @@ impl<W, C> Spacing<W, C> {
     }
 }
 
-impl<W, C> Container<Spacing<W, C>, NoData>
+impl<W> Container<Spacing<W>, NoData>
 where
     W: Widget,
 {
-    pub fn bind<D>(self, data: D) -> Container<Spacing<W, C>, D>
+    pub fn bind<D>(self, data: D) -> Container<Spacing<W>, D>
     where
         D: WidgetData,
     {
@@ -68,7 +63,7 @@ where
     }
 }
 
-impl<W, C, D> Container<Spacing<W, C>, D>
+impl<W, D> Container<Spacing<W>, D>
 where
     W: Widget,
     D: WidgetData,
@@ -103,7 +98,7 @@ where
     }
 }
 
-impl<W, C, D> WidgetStateHolder for Container<Spacing<W, C>, D>
+impl<W, D> WidgetStateHolder for Container<Spacing<W>, D>
 where
     W: Widget,
     D: WidgetData,
@@ -125,7 +120,7 @@ where
     }
 }
 
-impl<W, C, D> Widget for Container<Spacing<W, C>, D>
+impl<W, D> Widget for Container<Spacing<W>, D>
 where
     W: Widget,
     D: WidgetData,
@@ -199,7 +194,7 @@ where
     }
 }
 
-impl<C, W> WidgetRenderer<C> for Spacing<W, C>
+impl<C, W> WidgetRenderer<C> for Spacing<W>
 where
     W: Widget + WidgetRenderer<C>,
     C: Canvas,

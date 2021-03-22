@@ -199,7 +199,6 @@ fn op_button<D: DrawTarget<Color = BinaryColor>>(
                         BackgroundStyle<BinaryColor>,
                     >,
                 >,
-                EgCanvas<D>,
             >,
         >,
     >,
