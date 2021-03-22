@@ -27,7 +27,7 @@ use embedded_gui::{
             fill::{Center, FillParent, HorizontalAndVertical},
             spacing::Spacing,
         },
-        Widget, WidgetWrapper,
+        Container, Widget,
     },
     Position, WidgetState, Window,
 };
@@ -106,11 +106,11 @@ fn update_button_border<W: Widget>(
 // (`-> _` gives the type as a compile error ❤)
 fn button_with_style<W: Widget>(
     inner: W,
-) -> WidgetWrapper<
+) -> Container<
     Button<
-        WidgetWrapper<
+        Container<
             Background<
-                WidgetWrapper<
+                Container<
                     Border<
                         FillParent<W, HorizontalAndVertical, Center, Center>,
                         BorderStyle<BinaryColor>,

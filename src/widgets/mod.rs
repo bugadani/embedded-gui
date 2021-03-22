@@ -107,7 +107,7 @@ pub trait WidgetStateHolder {
     }
 }
 
-pub struct WidgetWrapper<W, D = NoData>
+pub struct Container<W, D = NoData>
 where
     D: WidgetData,
 {
@@ -118,9 +118,9 @@ where
     pub on_state_changed: fn(&mut W, WidgetState),
 }
 
-impl<W> WidgetWrapper<W, NoData> {
+impl<W> Container<W, NoData> {
     pub fn new(widget: W) -> Self {
-        WidgetWrapper {
+        Container {
             parent_index: 0,
             widget,
             data_holder: WidgetDataHolder::default(),
@@ -134,7 +134,7 @@ pub trait UpdateHandler {
     fn update(&mut self) {}
 }
 
-impl<W, D> WidgetWrapper<W, D>
+impl<W, D> Container<W, D>
 where
     D: WidgetData,
 {
@@ -149,10 +149,10 @@ where
     }
 }
 
-impl<W, D> UpdateHandler for WidgetWrapper<W, D>
+impl<W, D> UpdateHandler for Container<W, D>
 where
     D: WidgetData,
-    WidgetWrapper<W, D>: Widget,
+    Container<W, D>: Widget,
 {
     fn update(&mut self) {
         self.data_holder.update(&mut self.widget);
@@ -165,7 +165,7 @@ pub trait ParentHolder {
     fn set_parent(&mut self, index: usize);
 }
 
-impl<W, D> ParentHolder for WidgetWrapper<W, D>
+impl<W, D> ParentHolder for Container<W, D>
 where
     D: WidgetData,
 {

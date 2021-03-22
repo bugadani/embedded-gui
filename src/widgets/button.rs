@@ -4,7 +4,7 @@ use crate::{
         controller::InputContext,
         event::{InputEvent, PointerEvent},
     },
-    widgets::{ParentHolder, Widget, WidgetStateHolder, WidgetWrapper},
+    widgets::{Container, ParentHolder, Widget, WidgetStateHolder},
     BoundingBox, Canvas, MeasureSpec, Position, WidgetRenderer, WidgetState,
 };
 
@@ -26,8 +26,8 @@ impl<I> Button<I, NoData>
 where
     I: Widget,
 {
-    pub fn new(inner: I) -> WidgetWrapper<Self> {
-        WidgetWrapper::new(Button {
+    pub fn new(inner: I) -> Container<Self> {
+        Container::new(Button {
             inner,
             on_clicked: |_| (),
         })
@@ -57,15 +57,15 @@ where
     }
 }
 
-impl<I> WidgetWrapper<Button<I>, NoData>
+impl<I> Container<Button<I>, NoData>
 where
     I: Widget,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Button<I, D>, D>
+    pub fn bind<D>(self, data: D) -> Container<Button<I, D>, D>
     where
         D: WidgetData,
     {
-        WidgetWrapper {
+        Container {
             parent_index: self.parent_index,
             widget: self.widget.bind::<D>(),
             data_holder: self.data_holder.bind(data),
@@ -75,7 +75,7 @@ where
     }
 }
 
-impl<I, D> WidgetWrapper<Button<I, D>, D>
+impl<I, D> Container<Button<I, D>, D>
 where
     I: Widget,
     D: WidgetData,
@@ -95,7 +95,7 @@ where
     }
 }
 
-impl<I, D> WidgetStateHolder for WidgetWrapper<Button<I, D>, D>
+impl<I, D> WidgetStateHolder for Container<Button<I, D>, D>
 where
     I: Widget,
     D: WidgetData,
@@ -126,7 +126,7 @@ where
     }
 }
 
-impl<I, D> Widget for WidgetWrapper<Button<I, D>, D>
+impl<I, D> Widget for Container<Button<I, D>, D>
 where
     I: Widget,
     D: WidgetData,

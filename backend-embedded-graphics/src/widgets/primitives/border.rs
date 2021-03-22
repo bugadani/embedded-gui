@@ -9,7 +9,7 @@ use embedded_gui::{
     data::WidgetData,
     widgets::{
         primitives::border::{Border, BorderProperties},
-        Widget, WidgetWrapper,
+        Container, Widget,
     },
     WidgetRenderer,
 };
@@ -62,7 +62,7 @@ where
 }
 
 // TODO: draw target should be clipped to widget's bounds, so this can be restored to Border
-impl<W, C, DT, D> WidgetRenderer<EgCanvas<C, DT>> for WidgetWrapper<Border<W, BorderStyle<C>>, D>
+impl<W, C, DT, D> WidgetRenderer<EgCanvas<C, DT>> for Container<Border<W, BorderStyle<C>>, D>
 where
     W: Widget + WidgetRenderer<EgCanvas<C, DT>>,
     C: PixelColor,

@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use crate::{
     data::{NoData, WidgetData},
     input::event::InputEvent,
-    widgets::{ParentHolder, Widget, WidgetStateHolder, WidgetWrapper},
+    widgets::{Container, ParentHolder, Widget, WidgetStateHolder},
     BoundingBox, Canvas, MeasureSpec, MeasuredSize, Position, WidgetRenderer, WidgetState,
 };
 
@@ -26,8 +26,8 @@ where
     W: Widget + WidgetRenderer<C>,
     C: Canvas,
 {
-    pub fn new(inner: W) -> WidgetWrapper<Spacing<W, C>, NoData> {
-        WidgetWrapper::new(Spacing {
+    pub fn new(inner: W) -> Container<Spacing<W, C>, NoData> {
+        Container::new(Spacing {
             spacing: SpacingSpec::default(),
             inner,
             _marker: PhantomData,
@@ -50,15 +50,15 @@ impl<W, C> Spacing<W, C> {
     }
 }
 
-impl<W, C> WidgetWrapper<Spacing<W, C>, NoData>
+impl<W, C> Container<Spacing<W, C>, NoData>
 where
     W: Widget,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Spacing<W, C>, D>
+    pub fn bind<D>(self, data: D) -> Container<Spacing<W, C>, D>
     where
         D: WidgetData,
     {
-        WidgetWrapper {
+        Container {
             parent_index: self.parent_index,
             widget: self.widget,
             data_holder: self.data_holder.bind(data),
@@ -68,7 +68,7 @@ where
     }
 }
 
-impl<W, C, D> WidgetWrapper<Spacing<W, C>, D>
+impl<W, C, D> Container<Spacing<W, C>, D>
 where
     W: Widget,
     D: WidgetData,
@@ -103,7 +103,7 @@ where
     }
 }
 
-impl<W, C, D> WidgetStateHolder for WidgetWrapper<Spacing<W, C>, D>
+impl<W, C, D> WidgetStateHolder for Container<Spacing<W, C>, D>
 where
     W: Widget,
     D: WidgetData,
@@ -125,7 +125,7 @@ where
     }
 }
 
-impl<W, C, D> Widget for WidgetWrapper<Spacing<W, C>, D>
+impl<W, C, D> Widget for Container<Spacing<W, C>, D>
 where
     W: Widget,
     D: WidgetData,

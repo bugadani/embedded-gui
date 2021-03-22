@@ -1,7 +1,7 @@
 use crate::{
     data::{NoData, WidgetData},
     input::event::InputEvent,
-    widgets::{ParentHolder, Widget, WidgetStateHolder, WidgetWrapper},
+    widgets::{Container, ParentHolder, Widget, WidgetStateHolder},
     BoundingBox, MeasureSpec, Position, WidgetState,
 };
 
@@ -24,8 +24,8 @@ where
     I: Widget,
     P: BackgroundProperties + Default,
 {
-    pub fn new(inner: I) -> WidgetWrapper<Background<I, P>, NoData> {
-        WidgetWrapper::new(Background {
+    pub fn new(inner: I) -> Container<Background<I, P>, NoData> {
+        Container::new(Background {
             background_properties: P::default(),
             inner,
         })
@@ -42,16 +42,16 @@ where
     }
 }
 
-impl<W, P> WidgetWrapper<Background<W, P>, NoData>
+impl<W, P> Container<Background<W, P>, NoData>
 where
     W: Widget,
     P: BackgroundProperties,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Background<W, P>, D>
+    pub fn bind<D>(self, data: D) -> Container<Background<W, P>, D>
     where
         D: WidgetData,
     {
-        WidgetWrapper {
+        Container {
             parent_index: self.parent_index,
             widget: self.widget,
             data_holder: self.data_holder.bind(data),
@@ -61,7 +61,7 @@ where
     }
 }
 
-impl<W, P, D> WidgetWrapper<Background<W, P>, D>
+impl<W, P, D> Container<Background<W, P>, D>
 where
     W: Widget,
     P: BackgroundProperties,
@@ -73,7 +73,7 @@ where
     }
 }
 
-impl<W, P, D> WidgetStateHolder for WidgetWrapper<Background<W, P>, D>
+impl<W, P, D> WidgetStateHolder for Container<Background<W, P>, D>
 where
     W: Widget,
     P: BackgroundProperties,
@@ -94,7 +94,7 @@ where
     }
 }
 
-impl<W, P, D> Widget for WidgetWrapper<Background<W, P>, D>
+impl<W, P, D> Widget for Container<Background<W, P>, D>
 where
     W: Widget,
     P: BackgroundProperties,

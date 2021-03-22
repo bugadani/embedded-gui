@@ -10,7 +10,7 @@ use embedded_graphics::{
 use embedded_gui::{
     widgets::{
         label::{Label, LabelProperties},
-        WidgetDataHolder, WidgetWrapper,
+        Container, WidgetDataHolder,
     },
     BoundingBox, MeasuredSize, WidgetRenderer,
 };
@@ -74,7 +74,7 @@ where
 }
 
 pub trait LabelConstructor<S, P, C, D> {
-    fn new(text: S) -> WidgetWrapper<Label<S, EgCanvas<C, D>, P>>
+    fn new(text: S) -> Container<Label<S, EgCanvas<C, D>, P>>
     where
         C: PixelColor,
         D: DrawTarget<Color = C>,
@@ -91,8 +91,8 @@ where
     LabelStyle<F>: Default,
     D: DrawTarget<Color = C>,
 {
-    fn new(text: S) -> WidgetWrapper<Self> {
-        WidgetWrapper::new(Label {
+    fn new(text: S) -> Container<Self> {
+        Container::new(Label {
             text,
             label_properties: LabelStyle::default(),
             bounds: BoundingBox::default(),
@@ -116,11 +116,11 @@ where
     fn font<F2: MonoFont>(
         self,
         font: F2,
-    ) -> WidgetWrapper<Label<S, EgCanvas<C, D>, LabelStyle<MonoTextStyle<C, F2>>>>;
+    ) -> Container<Label<S, EgCanvas<C, D>, LabelStyle<MonoTextStyle<C, F2>>>>;
 }
 
 impl<F, C, D, S> LabelStyling<F, C, D, S>
-    for WidgetWrapper<Label<S, EgCanvas<C, D>, LabelStyle<MonoTextStyle<C, F>>>>
+    for Container<Label<S, EgCanvas<C, D>, LabelStyle<MonoTextStyle<C, F>>>>
 where
     S: AsRef<str>,
     F: MonoFont,
@@ -139,10 +139,10 @@ where
     fn font<F2: MonoFont>(
         self,
         font: F2,
-    ) -> WidgetWrapper<Label<S, EgCanvas<C, D>, LabelStyle<MonoTextStyle<C, F2>>>> {
+    ) -> Container<Label<S, EgCanvas<C, D>, LabelStyle<MonoTextStyle<C, F2>>>> {
         let label_properties = self.widget.label_properties.font(font);
 
-        WidgetWrapper {
+        Container {
             parent_index: self.parent_index,
             widget: Label {
                 text: self.widget.text,

@@ -10,7 +10,7 @@ use crate::{
         controller::{DefaultInputController, InputController},
         event::InputEvent,
     },
-    widgets::{Widget, WidgetWrapper},
+    widgets::{Container, Widget},
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -62,7 +62,7 @@ pub trait WidgetRenderer<C: Canvas> {
     fn draw(&self, canvas: &mut C) -> Result<(), C::Error>;
 }
 
-impl<C, W, D> WidgetRenderer<C> for WidgetWrapper<W, D>
+impl<C, W, D> WidgetRenderer<C> for Container<W, D>
 where
     C: Canvas,
     D: WidgetData,

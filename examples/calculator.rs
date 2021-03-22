@@ -33,7 +33,7 @@ use embedded_gui::{
             fill::{Center, FillParent, HorizontalAndVertical, Right},
             spacing::Spacing,
         },
-        Widget, WidgetWrapper,
+        Container, Widget,
     },
     Position, WidgetState, Window,
 };
@@ -113,11 +113,11 @@ fn update_button_border<W: Widget>(
 // (`-> _` gives the type as a compile error ❤)
 fn number_button<W: Widget>(
     inner: W,
-) -> WidgetWrapper<
+) -> Container<
     Button<
-        WidgetWrapper<
+        Container<
             Background<
-                WidgetWrapper<
+                Container<
                     Border<
                         FillParent<W, HorizontalAndVertical, Center, Center>,
                         BorderStyle<BinaryColor>,
@@ -173,16 +173,16 @@ fn update_op_label<S, D, F>(
 // (`-> _` gives the type as a compile error ❤)
 fn op_button<D: DrawTarget<Color = BinaryColor>>(
     label: &'static str,
-) -> WidgetWrapper<
+) -> Container<
     Button<
-        WidgetWrapper<
+        Container<
             Spacing<
-                WidgetWrapper<
+                Container<
                     Background<
-                        WidgetWrapper<
+                        Container<
                             Border<
                                 FillParent<
-                                    WidgetWrapper<
+                                    Container<
                                         Label<
                                             &'static str,
                                             EgCanvas<BinaryColor, D>,

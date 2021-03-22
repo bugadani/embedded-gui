@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use crate::{
     data::{NoData, WidgetData},
-    widgets::{Widget, WidgetStateHolder, WidgetWrapper},
+    widgets::{Container, Widget, WidgetStateHolder},
     BoundingBox, Canvas, MeasureSpec, MeasuredSize, WidgetState,
 };
 
@@ -41,17 +41,17 @@ where
     }
 }
 
-impl<S, C, P> WidgetWrapper<Label<S, C, P>, NoData>
+impl<S, C, P> Container<Label<S, C, P>, NoData>
 where
     S: AsRef<str>,
     C: Canvas,
     P: LabelProperties<C>,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Label<S, C, P>, D>
+    pub fn bind<D>(self, data: D) -> Container<Label<S, C, P>, D>
     where
         D: WidgetData,
     {
-        WidgetWrapper {
+        Container {
             parent_index: self.parent_index,
             widget: self.widget,
             data_holder: self.data_holder.bind(data),
@@ -61,7 +61,7 @@ where
     }
 }
 
-impl<S, C, P, D> WidgetStateHolder for WidgetWrapper<Label<S, C, P>, D>
+impl<S, C, P, D> WidgetStateHolder for Container<Label<S, C, P>, D>
 where
     S: AsRef<str>,
     C: Canvas,
@@ -87,7 +87,7 @@ where
     }
 }
 
-impl<S, C, P, D> Widget for WidgetWrapper<Label<S, C, P>, D>
+impl<S, C, P, D> Widget for Container<Label<S, C, P>, D>
 where
     S: AsRef<str>,
     C: Canvas,

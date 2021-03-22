@@ -1,7 +1,7 @@
 use crate::{
     data::{NoData, WidgetData},
     input::event::InputEvent,
-    widgets::{ParentHolder, Widget, WidgetStateHolder, WidgetWrapper},
+    widgets::{Container, ParentHolder, Widget, WidgetStateHolder},
     BoundingBox, MeasureSpec, MeasuredSize, Position, WidgetState,
 };
 
@@ -26,8 +26,8 @@ where
     I: Widget,
     P: BorderProperties + Default,
 {
-    pub fn new(inner: I) -> WidgetWrapper<Border<I, P>, NoData> {
-        WidgetWrapper::new(Border {
+    pub fn new(inner: I) -> Container<Border<I, P>, NoData> {
+        Container::new(Border {
             border_properties: P::default(),
             inner,
         })
@@ -44,16 +44,16 @@ where
     }
 }
 
-impl<W, P> WidgetWrapper<Border<W, P>, NoData>
+impl<W, P> Container<Border<W, P>, NoData>
 where
     W: Widget,
     P: BorderProperties,
 {
-    pub fn bind<D>(self, data: D) -> WidgetWrapper<Border<W, P>, D>
+    pub fn bind<D>(self, data: D) -> Container<Border<W, P>, D>
     where
         D: WidgetData,
     {
-        WidgetWrapper {
+        Container {
             parent_index: self.parent_index,
             widget: self.widget,
             data_holder: self.data_holder.bind(data),
@@ -63,7 +63,7 @@ where
     }
 }
 
-impl<W, P, D> WidgetWrapper<Border<W, P>, D>
+impl<W, P, D> Container<Border<W, P>, D>
 where
     W: Widget,
     P: BorderProperties,
@@ -75,7 +75,7 @@ where
     }
 }
 
-impl<W, P, D> WidgetStateHolder for WidgetWrapper<Border<W, P>, D>
+impl<W, P, D> WidgetStateHolder for Container<Border<W, P>, D>
 where
     W: Widget,
     P: BorderProperties,
@@ -96,7 +96,7 @@ where
     }
 }
 
-impl<W, P, D> Widget for WidgetWrapper<Border<W, P>, D>
+impl<W, P, D> Widget for Container<Border<W, P>, D>
 where
     W: Widget,
     P: BorderProperties,
