@@ -1,34 +1,31 @@
-use core::marker::PhantomData;
-
 use crate::{
     data::{NoData, WidgetData},
     widgets::{container::Container, Widget, WidgetStateHolder},
     BoundingBox, Canvas, MeasureSpec, MeasuredSize, WidgetState,
 };
 
-pub trait LabelProperties<C: Canvas> {
+pub trait LabelProperties {
+    type Canvas: Canvas;
+
     fn measure_text(&self, text: &str) -> MeasuredSize;
 }
 
-pub struct Label<S, C, P>
+pub struct Label<S, P>
 where
     S: AsRef<str>,
-    C: Canvas,
-    P: LabelProperties<C>,
+    P: LabelProperties,
 {
     pub text: S,
     pub label_properties: P,
     pub bounds: BoundingBox,
-    pub _marker: PhantomData<C>,
 }
 
-impl<S, C, P> Label<S, C, P>
+impl<S, P> Label<S, P>
 where
     S: AsRef<str>,
-    C: Canvas,
-    P: LabelProperties<C>,
+    P: LabelProperties,
 {
-    pub fn bind<D>(self) -> Label<S, C, P>
+    pub fn bind<D>(self) -> Label<S, P>
     where
         D: WidgetData,
     {
@@ -36,18 +33,16 @@ where
             label_properties: self.label_properties,
             bounds: self.bounds,
             text: self.text,
-            _marker: PhantomData,
         }
     }
 }
 
-impl<S, C, P> Container<Label<S, C, P>, NoData>
+impl<S, P> Container<Label<S, P>, NoData>
 where
     S: AsRef<str>,
-    C: Canvas,
-    P: LabelProperties<C>,
+    P: LabelProperties,
 {
-    pub fn bind<D>(self, data: D) -> Container<Label<S, C, P>, D>
+    pub fn bind<D>(self, data: D) -> Container<Label<S, P>, D>
     where
         D: WidgetData,
     {
@@ -61,11 +56,10 @@ where
     }
 }
 
-impl<S, C, P, D> WidgetStateHolder for Container<Label<S, C, P>, D>
+impl<S, P, D> WidgetStateHolder for Container<Label<S, P>, D>
 where
     S: AsRef<str>,
-    C: Canvas,
-    P: LabelProperties<C>,
+    P: LabelProperties,
     D: WidgetData,
 {
     fn change_state(&mut self, state: u32) {
@@ -87,11 +81,10 @@ where
     }
 }
 
-impl<S, C, P, D> Widget for Container<Label<S, C, P>, D>
+impl<S, P, D> Widget for Container<Label<S, P>, D>
 where
     S: AsRef<str>,
-    C: Canvas,
-    P: LabelProperties<C>,
+    P: LabelProperties,
     D: WidgetData,
 {
     fn bounding_box(&self) -> BoundingBox {

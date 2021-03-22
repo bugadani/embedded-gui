@@ -18,28 +18,35 @@ use embedded_gui::{
 
 use crate::EgCanvas;
 
-pub struct LabelStyle<T>
+pub struct LabelStyle<D, T>
 where
+    D: DrawTarget,
     T: TextRenderer,
 {
     renderer: T,
+    _marker: PhantomData<D>,
 }
 
-impl Default for LabelStyle<MonoTextStyle<BinaryColor, Font6x10>> {
+impl<D> Default for LabelStyle<D, MonoTextStyle<BinaryColor, Font6x10>>
+where
+    D: DrawTarget,
+{
     fn default() -> Self {
         Self {
             renderer: MonoTextStyleBuilder::new()
                 .font(Font6x10)
                 .text_color(BinaryColor::On)
                 .build(),
+            _marker: PhantomData,
         }
     }
 }
 
-impl<C, F> LabelStyle<MonoTextStyle<C, F>>
+impl<C, D, F> LabelStyle<D, MonoTextStyle<C, F>>
 where
     F: MonoFont,
     C: PixelColor,
+    D: DrawTarget<Color = C>,
 {
     /// Customize the text color
     pub fn text_color(&mut self, text_color: C) {
@@ -49,21 +56,24 @@ where
     }
 
     /// Customize the font
-    pub fn font<F2: MonoFont>(self, font: F2) -> LabelStyle<MonoTextStyle<C, F2>> {
+    pub fn font<F2: MonoFont>(self, font: F2) -> LabelStyle<D, MonoTextStyle<C, F2>> {
         LabelStyle {
             renderer: MonoTextStyleBuilder::from(&self.renderer)
                 .font(font)
                 .build(),
+            _marker: PhantomData,
         }
     }
 }
 
-impl<F, C, D> LabelProperties<EgCanvas<D>> for LabelStyle<F>
+impl<F, C, D> LabelProperties for LabelStyle<D, F>
 where
-    F: TextRenderer,
+    F: TextRenderer<Color = C>,
     C: PixelColor,
     D: DrawTarget<Color = C>,
 {
+    type Canvas = EgCanvas<D>;
+
     fn measure_text(&self, text: &str) -> MeasuredSize {
         let metrics = self.renderer.measure_string(text, Point::zero());
 
@@ -75,20 +85,20 @@ where
 }
 
 pub trait LabelConstructor<S, P, C, D> {
-    fn new(text: S) -> Container<Label<S, EgCanvas<D>, P>>
+    fn new(text: S) -> Container<Label<S, P>>
     where
         C: PixelColor,
         D: DrawTarget<Color = C>,
         S: AsRef<str>,
-        P: LabelProperties<EgCanvas<D>>;
+        P: LabelProperties;
 }
 
-impl<F, C, D, S> LabelConstructor<S, LabelStyle<F>, C, D> for Label<S, EgCanvas<D>, LabelStyle<F>>
+impl<F, C, D, S> LabelConstructor<S, LabelStyle<D, F>, C, D> for Label<S, LabelStyle<D, F>>
 where
     S: AsRef<str>,
-    F: TextRenderer,
+    F: TextRenderer<Color = C>,
     C: PixelColor,
-    LabelStyle<F>: Default,
+    LabelStyle<D, F>: Default,
     D: DrawTarget<Color = C>,
 {
     fn new(text: S) -> Container<Self> {
@@ -96,7 +106,6 @@ where
             text,
             label_properties: LabelStyle::default(),
             bounds: BoundingBox::default(),
-            _marker: PhantomData,
         })
     }
 }
@@ -116,16 +125,16 @@ where
     fn font<F2: MonoFont>(
         self,
         font: F2,
-    ) -> Container<Label<S, EgCanvas<D>, LabelStyle<MonoTextStyle<C, F2>>>>;
+    ) -> Container<Label<S, LabelStyle<D, MonoTextStyle<C, F2>>>>;
 }
 
 impl<F, C, D, S> LabelStyling<F, C, D, S>
-    for Container<Label<S, EgCanvas<D>, LabelStyle<MonoTextStyle<C, F>>>>
+    for Container<Label<S, LabelStyle<D, MonoTextStyle<C, F>>>>
 where
     S: AsRef<str>,
     F: MonoFont,
     C: PixelColor,
-    LabelStyle<MonoTextStyle<C, F>>: Default,
+    LabelStyle<D, MonoTextStyle<C, F>>: Default,
     D: DrawTarget<Color = C>,
 {
     type Color = C;
@@ -139,7 +148,7 @@ where
     fn font<F2: MonoFont>(
         self,
         font: F2,
-    ) -> Container<Label<S, EgCanvas<D>, LabelStyle<MonoTextStyle<C, F2>>>> {
+    ) -> Container<Label<S, LabelStyle<D, MonoTextStyle<C, F2>>>> {
         let label_properties = self.widget.label_properties.font(font);
 
         Container {
@@ -148,7 +157,6 @@ where
                 text: self.widget.text,
                 bounds: self.widget.bounds,
                 label_properties,
-                _marker: PhantomData,
             },
             data_holder: WidgetDataHolder::default(),
             state: self.state,
@@ -157,7 +165,7 @@ where
     }
 }
 
-impl<S, F, C, DT> WidgetRenderer<EgCanvas<DT>> for Label<S, EgCanvas<DT>, LabelStyle<F>>
+impl<S, F, C, DT> WidgetRenderer<EgCanvas<DT>> for Label<S, LabelStyle<DT, F>>
 where
     S: AsRef<str>,
     F: TextRenderer<Color = C>,

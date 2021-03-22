@@ -156,7 +156,7 @@ fn update_op_button_background<W: Widget>(
 }
 
 fn update_op_label<S, D, F>(
-    widget: &mut Label<S, EgCanvas<D>, LabelStyle<MonoTextStyle<BinaryColor, F>>>,
+    widget: &mut Label<S, LabelStyle<D, MonoTextStyle<BinaryColor, F>>>,
     state: WidgetState,
 ) where
     S: AsRef<str>,
@@ -186,8 +186,7 @@ fn op_button<D: DrawTarget<Color = BinaryColor>>(
                                     Container<
                                         Label<
                                             &'static str,
-                                            EgCanvas<D>,
-                                            LabelStyle<MonoTextStyle<BinaryColor, Font6x10>>,
+                                            LabelStyle<D, MonoTextStyle<BinaryColor, Font6x10>>,
                                         >,
                                     >,
                                     HorizontalAndVertical,
@@ -211,7 +210,7 @@ fn op_button<D: DrawTarget<Color = BinaryColor>>(
                 Border::new(
                     FillParent::both(
                         // here we have to help the compiler a bit
-                        Label::<_, EgCanvas<D>, _>::new(label)
+                        Label::new(label)
                             .text_color(BinaryColor::Off)
                             .on_state_changed(update_op_label),
                     )
@@ -536,6 +535,12 @@ fn main() {
     );
 
     println!("Size of struct: {}", std::mem::size_of_val(&gui.root));
+    fn print_type_of<T>(_: &T) {
+        println!("type of tree: {}", std::any::type_name::<T>());
+        println!("length of type: {}", std::any::type_name::<T>().len());
+    }
+
+    print_type_of(&gui.root);
 
     let output_settings = OutputSettingsBuilder::new()
         .theme(BinaryColorTheme::OledBlue)
