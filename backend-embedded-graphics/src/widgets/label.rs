@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use embedded_graphics::{
     draw_target::DrawTarget,
     mono_font::{ascii::Font6x10, MonoFont, MonoTextStyle, MonoTextStyleBuilder},
-    pixelcolor::{BinaryColor, PixelColor},
+    pixelcolor::PixelColor,
     prelude::Point,
     text::TextRenderer,
 };
@@ -12,7 +12,7 @@ use embedded_gui::{
     BoundingBox, MeasuredSize, WidgetRenderer, WidgetState,
 };
 
-use crate::EgCanvas;
+use crate::{themes::Theme, EgCanvas};
 
 pub struct LabelStyle<D, T>
 where
@@ -23,15 +23,16 @@ where
     _marker: PhantomData<D>,
 }
 
-impl<D> Default for LabelStyle<D, MonoTextStyle<BinaryColor, Font6x10>>
+impl<D> Default for LabelStyle<D, MonoTextStyle<D::Color, Font6x10>>
 where
     D: DrawTarget,
+    D::Color: Theme,
 {
     fn default() -> Self {
         Self {
             renderer: MonoTextStyleBuilder::new()
                 .font(Font6x10)
-                .text_color(BinaryColor::On)
+                .text_color(<D::Color as Theme>::TEXT_COLOR)
                 .build(),
             _marker: PhantomData,
         }

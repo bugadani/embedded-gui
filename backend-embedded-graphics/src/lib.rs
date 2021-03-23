@@ -1,5 +1,6 @@
 #![no_std]
 
+pub mod themes;
 pub mod widgets;
 
 use embedded_graphics::{

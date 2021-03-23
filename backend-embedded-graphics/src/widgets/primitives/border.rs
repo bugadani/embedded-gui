@@ -1,6 +1,6 @@
 use embedded_graphics::{
     draw_target::DrawTarget,
-    pixelcolor::{BinaryColor, PixelColor},
+    pixelcolor::PixelColor,
     prelude::Primitive,
     primitives::{PrimitiveStyle, PrimitiveStyleBuilder, StrokeAlignment},
     Drawable,
@@ -13,7 +13,7 @@ use embedded_gui::{
     WidgetRenderer,
 };
 
-use crate::{EgCanvas, ToRectangle};
+use crate::{themes::Theme, EgCanvas, ToRectangle};
 
 pub struct BorderStyle<C>
 where
@@ -36,10 +36,13 @@ where
     }
 }
 
-impl Default for BorderStyle<BinaryColor> {
+impl<C> Default for BorderStyle<C>
+where
+    C: Theme,
+{
     fn default() -> Self {
         Self {
-            color: BinaryColor::On,
+            color: C::BORDER_COLOR,
             width: 1,
         }
     }
