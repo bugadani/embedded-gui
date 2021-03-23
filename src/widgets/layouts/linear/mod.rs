@@ -1,6 +1,8 @@
 pub use object_chain::{Chain, ChainElement, Link};
 
-use crate::{widgets::Widget, Canvas, WidgetRenderer};
+use crate::{
+    input::event::InputEvent, widgets::Widget, BoundingBox, Canvas, Position, WidgetRenderer,
+};
 
 pub mod column;
 pub mod row;
@@ -70,12 +72,6 @@ where
     }
 }
 
-pub trait LinearLayoutChainElement {
-    fn at(&self, index: usize) -> &dyn LinearLayoutCell;
-
-    fn at_mut(&mut self, index: usize) -> &mut dyn LinearLayoutCell;
-}
-
 pub trait LinearLayoutCell {
     fn weight(&self) -> u32;
 
@@ -102,6 +98,22 @@ where
     }
 }
 
+pub trait LinearLayoutChainElement {
+    fn at(&self, index: usize) -> &dyn LinearLayoutCell;
+
+    fn at_mut(&mut self, index: usize) -> &mut dyn LinearLayoutCell;
+
+    fn test_input(&mut self, event: InputEvent) -> Option<usize>;
+
+    fn count_widgets(&self) -> usize;
+
+    fn arrange(
+        &mut self,
+        position: Position,
+        calc_next_pos: &impl Fn(Position, BoundingBox) -> Position,
+    ) -> Position;
+}
+
 impl<W, CW> LinearLayoutChainElement for Chain<Cell<W, CW>>
 where
     W: Widget,
@@ -117,6 +129,24 @@ where
         assert!(index == 0);
 
         &mut self.object
+    }
+
+    fn test_input(&mut self, event: InputEvent) -> Option<usize> {
+        self.object.inner.test_input(event)
+    }
+
+    fn count_widgets(&self) -> usize {
+        self.object.inner.children() + 1
+    }
+
+    fn arrange(
+        &mut self,
+        position: Position,
+        calc_next_pos: &impl Fn(Position, BoundingBox) -> Position,
+    ) -> Position {
+        self.object.inner.arrange(position);
+
+        calc_next_pos(position, self.object.inner.bounding_box())
     }
 }
 
@@ -140,6 +170,31 @@ where
         }
 
         return self.parent.at_mut(index);
+    }
+
+    fn test_input(&mut self, event: InputEvent) -> Option<usize> {
+        self.parent.test_input(event).or_else(|| {
+            self.object
+                .inner
+                .test_input(event)
+                .map(|idx| idx + self.parent.count_widgets())
+        })
+    }
+
+    fn count_widgets(&self) -> usize {
+        self.object.inner.children() + 1 + self.parent.count_widgets()
+    }
+
+    fn arrange(
+        &mut self,
+        position: Position,
+        calc_next_pos: &impl Fn(Position, BoundingBox) -> Position,
+    ) -> Position {
+        let next_pos = self.parent.arrange(position, calc_next_pos);
+
+        self.object.inner.arrange(next_pos);
+
+        calc_next_pos(next_pos, self.object.inner.bounding_box())
     }
 }
 

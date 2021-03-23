@@ -146,28 +146,17 @@ where
         })
     }
 
-    fn arrange(&mut self, mut position: Position) {
+    fn arrange(&mut self, position: Position) {
         self.bounding_box_mut().position = position;
 
-        let count = self.widgets.len();
-        for i in 0..count {
-            let widget = self.widgets.at_mut(i).widget_mut();
-
-            widget.arrange(position);
-
-            let height = widget.bounding_box().size.height;
-            position.y += height as i32;
-        }
+        self.widgets.arrange(position, &|pos, bb| Position {
+            x: pos.x,
+            y: pos.y + bb.size.height as i32,
+        });
     }
 
     fn children(&self) -> usize {
-        let count = self.widgets.len();
-        let mut children = count;
-        for i in 0..count {
-            children += self.widgets.at(i).widget().children();
-        }
-
-        children
+        self.widgets.count_widgets()
     }
 
     fn get_child(&self, idx: usize) -> &dyn Widget {
@@ -193,20 +182,7 @@ where
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
-        let mut index = 1;
-
-        let count = self.widgets.len();
-        for i in 0..count {
-            let widget = self.widgets.at_mut(i).widget_mut();
-
-            if let Some(idx) = widget.test_input(event) {
-                return Some(idx + index);
-            }
-
-            index += widget.children() + 1;
-        }
-
-        None
+        self.widgets.test_input(event).map(|idx| idx + 1)
     }
 }
 
