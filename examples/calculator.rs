@@ -177,51 +177,44 @@ fn op_button<D: DrawTarget<Color = BinaryColor>>(
 ) -> Container<
     Button<
         Container<
-            Spacing<
+            Background<
                 Container<
-                    Background<
-                        Container<
-                            Border<
-                                FillParent<
-                                    Container<
-                                        Label<
-                                            &'static str,
-                                            LabelStyle<D, MonoTextStyle<BinaryColor, Font6x10>>,
-                                        >,
-                                    >,
-                                    HorizontalAndVertical,
-                                    Center,
-                                    Center,
+                    Border<
+                        FillParent<
+                            Container<
+                                Label<
+                                    &'static str,
+                                    LabelStyle<D, MonoTextStyle<BinaryColor, Font6x10>>,
                                 >,
-                                BorderStyle<BinaryColor>,
                             >,
+                            HorizontalAndVertical,
+                            Center,
+                            Center,
                         >,
-                        BackgroundStyle<BinaryColor>,
+                        BorderStyle<BinaryColor>,
                     >,
                 >,
+                BackgroundStyle<BinaryColor>,
             >,
         >,
     >,
 > {
     Button::new(
-        Spacing::new(
-            Background::new(
-                Border::new(
-                    FillParent::both(
-                        // here we have to help the compiler a bit
-                        Label::new(label)
-                            .text_color(BinaryColor::Off)
-                            .on_state_changed(update_op_label),
-                    )
-                    .align_horizontal(Center)
-                    .align_vertical(Center),
+        Background::new(
+            Border::new(
+                FillParent::both(
+                    // here we have to help the compiler a bit
+                    Label::new(label)
+                        .text_color(BinaryColor::Off)
+                        .on_state_changed(update_op_label),
                 )
-                .border_color(BinaryColor::On),
+                .align_horizontal(Center)
+                .align_vertical(Center),
             )
-            .background_color(BinaryColor::On)
-            .on_state_changed(update_op_button_background),
+            .border_color(BinaryColor::On),
         )
-        .left(1),
+        .background_color(BinaryColor::On)
+        .on_state_changed(update_op_button_background),
     )
 }
 
@@ -368,6 +361,7 @@ fn main() {
                 )
                 .align_horizontal(Right),
             ))
+            .spacing(1)
             .add(
                 Cell::new(
                     Row::new(
@@ -378,6 +372,7 @@ fn main() {
                         )
                         .weight(2),
                     )
+                    .spacing(1)
                     .add(
                         Cell::new(
                             number_button(Label::new("<"))
@@ -407,6 +402,7 @@ fn main() {
                         )
                         .weight(1),
                     )
+                    .spacing(1)
                     .add(
                         Cell::new(
                             number_button(Label::new("8"))
@@ -444,6 +440,7 @@ fn main() {
                         )
                         .weight(1),
                     )
+                    .spacing(1)
                     .add(
                         Cell::new(
                             number_button(Label::new("5"))
@@ -481,6 +478,7 @@ fn main() {
                         )
                         .weight(1),
                     )
+                    .spacing(1)
                     .add(
                         Cell::new(
                             number_button(Label::new("2"))
@@ -518,6 +516,7 @@ fn main() {
                         )
                         .weight(3),
                     )
+                    .spacing(1)
                     .add(
                         Cell::new(
                             op_button("=")

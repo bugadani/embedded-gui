@@ -1,11 +1,33 @@
 pub use object_chain::{Chain, ChainElement, Link};
 
 use crate::{
-    input::event::InputEvent, widgets::Widget, BoundingBox, Canvas, Position, WidgetRenderer,
+    input::event::InputEvent,
+    widgets::{layouts::linear::layout::LayoutDirection, Widget},
+    Canvas, Position, WidgetRenderer,
 };
 
 pub mod column;
+pub mod layout;
 pub mod row;
+
+pub struct NoSpacing;
+pub struct WithSpacing(u32);
+
+pub trait ElementSpacing {
+    fn spacing(&self) -> u32;
+}
+
+impl ElementSpacing for NoSpacing {
+    fn spacing(&self) -> u32 {
+        0
+    }
+}
+
+impl ElementSpacing for WithSpacing {
+    fn spacing(&self) -> u32 {
+        self.0
+    }
+}
 
 pub trait CellWeight {
     fn weight(&self) -> u32;
@@ -107,11 +129,9 @@ pub trait LinearLayoutChainElement {
 
     fn count_widgets(&self) -> usize;
 
-    fn arrange(
-        &mut self,
-        position: Position,
-        calc_next_pos: &impl Fn(Position, BoundingBox) -> Position,
-    ) -> Position;
+    fn arrange<L>(&mut self, position: Position, direction: L, spacing: u32) -> Position
+    where
+        L: LayoutDirection;
 }
 
 impl<W, CW> LinearLayoutChainElement for Chain<Cell<W, CW>>
@@ -139,14 +159,13 @@ where
         self.object.inner.children() + 1
     }
 
-    fn arrange(
-        &mut self,
-        position: Position,
-        calc_next_pos: &impl Fn(Position, BoundingBox) -> Position,
-    ) -> Position {
+    fn arrange<L>(&mut self, position: Position, _direction: L, spacing: u32) -> Position
+    where
+        L: LayoutDirection,
+    {
         self.object.inner.arrange(position);
 
-        calc_next_pos(position, self.object.inner.bounding_box())
+        L::arrange(position, self.object.inner.bounding_box(), spacing)
     }
 }
 
@@ -185,16 +204,15 @@ where
         self.object.inner.children() + 1 + self.parent.count_widgets()
     }
 
-    fn arrange(
-        &mut self,
-        position: Position,
-        calc_next_pos: &impl Fn(Position, BoundingBox) -> Position,
-    ) -> Position {
-        let next_pos = self.parent.arrange(position, calc_next_pos);
+    fn arrange<L>(&mut self, position: Position, direction: L, spacing: u32) -> Position
+    where
+        L: LayoutDirection,
+    {
+        let next_pos = self.parent.arrange(position, direction, spacing);
 
         self.object.inner.arrange(next_pos);
 
-        calc_next_pos(next_pos, self.object.inner.bounding_box())
+        L::arrange(next_pos, self.object.inner.bounding_box(), spacing)
     }
 }
 
