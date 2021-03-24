@@ -1,0 +1,429 @@
+use std::{fmt::Write, thread, time::Duration};
+
+use backend_embedded_graphics::{
+    themes::default::{self},
+    widgets::label::{LabelConstructor, LabelStyling},
+    EgCanvas,
+};
+use embedded_graphics::{
+    draw_target::DrawTarget,
+    mono_font::ascii::Font10x20,
+    pixelcolor::{Rgb888, RgbColor, WebColors},
+    prelude::Size as EgSize,
+};
+use embedded_graphics_simulator::{
+    sdl2::MouseButton, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window as SimWindow,
+};
+use embedded_gui::{
+    data::BoundData,
+    input::event::{InputEvent, PointerEvent},
+    widgets::{
+        label::Label,
+        layouts::linear::{column::Column, row::Row, Cell},
+        primitives::{
+            background::Background,
+            fill::{FillParent, Right},
+            spacing::Spacing,
+        },
+    },
+    Position, Window,
+};
+use heapless::{consts::U11, String};
+
+fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
+    unsafe {
+        // This is fine for a demo
+        static mut MOUSE_DOWN: bool = false;
+        match event {
+            SimulatorEvent::MouseButtonUp {
+                mouse_btn: MouseButton::Left,
+                point,
+            } => {
+                MOUSE_DOWN = false;
+                Ok(InputEvent::PointerEvent(
+                    Position {
+                        x: point.x,
+                        y: point.y,
+                    },
+                    PointerEvent::Up,
+                ))
+            }
+            SimulatorEvent::MouseButtonDown {
+                mouse_btn: MouseButton::Left,
+                point,
+            } => {
+                MOUSE_DOWN = true;
+                Ok(InputEvent::PointerEvent(
+                    Position {
+                        x: point.x,
+                        y: point.y,
+                    },
+                    PointerEvent::Down,
+                ))
+            }
+            SimulatorEvent::MouseMove { point } => Ok(InputEvent::PointerEvent(
+                Position {
+                    x: point.x,
+                    y: point.y,
+                },
+                if MOUSE_DOWN {
+                    PointerEvent::Drag
+                } else {
+                    PointerEvent::Hover
+                },
+            )),
+            SimulatorEvent::Quit => Err(true),
+            _ => Err(false),
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
+pub enum Op {
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+}
+
+impl Op {
+    fn calc(self, current: i32, previous: i32) -> i32 {
+        match self {
+            Op::Add => previous.saturating_add(current),
+            Op::Subtract => previous.saturating_sub(current),
+            Op::Multiply => previous.saturating_mul(current),
+            Op::Divide => {
+                // I'm too lazy to add error handling.
+                let div = if current == 0 { 1 } else { current };
+                previous / div
+            }
+        }
+    }
+
+    fn bind(self, n: i32) -> PrevOp {
+        match self {
+            Op::Add => PrevOp::Add(n),
+            Op::Subtract => PrevOp::Subtract(n),
+            Op::Multiply => PrevOp::Multiply(n),
+            Op::Divide => PrevOp::Divide(n),
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
+pub enum PrevOp {
+    Add(i32),
+    Subtract(i32),
+    Multiply(i32),
+    Divide(i32),
+}
+
+impl PrevOp {
+    fn apply(self, n: i32) -> i32 {
+        match self {
+            PrevOp::Add(prev) => Op::Add.calc(prev, n),
+            PrevOp::Subtract(prev) => Op::Subtract.calc(prev, n),
+            PrevOp::Multiply(prev) => Op::Multiply.calc(prev, n),
+            PrevOp::Divide(prev) => Op::Divide.calc(prev, n),
+        }
+    }
+}
+
+pub struct Calculator {
+    pub previous: i32,
+    pub current: i32,
+    current_op: Option<Op>,
+    prev_op: Option<PrevOp>,
+    next_digit_clears: bool,
+}
+
+impl Calculator {
+    pub fn new() -> Self {
+        Calculator {
+            previous: 0,
+            current: 0,
+            current_op: None,
+            prev_op: None,
+            next_digit_clears: false,
+        }
+    }
+
+    pub fn clear(&mut self) {
+        self.previous = 0;
+        self.current = 0;
+        self.current_op = None;
+        self.prev_op = None;
+        self.next_digit_clears = false;
+    }
+
+    pub fn add_digit(&mut self, d: i32) {
+        if self.next_digit_clears {
+            self.next_digit_clears = false;
+            self.current = 0;
+        }
+        if let Some(c) = self.current.checked_mul(10).and_then(|c| c.checked_add(d)) {
+            self.current = c;
+        }
+    }
+
+    pub fn delete_digit(&mut self) {
+        self.current = self.current / 10;
+    }
+
+    pub fn set_op(&mut self, op: Op) {
+        if self.current_op.is_some() {
+            self.calc();
+        }
+        self.previous = self.current;
+        self.current_op = Some(op);
+        self.next_digit_clears = true;
+    }
+
+    pub fn update(&mut self) {
+        if self.current_op.is_some() {
+            self.calc();
+        } else if let Some(prev_op) = self.prev_op {
+            self.current = prev_op.apply(self.current);
+        }
+        self.current_op = None;
+        self.next_digit_clears = true;
+    }
+
+    fn calc(&mut self) {
+        match self.current_op {
+            Some(op) => {
+                self.prev_op = Some(op.bind(self.current));
+                let prev = std::mem::replace(&mut self.previous, self.current);
+                self.current = op.calc(self.current, prev);
+            }
+            None => {}
+        }
+    }
+}
+
+fn main() {
+    let display = SimulatorDisplay::<Rgb888>::new(EgSize::new(128, 160));
+
+    let calculator = BoundData::new(Calculator::new(), |_data| {});
+
+    let mut gui = Window::new(
+        EgCanvas::new(display),
+        Column::new(Cell::new(
+            Background::new(
+                Spacing::new(
+                    FillParent::horizontal(
+                        Label::new(String::<U11>::from("0"))
+                            .font(Font10x20)
+                            .text_color(Rgb888::BLACK)
+                            .bind(&calculator)
+                            .on_data_changed(|label, calc| {
+                                label.text.clear();
+                                write!(label.text, "{}", calc.current).unwrap();
+                            }),
+                    )
+                    .align_horizontal(Right),
+                )
+                .all(4),
+            )
+            .background_color(Rgb888::CSS_DARK_GRAY),
+        ))
+        .add(
+            Cell::new(
+                Row::new(
+                    Cell::new(
+                        default::primary_button("CE")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.clear()),
+                    )
+                    .weight(2),
+                )
+                .add(
+                    Cell::new(
+                        default::secondary_button("<")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.delete_digit()),
+                    )
+                    .weight(1),
+                )
+                .add(
+                    Cell::new(
+                        default::primary_button("/")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.set_op(Op::Divide)),
+                    )
+                    .weight(1),
+                ),
+            )
+            .weight(1),
+        )
+        .add(
+            Cell::new(
+                Row::new(
+                    Cell::new(
+                        default::secondary_button("7")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(7)),
+                    )
+                    .weight(1),
+                )
+                .add(
+                    Cell::new(
+                        default::secondary_button("8")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(8)),
+                    )
+                    .weight(1),
+                )
+                .add(
+                    Cell::new(
+                        default::secondary_button("9")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(9)),
+                    )
+                    .weight(1),
+                )
+                .add(
+                    Cell::new(
+                        default::primary_button("x")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.set_op(Op::Multiply)),
+                    )
+                    .weight(1),
+                ),
+            )
+            .weight(1),
+        )
+        .add(
+            Cell::new(
+                Row::new(
+                    Cell::new(
+                        default::secondary_button("4")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(4)),
+                    )
+                    .weight(1),
+                )
+                .add(
+                    Cell::new(
+                        default::secondary_button("5")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(5)),
+                    )
+                    .weight(1),
+                )
+                .add(
+                    Cell::new(
+                        default::secondary_button("6")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(6)),
+                    )
+                    .weight(1),
+                )
+                .add(
+                    Cell::new(
+                        default::primary_button("-")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.set_op(Op::Subtract)),
+                    )
+                    .weight(1),
+                ),
+            )
+            .weight(1),
+        )
+        .add(
+            Cell::new(
+                Row::new(
+                    Cell::new(
+                        default::secondary_button("1")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(1)),
+                    )
+                    .weight(1),
+                )
+                .add(
+                    Cell::new(
+                        default::secondary_button("2")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(2)),
+                    )
+                    .weight(1),
+                )
+                .add(
+                    Cell::new(
+                        default::secondary_button("3")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(3)),
+                    )
+                    .weight(1),
+                )
+                .add(
+                    Cell::new(
+                        default::primary_button("+")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.set_op(Op::Add)),
+                    )
+                    .weight(1),
+                ),
+            )
+            .weight(1),
+        )
+        .add(
+            Cell::new(
+                Row::new(
+                    Cell::new(
+                        default::secondary_button("0")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(0)),
+                    )
+                    .weight(3),
+                )
+                .add(
+                    Cell::new(
+                        default::primary_button("=")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.update()),
+                    )
+                    .weight(1),
+                ),
+            )
+            .weight(1),
+        ),
+    );
+
+    println!("Size of struct: {}", std::mem::size_of_val(&gui.root));
+    fn print_type_of<T>(_: &T) {
+        println!("type of tree: {}", std::any::type_name::<T>());
+        println!("length of type: {}", std::any::type_name::<T>().len());
+    }
+
+    print_type_of(&gui.root);
+
+    let output_settings = OutputSettingsBuilder::new().scale(2).build();
+    let mut window = SimWindow::new("GUI demonstration", &output_settings);
+
+    loop {
+        gui.canvas.target.clear(Rgb888::BLACK).unwrap();
+
+        gui.update();
+        gui.measure();
+        gui.arrange();
+        gui.draw().unwrap();
+
+        // Update the window.
+        window.update(&gui.canvas.target);
+
+        // Handle key and mouse events.
+        for event in window.events() {
+            match convert_input(event) {
+                Ok(input) => {
+                    gui.input_event(input);
+                }
+                Err(true) => return,
+                _ => {}
+            }
+        }
+
+        // Wait for a little while.
+        thread::sleep(Duration::from_millis(10));
+    }
+}

@@ -225,7 +225,7 @@ fn main() {
                 Cell::new(
                     Row::new(
                         Cell::new(
-                            default::primary_button("C")
+                            default::primary_button("CE")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.clear()),
                         )
