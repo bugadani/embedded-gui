@@ -227,6 +227,7 @@ fn main() {
             )
             .background_color(Rgb888::CSS_DARK_GRAY),
         ))
+        .spacing(1)
         .add(
             Cell::new(
                 Row::new(
@@ -237,6 +238,7 @@ fn main() {
                     )
                     .weight(2),
                 )
+                .spacing(1)
                 .add(
                     Cell::new(
                         default::secondary_button("<")
@@ -266,6 +268,7 @@ fn main() {
                     )
                     .weight(1),
                 )
+                .spacing(1)
                 .add(
                     Cell::new(
                         default::secondary_button("8")
@@ -303,6 +306,7 @@ fn main() {
                     )
                     .weight(1),
                 )
+                .spacing(1)
                 .add(
                     Cell::new(
                         default::secondary_button("5")
@@ -340,6 +344,7 @@ fn main() {
                     )
                     .weight(1),
                 )
+                .spacing(1)
                 .add(
                     Cell::new(
                         default::secondary_button("2")
@@ -377,6 +382,7 @@ fn main() {
                     )
                     .weight(3),
                 )
+                .spacing(1)
                 .add(
                     Cell::new(
                         default::primary_button("=")
