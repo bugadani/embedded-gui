@@ -4,16 +4,24 @@ use crate::{
         controller::InputContext,
         event::{InputEvent, PointerEvent},
     },
-    widgets::{container::Container, ParentHolder, Widget, WidgetStateHolder},
+    widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
     BoundingBox, Canvas, MeasureSpec, Position, WidgetRenderer, WidgetState,
 };
 
-pub struct Button<I, D = NoData>
+pub struct Button<W, D = NoData>
 where
     D: WidgetData,
 {
-    pub inner: I,
+    pub parent_index: usize,
+    pub inner: W,
     pub on_clicked: fn(&mut D::Data),
+
+    // FIXME: Borrow checker freaks out because update needs both widget and data.
+    // Should avoid possible runtime overhead, though.
+    data_holder: Option<WidgetDataHolder<Self, D>>,
+
+    pub on_state_changed: fn(&mut Self, WidgetState),
+    pub state: WidgetState,
 }
 
 impl Button<(), NoData> {
@@ -22,97 +30,76 @@ impl Button<(), NoData> {
     pub const STATE_PRESSED: u32 = 2;
 }
 
-impl<I> Button<I, NoData>
+impl<W> Button<W, NoData>
 where
-    I: Widget,
+    W: Widget,
 {
-    pub fn new(inner: I) -> Container<Self> {
-        Container::new(Button {
+    pub fn new(inner: W) -> Self {
+        Button {
+            parent_index: 0,
             inner,
             on_clicked: |_| (),
-        })
-    }
-
-    pub fn bind<D>(self) -> Button<I, D>
-    where
-        D: WidgetData,
-    {
-        Button {
-            inner: self.inner,
-            on_clicked: |_| (),
-        }
-    }
-}
-
-impl<I, D> Button<I, D>
-where
-    I: Widget,
-    D: WidgetData,
-{
-    pub fn on_clicked(&mut self, callback: fn(&mut D::Data))
-    where
-        D: WidgetData,
-    {
-        self.on_clicked = callback;
-    }
-}
-
-impl<I> Container<Button<I>, NoData>
-where
-    I: Widget,
-{
-    pub fn bind<D>(self, data: D) -> Container<Button<I, D>, D>
-    where
-        D: WidgetData,
-    {
-        Container {
-            parent_index: self.parent_index,
-            widget: self.widget.bind::<D>(),
-            data_holder: self.data_holder.bind(data),
+            data_holder: Some(WidgetDataHolder::<Self>::default()),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }
     }
+
+    pub fn bind<D>(self, data: D) -> Button<W, D>
+    where
+        D: WidgetData,
+    {
+        Button {
+            parent_index: self.parent_index,
+            inner: self.inner,
+            on_clicked: |_| (),
+            data_holder: Some(self.data_holder.unwrap().bind(data)),
+            on_state_changed: |_, _| (),
+            state: self.state,
+        }
+    }
 }
 
-impl<I, D> Container<Button<I, D>, D>
+impl<W, D> Button<W, D>
 where
-    I: Widget,
+    W: Widget,
     D: WidgetData,
 {
     pub fn on_clicked(mut self, callback: fn(&mut D::Data)) -> Self
     where
-        Self: Sized,
+        D: WidgetData,
     {
-        self.widget.on_clicked(callback);
+        self.on_clicked = callback;
         self
     }
 
     fn fire_on_pressed(&mut self) {}
     fn fire_on_clicked(&mut self) {
-        let callback = self.widget.on_clicked;
-        self.data_holder.data.update(callback);
+        let callback = self.on_clicked;
+        self.data_holder
+            .as_mut()
+            .map(|holder| holder.data.update(callback));
     }
 }
 
-impl<I, D> WidgetStateHolder for Container<Button<I, D>, D>
+impl<W, D> WidgetStateHolder for Button<W, D>
 where
-    I: Widget,
+    W: Widget,
     D: WidgetData,
 {
     fn change_state(&mut self, state: u32) {
         // propagate state to child widget
-        self.widget.inner.change_state(state);
+        self.inner.change_state(state);
         // apply state
         if self.state.change_state(state) {
-            (self.on_state_changed)(&mut self.widget, self.state);
+            (self.on_state_changed)(self, self.state);
         }
     }
 
     fn change_selection(&mut self, state: bool) {
         // apply state
         if self.state.change_selection(state) {
-            (self.on_state_changed)(&mut self.widget, self.state);
+            (self.on_state_changed)(self, self.state);
         }
         if !state {
             // while this isn't correct (i.e. deselecting by keyboard removes hover state)
@@ -126,22 +113,22 @@ where
     }
 }
 
-impl<I, D> Widget for Container<Button<I, D>, D>
+impl<W, D> Widget for Button<W, D>
 where
-    I: Widget,
+    W: Widget,
     D: WidgetData,
 {
     fn attach(&mut self, parent: usize, self_index: usize) {
         self.set_parent(parent);
-        self.widget.inner.attach(self_index, self_index + 1);
+        self.inner.attach(self_index, self_index + 1);
     }
 
     fn arrange(&mut self, position: Position) {
-        self.widget.inner.arrange(position);
+        self.inner.arrange(position);
     }
 
     fn bounding_box(&self) -> BoundingBox {
-        self.widget.inner.bounding_box()
+        self.inner.bounding_box()
     }
 
     fn bounding_box_mut(&mut self) -> &mut BoundingBox {
@@ -149,33 +136,33 @@ where
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
-        self.widget.inner.measure(measure_spec)
+        self.inner.measure(measure_spec)
     }
 
     fn children(&self) -> usize {
-        1 + self.widget.inner.children()
+        1 + self.inner.children()
     }
 
     fn get_child(&self, idx: usize) -> &dyn Widget {
         if idx == 0 {
-            &self.widget.inner
+            &self.inner
         } else {
-            self.widget.inner.get_child(idx - 1)
+            self.inner.get_child(idx - 1)
         }
     }
 
     fn get_mut_child(&mut self, idx: usize) -> &mut dyn Widget {
         if idx == 0 {
-            &mut self.widget.inner
+            &mut self.inner
         } else {
-            self.widget.inner.get_mut_child(idx - 1)
+            self.inner.get_mut_child(idx - 1)
         }
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
         match event {
             InputEvent::PointerEvent(position, PointerEvent::Down) => {
-                if let Some(idx) = self.widget.inner.test_input(event) {
+                if let Some(idx) = self.inner.test_input(event) {
                     // we give priority to our child
                     Some(idx + 1)
                 } else if self.bounding_box().contains(position) {
@@ -208,7 +195,7 @@ where
             }
 
             InputEvent::PointerEvent(position, PointerEvent::Hover) => {
-                if let Some(idx) = self.widget.inner.test_input(event) {
+                if let Some(idx) = self.inner.test_input(event) {
                     // we give priority to our child
                     self.change_state(Button::STATE_IDLE);
                     Some(idx + 1)
@@ -248,6 +235,32 @@ where
             }
         }
         true
+    }
+}
+
+impl<W, D> UpdateHandler for Button<W, D>
+where
+    W: Widget,
+    D: WidgetData,
+{
+    fn update(&mut self) {
+        let mut data = self.data_holder.take().unwrap();
+        data.update(self);
+        self.data_holder = Some(data);
+    }
+}
+
+impl<W, D> ParentHolder for Button<W, D>
+where
+    W: Widget,
+    D: WidgetData,
+{
+    fn parent_index(&self) -> usize {
+        self.parent_index
+    }
+
+    fn set_parent(&mut self, index: usize) {
+        self.parent_index = index;
     }
 }
 

@@ -5,7 +5,6 @@ use crate::{
 };
 
 pub mod button;
-pub mod container;
 pub mod label;
 pub mod layouts;
 pub mod primitives;

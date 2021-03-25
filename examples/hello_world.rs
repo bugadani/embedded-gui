@@ -19,7 +19,6 @@ use embedded_gui::{
     input::event::{InputEvent, PointerEvent},
     widgets::{
         button::Button,
-        container::Container,
         label::Label,
         layouts::linear::{column::Column, row::Row, Cell},
         primitives::{
@@ -113,12 +112,10 @@ fn update_button_border<W: Widget>(
 // (`-> _` gives the type as a compile error ❤)
 fn button_with_style<W: Widget>(
     inner: W,
-) -> Container<
-    Button<
-        Background<
-            Border<FillParent<W, HorizontalAndVertical, Center, Center>, BorderStyle<BinaryColor>>,
-            BackgroundStyle<BinaryColor>,
-        >,
+) -> Button<
+    Background<
+        Border<FillParent<W, HorizontalAndVertical, Center, Center>, BorderStyle<BinaryColor>>,
+        BackgroundStyle<BinaryColor>,
     >,
 > {
     Button::new(
