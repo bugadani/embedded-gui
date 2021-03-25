@@ -9,6 +9,7 @@ pub mod container;
 pub mod label;
 pub mod layouts;
 pub mod primitives;
+pub mod wrapper;
 
 pub trait Widget: WidgetStateHolder + ParentHolder + UpdateHandler {
     fn attach(&mut self, parent: usize, _index: usize) {

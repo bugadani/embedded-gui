@@ -23,8 +23,8 @@ use embedded_gui::{
         label::Label,
         layouts::linear::{column::Column, row::Row, Cell},
         primitives::{
-            background::Background,
-            border::Border,
+            background::{Background, BackgroundProperties},
+            border::{Border, BorderProperties},
             fill::{Center, FillParent, HorizontalAndVertical},
             spacing::Spacing,
         },
@@ -86,9 +86,15 @@ fn update_button_background<W: Widget>(
     state: WidgetState,
 ) {
     match state.state() {
-        Button::STATE_HOVERED => widget.background_color(BinaryColor::Off),
-        Button::STATE_PRESSED => widget.background_color(BinaryColor::On),
-        _ => widget.background_color(BinaryColor::Off),
+        Button::STATE_HOVERED => widget
+            .background_properties
+            .background_color(BinaryColor::Off),
+        Button::STATE_PRESSED => widget
+            .background_properties
+            .background_color(BinaryColor::On),
+        _ => widget
+            .background_properties
+            .background_color(BinaryColor::Off),
     }
 }
 
@@ -97,9 +103,9 @@ fn update_button_border<W: Widget>(
     state: WidgetState,
 ) {
     match state.state() {
-        Button::STATE_HOVERED => widget.border_color(BinaryColor::On),
-        Button::STATE_PRESSED => widget.border_color(BinaryColor::Off),
-        _ => widget.border_color(BinaryColor::Off),
+        Button::STATE_HOVERED => widget.border_properties.border_color(BinaryColor::On),
+        Button::STATE_PRESSED => widget.border_properties.border_color(BinaryColor::Off),
+        _ => widget.border_properties.border_color(BinaryColor::Off),
     }
 }
 
@@ -109,16 +115,9 @@ fn button_with_style<W: Widget>(
     inner: W,
 ) -> Container<
     Button<
-        Container<
-            Background<
-                Container<
-                    Border<
-                        FillParent<W, HorizontalAndVertical, Center, Center>,
-                        BorderStyle<BinaryColor>,
-                    >,
-                >,
-                BackgroundStyle<BinaryColor>,
-            >,
+        Background<
+            Border<FillParent<W, HorizontalAndVertical, Center, Center>, BorderStyle<BinaryColor>>,
+            BackgroundStyle<BinaryColor>,
         >,
     >,
 > {

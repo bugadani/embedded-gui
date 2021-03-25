@@ -6,9 +6,7 @@ use embedded_graphics::{
     Drawable,
 };
 use embedded_gui::{
-    data::WidgetData,
     widgets::{
-        container::Container,
         primitives::background::{Background, BackgroundProperties},
         Widget,
     },
@@ -53,22 +51,21 @@ where
 }
 
 // TODO: draw target should be clipped to widget's bounds, so this can be restored to Background
-impl<W, C, DT, D> WidgetRenderer<EgCanvas<DT>> for Container<Background<W, BackgroundStyle<C>>, D>
+impl<W, C, DT> WidgetRenderer<EgCanvas<DT>> for Background<W, BackgroundStyle<C>>
 where
     W: Widget + WidgetRenderer<EgCanvas<DT>>,
     C: PixelColor,
     DT: DrawTarget<Color = C>,
-    D: WidgetData,
     BackgroundStyle<C>: BackgroundProperties,
 {
     fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
-        let style = self.widget.background_properties.build_style();
+        let style = self.background_properties.build_style();
 
         self.bounding_box()
             .to_rectangle()
             .into_styled(style)
             .draw(&mut canvas.target)?;
 
-        self.widget.inner.draw(canvas)
+        self.inner.draw(canvas)
     }
 }
