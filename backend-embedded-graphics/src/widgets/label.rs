@@ -121,6 +121,8 @@ where
 
     fn text_color(self, color: Self::Color) -> Self;
 
+    fn set_text_color(&mut self, color: Self::Color) -> &mut Self;
+
     fn font<F2: MonoFont>(self, font: F2) -> Label<S, LabelStyle<D, MonoTextStyle<C, F2>>>;
 }
 
@@ -129,13 +131,17 @@ where
     S: AsRef<str>,
     F: MonoFont,
     C: PixelColor,
-    LabelStyle<D, MonoTextStyle<C, F>>: Default,
     D: DrawTarget<Color = C>,
 {
     type Color = C;
     type Font = F;
 
     fn text_color(mut self, color: Self::Color) -> Self {
+        self.label_properties.text_color(color);
+        self
+    }
+
+    fn set_text_color(&mut self, color: Self::Color) -> &mut Self {
         self.label_properties.text_color(color);
         self
     }

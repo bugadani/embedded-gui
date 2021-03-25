@@ -8,7 +8,7 @@ use crate::{
 pub trait BackgroundProperties {
     type Color;
 
-    fn background_color(&mut self, color: Self::Color);
+    fn set_background_color(&mut self, color: Self::Color) -> &mut Self;
 }
 
 pub struct Background<W, P>
@@ -41,7 +41,12 @@ where
     }
 
     pub fn background_color(mut self, color: P::Color) -> Self {
-        self.background_properties.background_color(color);
+        self.set_background_color(color);
+        self
+    }
+
+    pub fn set_background_color(&mut self, color: P::Color) -> &mut Self {
+        self.background_properties.set_background_color(color);
         self
     }
 
@@ -65,7 +70,7 @@ where
     D: WidgetData,
 {
     pub fn background_color(mut self, color: P::Color) -> Self {
-        self.widget.background_properties.background_color(color);
+        self.widget = self.widget.background_color(color);
         self
     }
 
