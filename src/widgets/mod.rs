@@ -74,7 +74,7 @@ impl<W> Default for WidgetDataHolder<W, NoData> {
 }
 
 impl<W> WidgetDataHolder<W, NoData> {
-    pub fn bind<W2, D>(self, data: D) -> WidgetDataHolder<W2, D>
+    pub fn new<D>(data: D) -> WidgetDataHolder<W, D>
     where
         D: WidgetData,
     {

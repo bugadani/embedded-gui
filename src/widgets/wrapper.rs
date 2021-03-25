@@ -16,7 +16,7 @@ impl Wrapper<(), NoData> {
     pub fn wrap<W: Widget, D: WidgetData>(widget: W, data: D) -> Wrapper<W, D> {
         Wrapper {
             widget,
-            data_holder: WidgetDataHolder::<W>::default().bind(data), // there's still room for improvement here - inline type maybe?
+            data_holder: WidgetDataHolder::new(data),
         }
     }
 }

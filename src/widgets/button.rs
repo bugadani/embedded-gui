@@ -39,7 +39,7 @@ where
             parent_index: 0,
             inner,
             on_clicked: |_| (),
-            data_holder: Some(WidgetDataHolder::<Self>::default()),
+            data_holder: Some(WidgetDataHolder::default()),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }
@@ -53,7 +53,7 @@ where
             parent_index: self.parent_index,
             inner: self.inner,
             on_clicked: |_| (),
-            data_holder: Some(self.data_holder.unwrap().bind(data)),
+            data_holder: Some(WidgetDataHolder::new(data)),
             on_state_changed: |_, _| (),
             state: self.state,
         }
