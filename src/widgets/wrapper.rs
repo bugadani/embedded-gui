@@ -21,6 +21,17 @@ impl Wrapper<(), NoData> {
     }
 }
 
+impl<W, D> Wrapper<W, D>
+where
+    W: Widget,
+    D: WidgetData,
+{
+    pub fn on_data_changed(mut self, callback: fn(&mut W, &D::Data)) -> Self {
+        self.data_holder.on_data_changed = callback;
+        self
+    }
+}
+
 impl<W, D> UpdateHandler for Wrapper<W, D>
 where
     W: Widget,

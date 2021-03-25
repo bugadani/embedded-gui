@@ -27,7 +27,7 @@ where
     W: Widget,
     P: BackgroundProperties,
 {
-    pub fn new(inner: W) -> Background<W, P>
+    pub fn new(inner: W) -> Self
     where
         P: Default,
     {
@@ -50,7 +50,7 @@ where
         self
     }
 
-    pub fn bind<D>(self, data: D) -> Wrapper<Background<W, P>, D>
+    pub fn bind<D>(self, data: D) -> Wrapper<Self, D>
     where
         D: WidgetData,
     {

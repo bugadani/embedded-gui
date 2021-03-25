@@ -184,9 +184,7 @@ fn op_button<D: DrawTarget<Color = BinaryColor>>(
         Background<
             Border<
                 FillParent<
-                    Container<
-                        Label<&'static str, LabelStyle<D, MonoTextStyle<BinaryColor, Font6x10>>>,
-                    >,
+                    Label<&'static str, LabelStyle<D, MonoTextStyle<BinaryColor, Font6x10>>>,
                     HorizontalAndVertical,
                     Center,
                     Center,
