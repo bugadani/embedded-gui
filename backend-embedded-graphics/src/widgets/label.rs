@@ -120,11 +120,18 @@ where
     type Color;
     type Font;
 
-    fn text_color(self, color: Self::Color) -> Self;
+    fn text_color(mut self, color: Self::Color) -> Self {
+        self.set_text_color(color);
+        self
+    }
 
     fn set_text_color(&mut self, color: Self::Color) -> &mut Self;
 
     fn font<F2: MonoFont>(self, font: F2) -> Label<S, LabelStyle<D, MonoTextStyle<C, F2>>>;
+
+    fn style<P>(self, props: P) -> Label<S, P>
+    where
+        P: LabelProperties;
 }
 
 impl<F, C, D, S> LabelStyling<F, C, D, S> for Label<S, LabelStyle<D, MonoTextStyle<C, F>>>
@@ -136,11 +143,6 @@ where
 {
     type Color = C;
     type Font = F;
-
-    fn text_color(mut self, color: Self::Color) -> Self {
-        self.label_properties.text_color(color);
-        self
-    }
 
     fn set_text_color(&mut self, color: Self::Color) -> &mut Self {
         self.label_properties.text_color(color);
@@ -155,6 +157,20 @@ where
             text: self.text,
             bounds: self.bounds,
             label_properties,
+            on_state_changed: |_, _| (),
+            state: self.state,
+        }
+    }
+
+    fn style<P>(self, props: P) -> Label<S, P>
+    where
+        P: LabelProperties,
+    {
+        Label {
+            parent_index: self.parent_index,
+            text: self.text,
+            bounds: self.bounds,
+            label_properties: props,
             on_state_changed: |_, _| (),
             state: self.state,
         }
