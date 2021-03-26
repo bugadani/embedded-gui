@@ -16,7 +16,7 @@ use embedded_gui::widgets::{
 use crate::{
     themes::Theme,
     widgets::{
-        label::{LabelConstructor, LabelStyle, LabelStyling},
+        label::{ascii::LabelConstructor, LabelStyle, LabelStyling},
         primitives::{background::BackgroundStyle, border::BorderStyle},
     },
 };

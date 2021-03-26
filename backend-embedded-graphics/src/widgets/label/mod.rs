@@ -2,17 +2,20 @@ use core::marker::PhantomData;
 
 use embedded_graphics::{
     draw_target::DrawTarget,
-    mono_font::{ascii::Font6x10, MonoFont, MonoTextStyle, MonoTextStyleBuilder},
+    mono_font::{MonoFont, MonoTextStyle, MonoTextStyleBuilder},
     pixelcolor::PixelColor,
     prelude::Point,
     text::TextRenderer,
 };
 use embedded_gui::{
     widgets::label::{Label, LabelProperties},
-    BoundingBox, MeasuredSize, WidgetRenderer, WidgetState,
+    MeasuredSize, WidgetRenderer,
 };
 
-use crate::{themes::Theme, EgCanvas};
+pub mod ascii;
+pub mod latin1;
+
+use crate::EgCanvas;
 
 pub struct LabelStyle<D, T>
 where
@@ -21,22 +24,6 @@ where
 {
     renderer: T,
     _marker: PhantomData<D>,
-}
-
-impl<D> Default for LabelStyle<D, MonoTextStyle<D::Color, Font6x10>>
-where
-    D: DrawTarget,
-    D::Color: Theme,
-{
-    fn default() -> Self {
-        Self {
-            renderer: MonoTextStyleBuilder::new()
-                .font(Font6x10)
-                .text_color(<D::Color as Theme>::TEXT_COLOR)
-                .build(),
-            _marker: PhantomData,
-        }
-    }
 }
 
 impl<C, D, F> LabelStyle<D, MonoTextStyle<C, F>>
@@ -77,35 +64,6 @@ where
         MeasuredSize {
             width: metrics.bounding_box.size.width,
             height: metrics.bounding_box.size.height,
-        }
-    }
-}
-
-pub trait LabelConstructor<S, P, C, D> {
-    fn new(text: S) -> Label<S, P>
-    where
-        C: PixelColor,
-        D: DrawTarget<Color = C>,
-        S: AsRef<str>,
-        P: LabelProperties;
-}
-
-impl<F, C, D, S> LabelConstructor<S, LabelStyle<D, F>, C, D> for Label<S, LabelStyle<D, F>>
-where
-    S: AsRef<str>,
-    F: TextRenderer<Color = C>,
-    C: PixelColor,
-    LabelStyle<D, F>: Default,
-    D: DrawTarget<Color = C>,
-{
-    fn new(text: S) -> Self {
-        Label {
-            parent_index: 0,
-            text,
-            label_properties: LabelStyle::default(),
-            bounds: BoundingBox::default(),
-            on_state_changed: |_, _| (),
-            state: WidgetState::default(),
         }
     }
 }

@@ -1,8 +1,8 @@
 use std::{fmt::Write, thread, time::Duration};
 
 use backend_embedded_graphics::{
-    themes::default::{self},
-    widgets::label::{LabelConstructor, LabelStyling},
+    themes::default,
+    widgets::label::{ascii::LabelConstructor, LabelStyling},
     EgCanvas,
 };
 use embedded_graphics::{
