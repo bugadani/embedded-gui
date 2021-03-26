@@ -17,7 +17,6 @@ use embedded_gui::{
     data::BoundData,
     input::event::{InputEvent, PointerEvent},
     widgets::{
-        button::Button,
         label::Label,
         layouts::linear::{column::Column, row::Row, Cell},
         primitives::{

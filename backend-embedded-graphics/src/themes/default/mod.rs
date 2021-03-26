@@ -1,7 +1,10 @@
-use embedded_graphics::{draw_target::DrawTarget, mono_font::{MonoFont, MonoTextStyle}, pixelcolor::PixelColor};
+use embedded_graphics::{
+    draw_target::DrawTarget,
+    mono_font::{MonoFont, MonoTextStyle},
+    pixelcolor::PixelColor,
+};
 use embedded_gui::widgets::{
     button::Button,
-    container::Container,
     label::Label,
     primitives::{
         background::Background,
@@ -43,26 +46,18 @@ pub trait ButtonStyle<C: PixelColor> {
 }
 
 #[allow(type_alias_bounds)]
-pub type StyledButton<C, D: DrawTarget, S: ButtonStyle<D::Color>> = Container<
-    Button<
-        Container<
-            Background<
-                Container<
-                    Border<
-                        FillParent<
-                            Container<
-                                Label<&'static str, LabelStyle<D, MonoTextStyle<C, S::Font>>>,
-                            >,
-                            HorizontalAndVertical,
-                            Center,
-                            Center,
-                        >,
-                        BorderStyle<C>,
-                    >,
-                >,
-                BackgroundStyle<C>,
+pub type StyledButton<C, D: DrawTarget, S: ButtonStyle<D::Color>> = Button<
+    Background<
+        Border<
+            FillParent<
+                Label<&'static str, LabelStyle<D, MonoTextStyle<C, S::Font>>>,
+                HorizontalAndVertical,
+                Center,
+                Center,
             >,
+            BorderStyle<C>,
         >,
+        BackgroundStyle<C>,
     >,
 >;
 pub fn button<D, S>(label: &'static str) -> StyledButton<D::Color, D, S>
@@ -81,11 +76,11 @@ where
                         .text_color(S::Idle::LABEL_COLOR)
                         .font(S::font())
                         .on_state_changed(|label, state| {
-                            label.label_properties.text_color(match state.state() {
+                            label.set_text_color(match state.state() {
                                 Button::STATE_HOVERED => S::Hovered::LABEL_COLOR,
                                 Button::STATE_PRESSED => S::Pressed::LABEL_COLOR,
                                 _ => S::Idle::LABEL_COLOR,
-                            })
+                            });
                         }),
                 )
                 .align_horizontal(Center)
@@ -93,25 +88,27 @@ where
             )
             .border_color(S::Idle::BORDER_COLOR)
             .on_state_changed(|button, state| {
-                button.border_color(match state.state() {
+                button.set_border_color(match state.state() {
                     Button::STATE_HOVERED => S::Hovered::BORDER_COLOR,
                     Button::STATE_PRESSED => S::Pressed::BORDER_COLOR,
                     _ => S::Idle::BORDER_COLOR,
-                })
+                });
             }),
         )
         .background_color(S::Idle::BACKGROUND_COLOR)
         .on_state_changed(|button, state| {
-            button.background_color(match state.state() {
+            button.set_background_color(match state.state() {
                 Button::STATE_HOVERED => S::Hovered::BACKGROUND_COLOR,
                 Button::STATE_PRESSED => S::Pressed::BACKGROUND_COLOR,
                 _ => S::Idle::BACKGROUND_COLOR,
-            })
+            });
         }),
     )
 }
 
-pub fn primary_button<D>(label: &'static str) -> StyledButton<D::Color, D, <D::Color as DefaultTheme>::PrimaryButton>
+pub fn primary_button<D>(
+    label: &'static str,
+) -> StyledButton<D::Color, D, <D::Color as DefaultTheme>::PrimaryButton>
 where
     D: DrawTarget,
     D::Color: DefaultTheme,
@@ -121,7 +118,9 @@ where
     button::<D, <D::Color as DefaultTheme>::PrimaryButton>(label)
 }
 
-pub fn secondary_button<D>(label: &'static str) -> StyledButton<D::Color, D, <D::Color as DefaultTheme>::SecondaryButton>
+pub fn secondary_button<D>(
+    label: &'static str,
+) -> StyledButton<D::Color, D, <D::Color as DefaultTheme>::SecondaryButton>
 where
     D: DrawTarget,
     D::Color: DefaultTheme,
