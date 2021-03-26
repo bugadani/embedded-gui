@@ -22,7 +22,7 @@ use crate::{
 };
 
 pub mod binary_color;
-pub mod rgb888;
+pub mod rgb;
 
 pub trait DefaultTheme: Theme {
     type PrimaryButton: ButtonStyle<Self>;
