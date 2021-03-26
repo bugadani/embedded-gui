@@ -5,12 +5,11 @@ pub mod input;
 pub mod widgets;
 
 use crate::{
-    data::WidgetData,
     input::{
         controller::{DefaultInputController, InputController},
         event::InputEvent,
     },
-    widgets::{container::Container, Widget},
+    widgets::Widget,
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -60,17 +59,6 @@ impl Default for BoundingBox {
 
 pub trait WidgetRenderer<C: Canvas> {
     fn draw(&self, canvas: &mut C) -> Result<(), C::Error>;
-}
-
-impl<C, W, D> WidgetRenderer<C> for Container<W, D>
-where
-    C: Canvas,
-    D: WidgetData,
-    W: WidgetRenderer<C>,
-{
-    fn draw(&self, canvas: &mut C) -> Result<(), C::Error> {
-        self.widget.draw(canvas)
-    }
 }
 
 pub trait Canvas {

@@ -8,12 +8,8 @@ use embedded_graphics::{
     text::TextRenderer,
 };
 use embedded_gui::{
-    widgets::{
-        container::Container,
-        label::{Label, LabelProperties},
-        WidgetDataHolder,
-    },
-    BoundingBox, MeasuredSize, WidgetRenderer,
+    widgets::label::{Label, LabelProperties},
+    BoundingBox, MeasuredSize, WidgetRenderer, WidgetState,
 };
 
 use crate::EgCanvas;
@@ -85,7 +81,7 @@ where
 }
 
 pub trait LabelConstructor<S, P, C, D> {
-    fn new(text: S) -> Container<Label<S, P>>
+    fn new(text: S) -> Label<S, P>
     where
         C: PixelColor,
         D: DrawTarget<Color = C>,
@@ -101,12 +97,15 @@ where
     LabelStyle<D, F>: Default,
     D: DrawTarget<Color = C>,
 {
-    fn new(text: S) -> Container<Self> {
-        Container::new(Label {
+    fn new(text: S) -> Self {
+        Label {
+            parent_index: 0,
             text,
             label_properties: LabelStyle::default(),
             bounds: BoundingBox::default(),
-        })
+            on_state_changed: |_, _| (),
+            state: WidgetState::default(),
+        }
     }
 }
 
@@ -122,45 +121,41 @@ where
 
     fn text_color(self, color: Self::Color) -> Self;
 
-    fn font<F2: MonoFont>(
-        self,
-        font: F2,
-    ) -> Container<Label<S, LabelStyle<D, MonoTextStyle<C, F2>>>>;
+    fn set_text_color(&mut self, color: Self::Color) -> &mut Self;
+
+    fn font<F2: MonoFont>(self, font: F2) -> Label<S, LabelStyle<D, MonoTextStyle<C, F2>>>;
 }
 
-impl<F, C, D, S> LabelStyling<F, C, D, S>
-    for Container<Label<S, LabelStyle<D, MonoTextStyle<C, F>>>>
+impl<F, C, D, S> LabelStyling<F, C, D, S> for Label<S, LabelStyle<D, MonoTextStyle<C, F>>>
 where
     S: AsRef<str>,
     F: MonoFont,
     C: PixelColor,
-    LabelStyle<D, MonoTextStyle<C, F>>: Default,
     D: DrawTarget<Color = C>,
 {
     type Color = C;
     type Font = F;
 
     fn text_color(mut self, color: Self::Color) -> Self {
-        self.widget.label_properties.text_color(color);
+        self.label_properties.text_color(color);
         self
     }
 
-    fn font<F2: MonoFont>(
-        self,
-        font: F2,
-    ) -> Container<Label<S, LabelStyle<D, MonoTextStyle<C, F2>>>> {
-        let label_properties = self.widget.label_properties.font(font);
+    fn set_text_color(&mut self, color: Self::Color) -> &mut Self {
+        self.label_properties.text_color(color);
+        self
+    }
 
-        Container {
+    fn font<F2: MonoFont>(self, font: F2) -> Label<S, LabelStyle<D, MonoTextStyle<C, F2>>> {
+        let label_properties = self.label_properties.font(font);
+
+        Label {
             parent_index: self.parent_index,
-            widget: Label {
-                text: self.widget.text,
-                bounds: self.widget.bounds,
-                label_properties,
-            },
-            data_holder: WidgetDataHolder::default(),
-            state: self.state,
+            text: self.text,
+            bounds: self.bounds,
+            label_properties,
             on_state_changed: |_, _| (),
+            state: self.state,
         }
     }
 }

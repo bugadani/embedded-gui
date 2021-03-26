@@ -1,7 +1,7 @@
 use crate::{
-    data::{NoData, WidgetData},
+    data::WidgetData,
     input::event::InputEvent,
-    widgets::{container::Container, ParentHolder, Widget, WidgetStateHolder},
+    widgets::{wrapper::Wrapper, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
     BoundingBox, Canvas, MeasureSpec, MeasuredSize, Position, WidgetRenderer, WidgetState,
 };
 
@@ -16,100 +16,103 @@ pub struct SpacingSpec {
 pub struct Spacing<W> {
     pub inner: W,
     pub spacing: SpacingSpec,
+    pub parent_index: usize,
+    pub on_state_changed: fn(&mut Self, WidgetState),
+    pub state: WidgetState,
 }
 
 impl<W> Spacing<W>
 where
     W: Widget,
 {
-    pub fn new(inner: W) -> Container<Spacing<W>, NoData> {
-        Container::new(Spacing {
+    pub fn new(inner: W) -> Spacing<W> {
+        Spacing {
+            parent_index: 0,
             spacing: SpacingSpec::default(),
             inner,
-        })
-    }
-}
-
-impl<W> Spacing<W> {
-    pub fn set_left(&mut self, space: u32) {
-        self.spacing.left = space;
-    }
-    pub fn set_right(&mut self, space: u32) {
-        self.spacing.right = space;
-    }
-    pub fn set_top(&mut self, space: u32) {
-        self.spacing.top = space;
-    }
-    pub fn set_bottom(&mut self, space: u32) {
-        self.spacing.bottom = space;
-    }
-}
-
-impl<W> Container<Spacing<W>, NoData>
-where
-    W: Widget,
-{
-    pub fn bind<D>(self, data: D) -> Container<Spacing<W>, D>
-    where
-        D: WidgetData,
-    {
-        Container {
-            parent_index: self.parent_index,
-            widget: self.widget,
-            data_holder: self.data_holder.bind(data),
             on_state_changed: |_, _| (),
             state: WidgetState::default(),
         }
     }
+
+    pub fn left(mut self, space: u32) -> Self {
+        self.spacing.left = space;
+        self
+    }
+
+    pub fn right(mut self, space: u32) -> Self {
+        self.spacing.right = space;
+        self
+    }
+
+    pub fn top(mut self, space: u32) -> Self {
+        self.spacing.top = space;
+        self
+    }
+
+    pub fn bottom(mut self, space: u32) -> Self {
+        self.spacing.bottom = space;
+        self
+    }
+
+    pub fn all(mut self, space: u32) -> Self {
+        self = self.top(space);
+        self = self.right(space);
+        self = self.bottom(space);
+        self = self.left(space);
+        self
+    }
+
+    pub fn bind<D>(self, data: D) -> Wrapper<Spacing<W>, D>
+    where
+        D: WidgetData,
+    {
+        Wrapper::wrap(self, data)
+    }
 }
 
-impl<W, D> Container<Spacing<W>, D>
+impl<W, D> Wrapper<Spacing<W>, D>
 where
     W: Widget,
     D: WidgetData,
 {
     pub fn left(mut self, space: u32) -> Self {
-        self.widget.set_left(space);
+        self.widget = self.widget.left(space);
         self
     }
 
     pub fn right(mut self, space: u32) -> Self {
-        self.widget.set_right(space);
+        self.widget = self.widget.right(space);
         self
     }
 
     pub fn top(mut self, space: u32) -> Self {
-        self.widget.set_top(space);
+        self.widget = self.widget.top(space);
         self
     }
 
     pub fn bottom(mut self, space: u32) -> Self {
-        self.widget.set_bottom(space);
+        self.widget = self.widget.bottom(space);
         self
     }
 
     pub fn all(mut self, space: u32) -> Self {
-        self.widget.set_left(space);
-        self.widget.set_right(space);
-        self.widget.set_top(space);
-        self.widget.set_bottom(space);
-
+        self.widget = self.widget.all(space);
         self
     }
 }
 
-impl<W, D> WidgetStateHolder for Container<Spacing<W>, D>
+impl<W> WidgetStateHolder for Spacing<W>
 where
     W: Widget,
-    D: WidgetData,
 {
     fn change_state(&mut self, state: u32) {
         // propagate state to child widget
-        self.widget.inner.change_state(state);
+        self.inner.change_state(state);
 
         // apply state
         if self.state.change_state(state) {
-            (self.on_state_changed)(&mut self.widget, self.state);
+            (self.on_state_changed)(self, self.state);
         }
     }
 
@@ -120,28 +123,27 @@ where
     }
 }
 
-impl<W, D> Widget for Container<Spacing<W>, D>
+impl<W> Widget for Spacing<W>
 where
     W: Widget,
-    D: WidgetData,
 {
     fn attach(&mut self, parent: usize, self_index: usize) {
         self.set_parent(parent);
-        self.widget.inner.attach(self_index, self_index + 1);
+        self.inner.attach(self_index, self_index + 1);
     }
 
     fn arrange(&mut self, position: Position) {
-        let spacing = self.widget.spacing;
+        let spacing = self.spacing;
 
-        self.widget.inner.arrange(Position {
+        self.inner.arrange(Position {
             x: position.x + spacing.left as i32,
             y: position.y + spacing.top as i32,
         });
     }
 
     fn bounding_box(&self) -> BoundingBox {
-        let spacing = self.widget.spacing;
-        let bounds = self.widget.inner.bounding_box();
+        let spacing = self.spacing;
+        let bounds = self.inner.bounding_box();
 
         BoundingBox {
             position: Position {
@@ -160,37 +162,57 @@ where
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
-        let spacing = self.widget.spacing;
+        let spacing = self.spacing;
 
-        self.widget.inner.measure(MeasureSpec {
+        self.inner.measure(MeasureSpec {
             width: measure_spec.width.shrink(spacing.left + spacing.right),
             height: measure_spec.height.shrink(spacing.top + spacing.bottom),
         });
     }
 
     fn children(&self) -> usize {
-        1 + self.widget.inner.children()
+        1 + self.inner.children()
     }
 
     fn get_child(&self, idx: usize) -> &dyn Widget {
         if idx == 0 {
-            &self.widget.inner
+            &self.inner
         } else {
-            self.widget.inner.get_child(idx - 1)
+            self.inner.get_child(idx - 1)
         }
     }
 
     fn get_mut_child(&mut self, idx: usize) -> &mut dyn Widget {
         if idx == 0 {
-            &mut self.widget.inner
+            &mut self.inner
         } else {
-            self.widget.inner.get_mut_child(idx - 1)
+            self.inner.get_mut_child(idx - 1)
         }
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
         // We just relay whatever the child desires
-        self.widget.inner.test_input(event).map(|i| i + 1)
+        self.inner.test_input(event).map(|i| i + 1)
+    }
+}
+
+impl<W> UpdateHandler for Spacing<W>
+where
+    W: Widget,
+{
+    fn update(&mut self) {}
+}
+
+impl<W> ParentHolder for Spacing<W>
+where
+    W: Widget,
+{
+    fn parent_index(&self) -> usize {
+        self.parent_index
+    }
+
+    fn set_parent(&mut self, index: usize) {
+        self.parent_index = index;
     }
 }
 

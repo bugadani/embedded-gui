@@ -6,9 +6,7 @@ use embedded_graphics::{
     Drawable,
 };
 use embedded_gui::{
-    data::WidgetData,
     widgets::{
-        container::Container,
         primitives::border::{Border, BorderProperties},
         Widget,
     },
@@ -57,28 +55,28 @@ where
         self.width
     }
 
-    fn border_color(&mut self, color: Self::Color) {
+    fn set_border_color(&mut self, color: Self::Color) -> &mut Self {
         self.color = color;
+        self
     }
 }
 
 // TODO: draw target should be clipped to widget's bounds, so this can be restored to Border
-impl<W, C, DT, D> WidgetRenderer<EgCanvas<DT>> for Container<Border<W, BorderStyle<C>>, D>
+impl<W, C, DT> WidgetRenderer<EgCanvas<DT>> for Border<W, BorderStyle<C>>
 where
     W: Widget + WidgetRenderer<EgCanvas<DT>>,
     C: PixelColor,
     DT: DrawTarget<Color = C>,
-    D: WidgetData,
     BorderStyle<C>: BorderProperties,
 {
     fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
-        let style = self.widget.border_properties.build_style();
+        let style = self.border_properties.build_style();
 
         self.bounding_box()
             .to_rectangle()
             .into_styled(style)
             .draw(&mut canvas.target)?;
 
-        self.widget.inner.draw(canvas)
+        self.inner.draw(canvas)
     }
 }

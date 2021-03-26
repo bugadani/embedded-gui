@@ -5,10 +5,10 @@ use crate::{
 };
 
 pub mod button;
-pub mod container;
 pub mod label;
 pub mod layouts;
 pub mod primitives;
+pub mod wrapper;
 
 pub trait Widget: WidgetStateHolder + ParentHolder + UpdateHandler {
     fn attach(&mut self, parent: usize, _index: usize) {
@@ -74,7 +74,7 @@ impl<W> Default for WidgetDataHolder<W, NoData> {
 }
 
 impl<W> WidgetDataHolder<W, NoData> {
-    pub fn bind<W2, D>(self, data: D) -> WidgetDataHolder<W2, D>
+    pub fn new<D>(data: D) -> WidgetDataHolder<W, D>
     where
         D: WidgetData,
     {
