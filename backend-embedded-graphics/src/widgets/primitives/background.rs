@@ -1,6 +1,6 @@
 use embedded_graphics::{
     draw_target::DrawTarget,
-    pixelcolor::{BinaryColor, PixelColor},
+    pixelcolor::PixelColor,
     prelude::Primitive,
     primitives::{PrimitiveStyle, PrimitiveStyleBuilder},
     Drawable,
@@ -13,7 +13,7 @@ use embedded_gui::{
     WidgetRenderer,
 };
 
-use crate::{EgCanvas, ToRectangle};
+use crate::{themes::Theme, EgCanvas, ToRectangle};
 
 pub struct BackgroundStyle<C>
 where
@@ -31,10 +31,13 @@ where
     }
 }
 
-impl Default for BackgroundStyle<BinaryColor> {
+impl<C> Default for BackgroundStyle<C>
+where
+    C: Theme,
+{
     fn default() -> Self {
         Self {
-            color: BinaryColor::On,
+            color: C::BACKGROUND_COLOR,
         }
     }
 }

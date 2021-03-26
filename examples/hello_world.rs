@@ -2,7 +2,7 @@ use std::{thread, time::Duration};
 
 use backend_embedded_graphics::{
     widgets::{
-        label::LabelConstructor,
+        label::ascii::LabelConstructor,
         primitives::{background::BackgroundStyle, border::BorderStyle},
     },
     EgCanvas,
