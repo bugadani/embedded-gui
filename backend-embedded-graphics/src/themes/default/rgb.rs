@@ -12,9 +12,19 @@ use crate::themes::{
 
 // region: Primary button
 
+pub struct PrimaryButtonDisabled<C>(PhantomData<C>);
 pub struct PrimaryButtonIdle<C>(PhantomData<C>);
 pub struct PrimaryButtonHovered<C>(PhantomData<C>);
 pub struct PrimaryButtonPressed<C>(PhantomData<C>);
+
+impl<C> ButtonStateColors<C> for PrimaryButtonDisabled<C>
+where
+    C: WebColors,
+{
+    const LABEL_COLOR: C = C::CSS_LIGHT_GRAY;
+    const BORDER_COLOR: C = C::CSS_DIM_GRAY;
+    const BACKGROUND_COLOR: C = C::CSS_DIM_GRAY;
+}
 
 impl<C> ButtonStateColors<C> for PrimaryButtonIdle<C>
 where
@@ -50,6 +60,7 @@ where
 {
     type Font = Font6x10;
 
+    type Disabled = PrimaryButtonDisabled<C>;
     type Idle = PrimaryButtonIdle<C>;
     type Hovered = PrimaryButtonHovered<C>;
     type Pressed = PrimaryButtonPressed<C>;
@@ -63,9 +74,19 @@ where
 
 // region: Secondary button
 
+pub struct SecondaryButtonDisabled<C>(PhantomData<C>);
 pub struct SecondaryButtonIdle<C>(PhantomData<C>);
 pub struct SecondaryButtonHovered<C>(PhantomData<C>);
 pub struct SecondaryButtonPressed<C>(PhantomData<C>);
+
+impl<C> ButtonStateColors<C> for SecondaryButtonDisabled<C>
+where
+    C: WebColors,
+{
+    const LABEL_COLOR: C = C::CSS_LIGHT_GRAY;
+    const BORDER_COLOR: C = C::CSS_DIM_GRAY;
+    const BACKGROUND_COLOR: C = C::CSS_DIM_GRAY;
+}
 
 impl<C> ButtonStateColors<C> for SecondaryButtonIdle<C>
 where
@@ -101,6 +122,7 @@ where
 {
     type Font = Font6x10;
 
+    type Disabled = SecondaryButtonDisabled<C>;
     type Idle = SecondaryButtonIdle<C>;
     type Hovered = SecondaryButtonHovered<C>;
     type Pressed = SecondaryButtonPressed<C>;

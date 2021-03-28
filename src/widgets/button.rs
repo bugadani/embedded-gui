@@ -18,6 +18,33 @@ pub struct ButtonFields<W, D> {
     pub state: WidgetState,
 }
 
+impl<W, D> ButtonFields<W, D>
+where
+    W: Widget,
+{
+    pub fn change_state(&mut self, state: u32) -> &mut Self {
+        if self.state.change_state(state) {
+            self.inner.change_state(state);
+            (self.on_state_changed)(self, self.state);
+        }
+
+        self
+    }
+
+    pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
+        if enabled {
+            if self.state.state() == Button::STATE_DISABLED {
+                // Don't want to override other states
+                self.change_state(Button::STATE_IDLE);
+            }
+        } else {
+            self.change_state(Button::STATE_DISABLED);
+        }
+
+        self
+    }
+}
+
 pub struct Button<W, D = NoData>
 where
     D: WidgetData,
@@ -30,6 +57,7 @@ impl Button<(), NoData> {
     pub const STATE_IDLE: u32 = 0;
     pub const STATE_HOVERED: u32 = 1;
     pub const STATE_PRESSED: u32 = 2;
+    pub const STATE_DISABLED: u32 = 3;
 }
 
 impl<W> Button<W, NoData>
@@ -71,6 +99,25 @@ where
     W: Widget,
     D: WidgetData,
 {
+    pub fn enabled(mut self, enabled: bool) -> Self {
+        self.set_enabled(enabled);
+        self
+    }
+
+    pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
+        self.fields.set_enabled(enabled);
+
+        self
+    }
+
+    pub fn on_data_changed(mut self, callback: fn(&mut ButtonFields<W, D::Data>, &D::Data)) -> Self
+    where
+        D: WidgetData,
+    {
+        self.data_holder.on_data_changed = callback;
+        self
+    }
+
     pub fn on_clicked(mut self, callback: fn(&mut D::Data)) -> Self
     where
         D: WidgetData,
@@ -92,13 +139,7 @@ where
     D: WidgetData,
 {
     fn change_state(&mut self, state: u32) {
-        // propagate state to child widget
-        self.fields.inner.change_state(state);
-        // apply state
-        if self.fields.state.change_state(state) {
-            let button_fields = &mut self.fields;
-            (button_fields.on_state_changed)(button_fields, button_fields.state);
-        }
+        self.fields.change_state(state);
     }
 
     fn change_selection(&mut self, state: bool) {
@@ -166,6 +207,10 @@ where
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
+        if self.fields.state.state() == Button::STATE_DISABLED {
+            return None;
+        }
+
         match event {
             InputEvent::PointerEvent(position, PointerEvent::Down) => {
                 if let Some(idx) = self.fields.inner.test_input(event) {
@@ -223,6 +268,10 @@ where
     }
 
     fn handle_input(&mut self, _ctxt: InputContext, event: InputEvent) -> bool {
+        if self.fields.state.state() == Button::STATE_DISABLED {
+            return false;
+        }
+
         match event {
             InputEvent::PointerEvent(_, pe) => match pe {
                 PointerEvent::Hover => self.change_state(Button::STATE_HOVERED),

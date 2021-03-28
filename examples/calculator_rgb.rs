@@ -78,7 +78,7 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum Op {
     Add,
     Subtract,
@@ -98,6 +98,16 @@ impl Op {
                 previous / div
             }
         }
+    }
+
+    fn valid(self, current: i32, _previous: i32) -> bool {
+        if matches!(self, Op::Divide) {
+            if current == 0 {
+                return false;
+            }
+        }
+
+        true
     }
 
     fn bind(self, n: i32) -> PrevOp {
@@ -198,6 +208,14 @@ impl Calculator {
             }
             None => {}
         }
+    }
+
+    pub fn op_valid(&self) -> bool {
+        self.current_op
+            .as_ref()
+            .map(|op| op.valid(self.current, self.previous)) // either our current op is set and valid
+            .or_else(|| self.prev_op.map(|_| true)) // or we have a previous operation (which must be valid)
+            .unwrap_or(true) // there's nothing, but a gray button is ugly
     }
 }
 
@@ -387,7 +405,10 @@ fn main() {
                     Cell::new(
                         default::primary_button("=")
                             .bind(&calculator)
-                            .on_clicked(|calculator| calculator.update()),
+                            .on_clicked(|calculator| calculator.update())
+                            .on_data_changed(|button, calculator| {
+                                button.set_enabled(calculator.op_valid());
+                            }),
                     )
                     .weight(1),
                 ),
