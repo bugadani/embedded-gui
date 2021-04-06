@@ -92,21 +92,34 @@ where
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
+        let count = self.widgets.len();
+        let mut total_fixed_main_axis_size = 0;
+        let mut max_cross = 0;
+
         let max_main_axis_size = match L::main_axis_measure_spec(measure_spec) {
             MeasureConstraint::AtMost(max) | MeasureConstraint::Exactly(max) => max,
             MeasureConstraint::Unspecified => {
-                // We can do whatever
-                let count = self.widgets.len();
+                // Weight makes no sense here as we have "infinite" space.
                 for i in 0..count {
-                    self.widgets.at_mut(i).widget_mut().measure(measure_spec);
+                    let widget = self.widgets.at_mut(i).widget_mut();
+
+                    widget.measure(measure_spec);
+                    total_fixed_main_axis_size += L::main_axis_size(widget.bounding_box());
+                    max_cross = max_cross.max(L::cross_axis_size(widget.bounding_box()));
                 }
+
+                total_fixed_main_axis_size += (count as u32 - 1) * self.spacing.spacing();
+
+                // TODO this is almost the same as the bottom of the function. Should deduplicate.
+                self.set_measured_size(L::create_measured_size(
+                    total_fixed_main_axis_size,
+                    L::cross_axis_measure_spec(measure_spec).apply_to_measured(max_cross),
+                ));
+
                 return;
             }
         };
 
-        let count = self.widgets.len();
-        let mut total_fixed_main_axis_size = 0;
-        let mut max_cross = 0;
         let mut total_weight = 0;
 
         // Count the height of the widgets that don't have a weight
