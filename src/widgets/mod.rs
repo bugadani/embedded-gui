@@ -12,6 +12,10 @@ pub mod wrapper;
 
 pub trait Widget: WidgetStateHolder + ParentHolder + UpdateHandler {
     fn attach(&mut self, parent: usize, _index: usize) {
+        debug_assert!(
+            self.children() == 0,
+            "Attach must be implemented by non-leaf widgets"
+        );
         self.set_parent(parent);
     }
 

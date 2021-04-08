@@ -83,6 +83,19 @@ where
     ES: ElementSpacing,
     L: LayoutDirection,
 {
+    fn attach(&mut self, parent: usize, index: usize) {
+        self.set_parent(parent);
+
+        let mut children = 0;
+
+        for i in 0..self.widgets.len() {
+            let widget = self.widgets.at_mut(i).widget_mut();
+
+            widget.attach(index, children + i + 1);
+            children += widget.children();
+        }
+    }
+
     fn bounding_box(&self) -> BoundingBox {
         self.bounds
     }
