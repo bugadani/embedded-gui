@@ -274,22 +274,27 @@ where
 
         match event {
             InputEvent::PointerEvent(_, pe) => match pe {
-                PointerEvent::Hover => self.change_state(Button::STATE_HOVERED),
+                PointerEvent::Hover => {
+                    self.change_state(Button::STATE_HOVERED);
+                    false
+                }
                 PointerEvent::Down => {
                     self.fire_on_pressed();
                     self.change_state(Button::STATE_PRESSED);
+                    true
                 }
-                PointerEvent::Drag => {}
+                PointerEvent::Drag => false,
                 PointerEvent::Up => {
                     self.change_state(Button::STATE_HOVERED);
                     self.fire_on_clicked();
+                    true
                 }
             },
             _ => {
                 // TODO
+                false
             }
         }
-        true
     }
 }
 
