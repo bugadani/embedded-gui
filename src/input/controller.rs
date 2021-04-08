@@ -30,7 +30,7 @@ impl DefaultInputController {
 
 impl InputController for DefaultInputController {
     fn input_event(&mut self, root: &mut impl Widget, event: InputEvent) {
-        let handler = if let Some(last) = self.last_handler {
+        self.last_handler = if let Some(last) = self.last_handler {
             if let Some(handler) = self.get_mut_widget(root, last).test_input(event) {
                 // it's possible the widget wants to pass the event to it's child
                 Some(last + handler)
@@ -42,24 +42,22 @@ impl InputController for DefaultInputController {
             root.test_input(event)
         };
 
-        if let Some(mut handler) = handler {
-            let actual_handler = loop {
+        if let Some(mut handler) = self.last_handler {
+            loop {
                 let widget = self.get_mut_widget(root, handler);
                 let context = InputContext {};
                 if widget.handle_input(context, event) {
-                    break Some(handler);
+                    break;
                 } else {
                     let parent = widget.parent_index();
                     if parent == 0 && handler == 0 {
                         // I am Root
-                        break None;
+                        break;
                     } else {
                         handler = parent;
                     }
                 }
-            };
-
-            self.last_handler = actual_handler;
+            }
         }
     }
 }
