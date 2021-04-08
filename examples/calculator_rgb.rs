@@ -220,7 +220,7 @@ impl Calculator {
 }
 
 fn main() {
-    let display = SimulatorDisplay::<Rgb888>::new(EgSize::new(128, 160));
+    let display = SimulatorDisplay::new(EgSize::new(128, 160));
 
     let calculator = BoundData::new(Calculator::new(), |_data| {});
 

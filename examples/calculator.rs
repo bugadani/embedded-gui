@@ -200,7 +200,7 @@ impl Calculator {
 }
 
 fn main() {
-    let display = SimulatorDisplay::<BinaryColor>::new(EgSize::new(96, 96));
+    let display = SimulatorDisplay::new(EgSize::new(96, 96));
 
     let calculator = BoundData::new(Calculator::new(), |_data| {});
 

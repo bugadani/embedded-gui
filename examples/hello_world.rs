@@ -128,7 +128,7 @@ fn button_with_style<W: Widget>(
 }
 
 fn main() {
-    let display = SimulatorDisplay::<BinaryColor>::new(EgSize::new(128, 64));
+    let display = SimulatorDisplay::new(EgSize::new(128, 64));
 
     let flag = BoundData::new(true, |data| {
         println!("Data changed to {:?}", data);
