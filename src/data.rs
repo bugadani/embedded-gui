@@ -7,7 +7,7 @@ pub trait WidgetData {
     type Data;
     type Version: PartialEq + Default;
 
-    fn update(&self, _f: impl Fn(&mut Self::Data));
+    fn update(&self, _f: impl FnOnce(&mut Self::Data));
 
     fn read<W>(&self, widget: &mut W, callback: fn(&mut W, &Self::Data));
 
@@ -21,7 +21,7 @@ where
     type Data = T::Data;
     type Version = T::Version;
 
-    fn update(&self, f: impl Fn(&mut Self::Data)) {
+    fn update(&self, f: impl FnOnce(&mut Self::Data)) {
         (*self).update(f)
     }
 
@@ -46,7 +46,7 @@ impl WidgetData for NoData {
     type Data = ();
     type Version = ();
 
-    fn update(&self, _f: impl Fn(&mut Self::Data)) {}
+    fn update(&self, _f: impl FnOnce(&mut Self::Data)) {}
 
     fn read<W>(&self, widget: &mut W, callback: fn(&mut W, &Self::Data)) {
         callback(widget, &());
@@ -94,7 +94,7 @@ where
     type Data = D;
     type Version = usize;
 
-    fn update(&self, updater: impl Fn(&mut Self::Data)) {
+    fn update(&self, updater: impl FnOnce(&mut Self::Data)) {
         let mut borrow = self.inner.borrow_mut();
 
         borrow.version = borrow.version.wrapping_add(1);
