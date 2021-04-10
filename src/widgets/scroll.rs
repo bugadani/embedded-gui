@@ -5,8 +5,8 @@ use crate::{
         event::{InputEvent, PointerEvent, ScrollEvent},
     },
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
-    BoundingBox, Canvas, MeasureConstraint, MeasureSpec, MeasuredSize, Position, PositionDelta,
-    WidgetRenderer, WidgetState,
+    BoundingBox, MeasureConstraint, MeasureSpec, MeasuredSize, Position, PositionDelta,
+    WidgetState,
 };
 
 pub struct ScrollData {
@@ -455,16 +455,5 @@ where
 
     fn set_parent(&mut self, index: usize) {
         self.fields.parent_index = index;
-    }
-}
-
-impl<C, W, SD, D> WidgetRenderer<C> for Scroll<W, SD, D>
-where
-    W: Widget + WidgetRenderer<C>,
-    C: Canvas,
-    D: WidgetData,
-{
-    fn draw(&self, canvas: &mut C) -> Result<(), C::Error> {
-        self.fields.inner.draw(canvas)
     }
 }
