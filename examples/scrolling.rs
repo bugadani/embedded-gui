@@ -81,13 +81,26 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
 }
 
 fn main() {
-    let display = SimulatorDisplay::new(EgSize::new(32, 32));
+    let display = SimulatorDisplay::new(EgSize::new(128, 64));
 
-    let dummy_data = BoundData::new((), |_| ());
+    let scroll_data = BoundData::new((0, 0), |_| ());
     // TODO: this example should also demonstrate a scrollbar and horizontal scroll widget
     let mut gui = Window::new(
         EgCanvas::new(display),
-        Border::new(
+        Column::new(Cell::new(
+            Label::new("Scroll down")
+                .bind(&scroll_data)
+                .on_data_changed(|label, data| {
+                    label.text = if data.0 == data.1 {
+                        "Scroll back"
+                    } else if data.0 == 0 {
+                        "Scroll down"
+                    } else {
+                        "Scroll more"
+                    };
+                }),
+        ))
+        .add(Cell::new(Border::new(
             Scroll::vertical(
                 Column::new(Cell::new(Label::new("S")))
                     .add(Cell::new(Label::new("c")))
@@ -95,19 +108,39 @@ fn main() {
                     .add(Cell::new(Label::new("o")))
                     .add(Cell::new(
                         primary_button("l")
-                            .bind(&dummy_data)
-                            .on_clicked(|_| println!("Clicked")),
+                            .bind(&scroll_data)
+                            .on_clicked(|data| println!("Clicked at scroll offset: {}", data.0)),
                     ))
                     .add(Cell::new(Label::new("l")))
                     .add(Cell::new(Label::new("o")))
                     .add(Cell::new(Label::new("l")))
-                    .add(Cell::new(Label::new("o"))),
+                    .add(Cell::new(Label::new("o")))
+                    .add(Cell::new(Label::new("l")))
+                    .add(Cell::new(Label::new("o")))
+                    .add(Cell::new(Label::new("l")))
+                    .add(Cell::new(Label::new("o")))
+                    .add(Cell::new(Label::new("l")))
+                    .add(Cell::new(Label::new("o")))
+                    .add(Cell::new(Label::new("l")))
+                    .add(Cell::new(Label::new("o")))
+                    .add(Cell::new(Label::new("l")))
+                    .add(Cell::new(Label::new("o")))
+                    .add(Cell::new(Label::new("l")))
+                    .add(Cell::new(Label::new("o")))
+                    .add(Cell::new(Label::new("l")))
+                    .add(Cell::new(Label::new("o")))
+                    .add(Cell::new(Label::new("Scrollolo :)"))),
             )
-            .bind(&dummy_data) // FIXME (maybe) - needs to be bound otherwise callback doesn't fire
-            .on_scroll_changed(|_, _pd| {
-                //println!("Scroll offset: {:?}", pd);
+            .bind(&scroll_data) // FIXME (maybe) - needs to be bound otherwise callback doesn't fire
+            .on_scroll_changed(|data, pos| {
+                data.0 = pos.offset;
+                data.1 = pos.maximum_offset;
+            })
+            .on_data_changed(|_scroll, _data| {
+                // TODO
+                // scroll.scroll_to(data.0)
             }),
-        ),
+        ))),
     );
 
     let output_settings = OutputSettingsBuilder::new()
