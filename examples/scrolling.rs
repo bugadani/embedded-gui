@@ -83,7 +83,7 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
 fn main() {
     let display = SimulatorDisplay::new(EgSize::new(32, 32));
 
-    let scroll_data = BoundData::new(0, |_| ());
+    let dummy_data = BoundData::new((), |_| ());
     // TODO: this example should also demonstrate a scrollbar and horizontal scroll widget
     let mut gui = Window::new(
         EgCanvas::new(display),
@@ -93,13 +93,17 @@ fn main() {
                     .add(Cell::new(Label::new("c")))
                     .add(Cell::new(Label::new("r")))
                     .add(Cell::new(Label::new("o")))
-                    .add(Cell::new(primary_button("l")))
+                    .add(Cell::new(
+                        primary_button("l")
+                            .bind(&dummy_data)
+                            .on_clicked(|_| println!("Clicked")),
+                    ))
                     .add(Cell::new(Label::new("l")))
                     .add(Cell::new(Label::new("o")))
                     .add(Cell::new(Label::new("l")))
                     .add(Cell::new(Label::new("o"))),
             )
-            .bind(scroll_data) // FIXME (maybe) - needs to be bound otherwise callback doesn't fire
+            .bind(&dummy_data) // FIXME (maybe) - needs to be bound otherwise callback doesn't fire
             .on_scroll_changed(|_, _pd| {
                 //println!("Scroll offset: {:?}", pd);
             }),
