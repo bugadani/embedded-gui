@@ -24,9 +24,9 @@ pub trait ScrollDirection {
     fn offset(&self) -> PositionDelta;
     fn change_offset(&mut self, delta: PositionDelta);
     fn override_offset(&mut self, offset: PositionDelta);
-    fn derive_measure_spec(spec: MeasureSpec) -> MeasureSpec;
     fn scroll_direction<T>(x: T, y: T) -> T;
     fn cross_direction<T>(x: T, y: T) -> T;
+    fn merge_directions<T>(main: T, cross: T) -> (T, T);
 }
 
 pub struct Horizontal {
@@ -49,19 +49,16 @@ impl ScrollDirection for Horizontal {
         self.offset = Self::scroll_direction(offset.x, offset.y) as u32;
     }
 
-    fn derive_measure_spec(spec: MeasureSpec) -> MeasureSpec {
-        MeasureSpec {
-            width: MeasureConstraint::Unspecified,
-            height: spec.height,
-        }
-    }
-
     fn scroll_direction<T>(x: T, _y: T) -> T {
         x
     }
 
     fn cross_direction<T>(_x: T, y: T) -> T {
         y
+    }
+
+    fn merge_directions<T>(main: T, cross: T) -> (T, T) {
+        (main, cross)
     }
 }
 
@@ -85,19 +82,16 @@ impl ScrollDirection for Vertical {
         self.offset = Self::scroll_direction(offset.x, offset.y) as u32;
     }
 
-    fn derive_measure_spec(spec: MeasureSpec) -> MeasureSpec {
-        MeasureSpec {
-            width: spec.width,
-            height: MeasureConstraint::Unspecified,
-        }
-    }
-
     fn scroll_direction<T>(_x: T, y: T) -> T {
         y
     }
 
     fn cross_direction<T>(x: T, _y: T) -> T {
         x
+    }
+
+    fn merge_directions<T>(main: T, cross: T) -> (T, T) {
+        (cross, main)
     }
 }
 
@@ -296,20 +290,29 @@ where
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
-        let child_spec = SD::derive_measure_spec(measure_spec);
-        self.fields.inner.measure(child_spec);
+        let (width_spec, height_spec) = SD::merge_directions(
+            MeasureConstraint::Unspecified,
+            SD::cross_direction(measure_spec.width, measure_spec.height),
+        );
+        self.fields.inner.measure(MeasureSpec {
+            width: width_spec,
+            height: height_spec,
+        });
 
         // Scroll is as big as parent lets it to be, children are (depending on the direction)
         // as big as they want to be. If parent gives us an unspecified dimension, scroll will take
         // up as much space as the child.
-        // TODO: maybe minor direction size should be equal to child's (e.g. Horizontal's height)
-        //       except when spec is Exactly
+
         let child_size = self.fields.inner.bounding_box().size;
-        let size = MeasuredSize {
-            width: measure_spec.width.largest().unwrap_or(child_size.width),
-            height: measure_spec.height.largest().unwrap_or(child_size.height),
-        };
-        self.set_measured_size(size);
+
+        let main_size = SD::scroll_direction(measure_spec.width, measure_spec.height)
+            .largest()
+            .unwrap_or(SD::scroll_direction(child_size.width, child_size.height));
+        let cross_size = SD::cross_direction(child_size.width, child_size.height);
+
+        let (width, height) = SD::merge_directions(main_size, cross_size);
+
+        self.set_measured_size(MeasuredSize { width, height });
     }
 
     fn children(&self) -> usize {
