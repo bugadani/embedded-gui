@@ -42,11 +42,18 @@ impl InputController for DefaultInputController {
             root.test_input(event)
         };
 
-        if let Some(mut handler) = self.last_handler {
+        if let Some(orig_handler) = self.last_handler {
+            let mut handler = orig_handler;
             loop {
                 let widget = self.get_mut_widget(root, handler);
                 let context = InputContext {};
                 if widget.handle_input(context, event) {
+                    if handler != orig_handler {
+                        // parent handled a bubbled event, should notify child somehow
+                        let widget = self.get_mut_widget(root, orig_handler);
+                        let context = InputContext {};
+                        widget.handle_input(context, InputEvent::Cancel);
+                    }
                     break;
                 } else {
                     let parent = widget.parent_index();

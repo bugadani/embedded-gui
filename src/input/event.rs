@@ -66,6 +66,7 @@ pub enum Modifier {
 
 #[derive(Copy, Clone, Debug)]
 pub enum InputEvent {
+    Cancel,
     KeyEvent(KeyEvent),
     PointerEvent(Position, PointerEvent),
     ScrollEvent(ScrollEvent),

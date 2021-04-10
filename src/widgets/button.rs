@@ -212,6 +212,7 @@ where
         }
 
         match event {
+            InputEvent::Cancel => None,
             InputEvent::PointerEvent(position, PointerEvent::Down) => {
                 if let Some(idx) = self.fields.inner.test_input(event) {
                     // we give priority to our child
@@ -273,6 +274,12 @@ where
         }
 
         match event {
+            InputEvent::Cancel => {
+                if self.fields.state.state() == Button::STATE_PRESSED {
+                    self.change_state(Button::STATE_HOVERED);
+                }
+                true
+            }
             InputEvent::PointerEvent(_, pe) => match pe {
                 PointerEvent::Hover => {
                     self.change_state(Button::STATE_HOVERED);
