@@ -1,5 +1,4 @@
 use embedded_graphics::{
-    draw_target::DrawTarget,
     mono_font::{MonoFont, MonoTextStyle},
     pixelcolor::PixelColor,
 };
@@ -47,11 +46,11 @@ pub trait ButtonStyle<C: PixelColor> {
 }
 
 #[allow(type_alias_bounds)]
-pub type StyledButton<C, D: DrawTarget, S: ButtonStyle<D::Color>> = Button<
+pub type StyledButton<C, S: ButtonStyle<C>> = Button<
     Background<
         Border<
             FillParent<
-                Label<&'static str, LabelStyle<D, MonoTextStyle<C, S::Font>>>,
+                Label<&'static str, LabelStyle<MonoTextStyle<C, S::Font>>>,
                 HorizontalAndVertical,
                 Center,
                 Center,
@@ -61,13 +60,12 @@ pub type StyledButton<C, D: DrawTarget, S: ButtonStyle<D::Color>> = Button<
         BackgroundStyle<C>,
     >,
 >;
-pub fn button<D, S>(label: &'static str) -> StyledButton<D::Color, D, S>
+pub fn button<C, S>(label: &'static str) -> StyledButton<C, S>
 where
-    D: DrawTarget,
-    D::Color: DefaultTheme,
-    S: ButtonStyle<D::Color>,
-    BorderStyle<<D as DrawTarget>::Color>: Default,
-    BackgroundStyle<<D as DrawTarget>::Color>: Default,
+    C: DefaultTheme,
+    S: ButtonStyle<C>,
+    BorderStyle<C>: Default,
+    BackgroundStyle<C>: Default,
 {
     Button::new(
         Background::new(
@@ -110,26 +108,22 @@ where
     )
 }
 
-pub fn primary_button<D>(
-    label: &'static str,
-) -> StyledButton<D::Color, D, <D::Color as DefaultTheme>::PrimaryButton>
+pub fn primary_button<C>(label: &'static str) -> StyledButton<C, <C as DefaultTheme>::PrimaryButton>
 where
-    D: DrawTarget,
-    D::Color: DefaultTheme,
-    BorderStyle<<D as DrawTarget>::Color>: Default,
-    BackgroundStyle<<D as DrawTarget>::Color>: Default,
+    C: DefaultTheme,
+    BorderStyle<C>: Default,
+    BackgroundStyle<C>: Default,
 {
-    button::<D, <D::Color as DefaultTheme>::PrimaryButton>(label)
+    button::<C, <C as DefaultTheme>::PrimaryButton>(label)
 }
 
-pub fn secondary_button<D>(
+pub fn secondary_button<C>(
     label: &'static str,
-) -> StyledButton<D::Color, D, <D::Color as DefaultTheme>::SecondaryButton>
+) -> StyledButton<C, <C as DefaultTheme>::SecondaryButton>
 where
-    D: DrawTarget,
-    D::Color: DefaultTheme,
-    BorderStyle<<D as DrawTarget>::Color>: Default,
-    BackgroundStyle<<D as DrawTarget>::Color>: Default,
+    C: DefaultTheme,
+    BorderStyle<C>: Default,
+    BackgroundStyle<C>: Default,
 {
-    button::<D, <D::Color as DefaultTheme>::SecondaryButton>(label)
+    button::<C, <C as DefaultTheme>::SecondaryButton>(label)
 }

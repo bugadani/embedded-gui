@@ -1,5 +1,3 @@
-use core::marker::PhantomData;
-
 use embedded_graphics::{
     draw_target::DrawTarget,
     mono_font::{MonoFont, MonoTextStyle, MonoTextStyleBuilder},
@@ -17,20 +15,17 @@ pub mod latin1;
 
 use crate::EgCanvas;
 
-pub struct LabelStyle<D, T>
+pub struct LabelStyle<T>
 where
-    D: DrawTarget,
     T: TextRenderer,
 {
     renderer: T,
-    _marker: PhantomData<D>,
 }
 
-impl<C, D, F> LabelStyle<D, MonoTextStyle<C, F>>
+impl<C, F> LabelStyle<MonoTextStyle<C, F>>
 where
     F: MonoFont,
     C: PixelColor,
-    D: DrawTarget<Color = C>,
 {
     /// Customize the text color
     pub fn text_color(&mut self, text_color: C) {
@@ -40,24 +35,20 @@ where
     }
 
     /// Customize the font
-    pub fn font<F2: MonoFont>(self, font: F2) -> LabelStyle<D, MonoTextStyle<C, F2>> {
+    pub fn font<F2: MonoFont>(self, font: F2) -> LabelStyle<MonoTextStyle<C, F2>> {
         LabelStyle {
             renderer: MonoTextStyleBuilder::from(&self.renderer)
                 .font(font)
                 .build(),
-            _marker: PhantomData,
         }
     }
 }
 
-impl<F, C, D> LabelProperties for LabelStyle<D, F>
+impl<F, C> LabelProperties for LabelStyle<F>
 where
     F: TextRenderer<Color = C>,
     C: PixelColor,
-    D: DrawTarget<Color = C>,
 {
-    type Canvas = EgCanvas<D>;
-
     fn measure_text(&self, text: &str) -> MeasuredSize {
         let metrics = self.renderer.measure_string(text, Point::zero());
 
@@ -68,12 +59,11 @@ where
     }
 }
 
-pub trait LabelStyling<F, C, D, S>: Sized
+pub trait LabelStyling<F, C, S>: Sized
 where
     S: AsRef<str>,
     F: MonoFont,
     C: PixelColor,
-    D: DrawTarget<Color = C>,
 {
     type Color;
     type Font;
@@ -85,19 +75,18 @@ where
 
     fn set_text_color(&mut self, color: Self::Color) -> &mut Self;
 
-    fn font<F2: MonoFont>(self, font: F2) -> Label<S, LabelStyle<D, MonoTextStyle<C, F2>>>;
+    fn font<F2: MonoFont>(self, font: F2) -> Label<S, LabelStyle<MonoTextStyle<C, F2>>>;
 
     fn style<P>(self, props: P) -> Label<S, P>
     where
         P: LabelProperties;
 }
 
-impl<F, C, D, S> LabelStyling<F, C, D, S> for Label<S, LabelStyle<D, MonoTextStyle<C, F>>>
+impl<F, C, S> LabelStyling<F, C, S> for Label<S, LabelStyle<MonoTextStyle<C, F>>>
 where
     S: AsRef<str>,
     F: MonoFont,
     C: PixelColor,
-    D: DrawTarget<Color = C>,
 {
     type Color = C;
     type Font = F;
@@ -107,7 +96,7 @@ where
         self
     }
 
-    fn font<F2: MonoFont>(self, font: F2) -> Label<S, LabelStyle<D, MonoTextStyle<C, F2>>> {
+    fn font<F2: MonoFont>(self, font: F2) -> Label<S, LabelStyle<MonoTextStyle<C, F2>>> {
         let label_properties = self.label_properties.font(font);
 
         Label {
@@ -135,7 +124,7 @@ where
     }
 }
 
-impl<S, F, C, DT> WidgetRenderer<EgCanvas<DT>> for Label<S, LabelStyle<DT, F>>
+impl<S, F, C, DT> WidgetRenderer<EgCanvas<DT>> for Label<S, LabelStyle<F>>
 where
     S: AsRef<str>,
     F: TextRenderer<Color = C>,

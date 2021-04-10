@@ -1,12 +1,10 @@
 use crate::{
     data::WidgetData,
     widgets::{wrapper::Wrapper, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
-    BoundingBox, Canvas, MeasureSpec, MeasuredSize, WidgetState,
+    BoundingBox, MeasureSpec, MeasuredSize, WidgetState,
 };
 
 pub trait LabelProperties {
-    type Canvas: Canvas;
-
     fn measure_text(&self, text: &str) -> MeasuredSize;
 }
 
