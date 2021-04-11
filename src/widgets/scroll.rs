@@ -11,13 +11,13 @@ use crate::{
 
 pub struct ScrollData {
     /// The current scroll position.
-    pub offset: u32,
+    pub offset: i32,
 
     /// The largest possible value of `offset`.
-    pub maximum_offset: u32,
+    pub maximum_offset: i32,
 
     /// The Scroll widget's main size (height of Vertical, width of Horizontal).
-    pub viewport_size: u32,
+    pub viewport_size: i32,
 }
 
 pub trait ScrollDirection {
@@ -186,6 +186,19 @@ pub struct ScrollFields<W, SD, D> {
     pub state: WidgetState,
     pub last_pointer_pos: Option<Position>,
     pub on_scroll_changed: fn(&mut D, ScrollData),
+    pub offset_target: Option<i32>,
+    pub scroll_time: u32,
+}
+
+impl<W, SD, D> ScrollFields<W, SD, D> {
+    pub fn scroll_to(&mut self, offset: i32) {
+        self.offset_target = Some(offset);
+    }
+
+    pub fn scroll_time(&mut self, time: u32) -> &mut Self {
+        self.scroll_time = time;
+        self
+    }
 }
 
 impl Scroll<(), (), NoData> {
@@ -217,6 +230,8 @@ where
                 state: WidgetState::default(),
                 last_pointer_pos: None,
                 on_scroll_changed: |_, _| (),
+                offset_target: None,
+                scroll_time: 6,
             },
             fling_controller: PointerFling::new(),
             data_holder: WidgetDataHolder::default(),
@@ -239,6 +254,8 @@ where
                 state: WidgetState::default(),
                 last_pointer_pos: None,
                 on_scroll_changed: |_, _| (),
+                offset_target: None,
+                scroll_time: 6,
             },
             fling_controller: PointerFling::new(),
             data_holder: WidgetDataHolder::default(),
@@ -267,6 +284,15 @@ where
         self.fling_controller.divisor(divisor);
         self
     }
+
+    /// Determines the time it takes for `scroll_to` to reach its target.
+    ///
+    /// The bigger the `time` parameter, the slower the scrolling speed. Does not affect manual
+    /// scrolling speed.
+    pub fn scroll_time(mut self, time: u32) -> Self {
+        self.fields.scroll_time(time);
+        self
+    }
 }
 
 impl<W, SD, F> Scroll<W, SD, NoData, F>
@@ -287,6 +313,8 @@ where
                 state: self.fields.state,
                 last_pointer_pos: self.fields.last_pointer_pos,
                 on_scroll_changed: |_, _| (),
+                offset_target: self.fields.offset_target,
+                scroll_time: self.fields.scroll_time,
             },
             fling_controller: self.fling_controller,
             data_holder: WidgetDataHolder::new(data),
@@ -336,12 +364,12 @@ where
 
         let PositionDelta { x: dx, y: dy } = self.fields.direction.offset();
 
-        let max_offset_x = child_size.width.saturating_sub(own_size.width);
-        let max_offset_y = child_size.height.saturating_sub(own_size.height);
+        let max_offset_x = child_size.width.saturating_sub(own_size.width) as i32;
+        let max_offset_y = child_size.height.saturating_sub(own_size.height) as i32;
 
         let offset = PositionDelta {
-            x: dx.min(max_offset_x as i32),
-            y: dy.min(max_offset_y as i32),
+            x: dx.min(max_offset_x),
+            y: dy.min(max_offset_y),
         };
 
         // Apply clamping.
@@ -350,8 +378,8 @@ where
         // Fire callback
         let scroll_data = ScrollData {
             maximum_offset: SD::scroll_direction(max_offset_x, max_offset_y),
-            offset: SD::scroll_direction(offset.x as u32, offset.y as u32),
-            viewport_size: SD::scroll_direction(own_size.width, own_size.height),
+            offset: SD::scroll_direction(offset.x, offset.y),
+            viewport_size: SD::scroll_direction(own_size.width as i32, own_size.height as i32),
         };
 
         let callback = self.fields.on_scroll_changed;
@@ -455,13 +483,13 @@ where
         match event {
             InputEvent::PointerEvent(position, PointerEvent::Hover) => {
                 // Need to keep track of hovered state because a Scroll event has no position
-                self.change_state(if self.bounding_box().contains(position) {
-                    Scroll::STATE_HOVERED
+                if self.bounding_box().contains(position) {
+                    self.change_state(Scroll::STATE_HOVERED);
+                    self.fields.inner.test_input(event).map(|idx| idx + 1)
                 } else {
-                    Scroll::STATE_IDLE
-                });
-
-                self.fields.inner.test_input(event).map(|idx| idx + 1)
+                    self.change_state(Scroll::STATE_IDLE);
+                    None
+                }
             }
 
             InputEvent::ScrollEvent(_) => self
@@ -477,15 +505,19 @@ where
                     }
                 }),
 
-            InputEvent::PointerEvent(_position, PointerEvent::Down) => {
+            InputEvent::PointerEvent(position, PointerEvent::Down) => {
                 // Pointer down = start drag-scrolling
-                if let Some(idx) = self.fields.inner.test_input(event) {
-                    // we give priority to our child
-                    Some(idx + 1)
-                } else if self.fields.state.state() == Scroll::STATE_HOVERED {
-                    // Avoid jumping when some events were handled by children.
-                    self.fields.last_pointer_pos = None;
-                    Some(0)
+                if self.bounding_box().contains(position) {
+                    if let Some(idx) = self.fields.inner.test_input(event) {
+                        // we give priority to our child
+                        Some(idx + 1)
+                    } else if self.fields.state.state() == Scroll::STATE_HOVERED {
+                        // Avoid jumping when some events were handled by children.
+                        self.fields.last_pointer_pos = None;
+                        Some(0)
+                    } else {
+                        None
+                    }
                 } else {
                     None
                 }
@@ -512,17 +544,26 @@ where
             InputEvent::ScrollEvent(ScrollEvent::HorizontalScroll(dx)) => {
                 self.change_offset(PositionDelta { x: -dx, y: 0 });
                 self.fling_controller.stop_fling();
+
+                // Cancel ongoing scroll_to
+                self.fields.offset_target = None;
             }
 
             InputEvent::ScrollEvent(ScrollEvent::VerticalScroll(dy)) => {
                 self.change_offset(PositionDelta { x: 0, y: -dy });
                 self.fling_controller.stop_fling();
+
+                // Cancel ongoing scroll_to
+                self.fields.offset_target = None;
             }
 
             InputEvent::PointerEvent(position, evt) if hovered => {
                 self.fields.last_pointer_pos = match evt {
                     PointerEvent::Down => {
                         self.fling_controller.stop_fling();
+
+                        // Cancel ongoing scroll_to
+                        self.fields.offset_target = None;
 
                         Some(position)
                     }
@@ -567,11 +608,41 @@ where
     fn update(&mut self) {
         self.data_holder.update(&mut self.fields);
 
-        self.fling_controller.update();
-        let delta = self.fling_controller.fling_delta();
-        if delta != 0 {
+        if let Some(target) = self.fields.offset_target {
+            let current_offset = SD::scroll_direction(
+                self.fields.direction.offset().x,
+                self.fields.direction.offset().y,
+            );
+
+            if target == current_offset {
+                self.fields.offset_target = None;
+                return;
+            }
+
+            let delta = target - current_offset;
+            let frames = self.fields.scroll_time as i32;
+
+            let delta = if delta / frames == 0 {
+                if target > current_offset {
+                    1
+                } else {
+                    -1
+                }
+            } else {
+                delta / frames
+            };
+
             let (x, y) = SD::merge_directions(delta, 0);
             self.change_offset(PositionDelta { x, y });
+
+            self.fling_controller.stop_fling();
+        } else {
+            self.fling_controller.update();
+            let delta = self.fling_controller.fling_delta();
+            if delta != 0 {
+                let (x, y) = SD::merge_directions(delta, 0);
+                self.change_offset(PositionDelta { x, y });
+            }
         }
     }
 }
