@@ -8,6 +8,7 @@ pub mod button;
 pub mod label;
 pub mod layouts;
 pub mod primitives;
+pub mod scroll;
 pub mod wrapper;
 
 pub trait Widget: WidgetStateHolder + ParentHolder + UpdateHandler {
