@@ -95,6 +95,87 @@ impl ScrollDirection for Vertical {
     }
 }
 
+pub trait FlingController {
+    fn update(&mut self);
+    fn start_fling(&mut self);
+    fn stop_fling(&mut self);
+    fn fling_delta(&self) -> i32;
+    fn set_fling_delta(&mut self, delta: i32);
+}
+
+pub struct NoFling;
+
+pub struct PointerFling {
+    next_delta: i32,
+    delta: i32,
+    divisor: i32,
+    friction: i32,
+}
+
+impl PointerFling {
+    fn new() -> Self {
+        Self {
+            delta: 0,
+            next_delta: 0,
+            divisor: 1,
+            friction: 1,
+        }
+    }
+
+    pub fn friction(&mut self, friction: i32) -> &mut Self {
+        self.friction = friction;
+        self
+    }
+
+    pub fn divisor(&mut self, divisor: i32) -> &mut Self {
+        self.divisor = divisor;
+        self
+    }
+}
+
+impl FlingController for NoFling {
+    fn start_fling(&mut self) {}
+    fn stop_fling(&mut self) {}
+
+    fn update(&mut self) {}
+
+    fn fling_delta(&self) -> i32 {
+        0
+    }
+
+    fn set_fling_delta(&mut self, _delta: i32) {}
+}
+
+impl FlingController for PointerFling {
+    fn start_fling(&mut self) {
+        // multiplication because a friction value of 1 might be too big
+        self.delta = self.next_delta * self.divisor;
+        self.next_delta = 0;
+    }
+
+    fn stop_fling(&mut self) {
+        self.delta = 0;
+    }
+
+    fn update(&mut self) {
+        if self.delta != 0 {
+            self.delta = if self.delta < 0 {
+                (self.delta + self.friction).min(0)
+            } else {
+                (self.delta - self.friction).max(0)
+            };
+        }
+    }
+
+    fn fling_delta(&self) -> i32 {
+        self.delta / self.divisor
+    }
+
+    fn set_fling_delta(&mut self, delta: i32) {
+        self.next_delta = delta;
+    }
+}
+
 // Need separation because scroll change listeners need the fields.
 pub struct ScrollFields<W, SD, D> {
     pub parent_index: usize,
@@ -112,15 +193,16 @@ impl Scroll<(), (), NoData> {
     const STATE_HOVERED: u32 = 1;
 }
 
-pub struct Scroll<W, SD, D = NoData>
+pub struct Scroll<W, SD, D = NoData, F = PointerFling>
 where
     D: WidgetData,
 {
     pub fields: ScrollFields<W, SD, D::Data>,
     data_holder: WidgetDataHolder<ScrollFields<W, SD, D::Data>, D>,
+    fling_controller: F,
 }
 
-impl<W> Scroll<W, Horizontal, NoData>
+impl<W> Scroll<W, Horizontal, NoData, PointerFling>
 where
     W: Widget,
 {
@@ -136,12 +218,13 @@ where
                 last_pointer_pos: None,
                 on_scroll_changed: |_, _| (),
             },
+            fling_controller: PointerFling::new(),
             data_holder: WidgetDataHolder::default(),
         }
     }
 }
 
-impl<W> Scroll<W, Vertical, NoData>
+impl<W> Scroll<W, Vertical, NoData, PointerFling>
 where
     W: Widget,
 {
@@ -157,16 +240,40 @@ where
                 last_pointer_pos: None,
                 on_scroll_changed: |_, _| (),
             },
+            fling_controller: PointerFling::new(),
             data_holder: WidgetDataHolder::default(),
         }
     }
 }
 
-impl<W, SD> Scroll<W, SD, NoData>
+impl<W, SD, D> Scroll<W, SD, D, PointerFling>
+where
+    W: Widget,
+    D: WidgetData,
+{
+    /// Sets the friction value.
+    ///
+    /// A higher value results in a shorter fling.
+    pub fn friction(mut self, friction: i32) -> Self {
+        self.fling_controller.friction(friction);
+        self
+    }
+
+    /// Sets the friction divisor.
+    ///
+    /// A higher value results in a smaller overall friction value, i.e. a longer fling.
+    /// Used to fine-tune the friction or to allow for smaller friction values.
+    pub fn friction_divisor(mut self, divisor: i32) -> Self {
+        self.fling_controller.divisor(divisor);
+        self
+    }
+}
+
+impl<W, SD, F> Scroll<W, SD, NoData, F>
 where
     W: Widget,
 {
-    pub fn bind<D>(self, data: D) -> Scroll<W, SD, D>
+    pub fn bind<D>(self, data: D) -> Scroll<W, SD, D, F>
     where
         D: WidgetData,
     {
@@ -181,6 +288,7 @@ where
                 last_pointer_pos: self.fields.last_pointer_pos,
                 on_scroll_changed: |_, _| (),
             },
+            fling_controller: self.fling_controller,
             data_holder: WidgetDataHolder::new(data),
         }
     }
@@ -192,6 +300,14 @@ where
     D: WidgetData,
     SD: ScrollDirection,
 {
+    pub fn disable_fling(self) -> Scroll<W, SD, D, NoFling> {
+        Scroll {
+            fields: self.fields,
+            fling_controller: NoFling,
+            data_holder: self.data_holder,
+        }
+    }
+
     pub fn on_data_changed(
         mut self,
         callback: fn(&mut ScrollFields<W, SD, D::Data>, &D::Data),
@@ -395,23 +511,44 @@ where
         match event {
             InputEvent::ScrollEvent(ScrollEvent::HorizontalScroll(dx)) => {
                 self.change_offset(PositionDelta { x: -dx, y: 0 });
+                self.fling_controller.stop_fling();
             }
 
             InputEvent::ScrollEvent(ScrollEvent::VerticalScroll(dy)) => {
                 self.change_offset(PositionDelta { x: 0, y: -dy });
+                self.fling_controller.stop_fling();
             }
 
             InputEvent::PointerEvent(position, evt) if hovered => {
-                let last = self.fields.last_pointer_pos;
                 self.fields.last_pointer_pos = match evt {
-                    PointerEvent::Drag => Some(position),
-                    PointerEvent::Up => None,
+                    PointerEvent::Down => {
+                        self.fling_controller.stop_fling();
+
+                        Some(position)
+                    }
+
+                    PointerEvent::Drag => {
+                        self.fling_controller.stop_fling();
+                        let delta = if let Some(last) = self.fields.last_pointer_pos {
+                            let delta = last - position;
+                            self.change_offset(last - position);
+                            SD::scroll_direction(delta.x, delta.y)
+                        } else {
+                            0
+                        };
+                        self.fling_controller.set_fling_delta(delta);
+
+                        Some(position)
+                    }
+
+                    PointerEvent::Up => {
+                        self.fling_controller.start_fling();
+
+                        None
+                    }
+
                     _ => return false,
                 };
-
-                if let Some(last) = last {
-                    self.change_offset(last - position);
-                }
             }
 
             _ => return false,
@@ -429,6 +566,13 @@ where
 {
     fn update(&mut self) {
         self.data_holder.update(&mut self.fields);
+
+        self.fling_controller.update();
+        let delta = self.fling_controller.fling_delta();
+        if delta != 0 {
+            let (x, y) = SD::merge_directions(delta, 0);
+            self.change_offset(PositionDelta { x, y });
+        }
     }
 }
 

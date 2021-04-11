@@ -131,6 +131,8 @@ fn main() {
                     .add(Cell::new(Label::new("o")))
                     .add(Cell::new(Label::new("Scrollolo :)"))),
             )
+            .friction(1)
+            .friction_divisor(2)
             .bind(&scroll_data) // FIXME (maybe) - needs to be bound otherwise callback doesn't fire
             .on_scroll_changed(|data, pos| {
                 data.0 = pos.offset;
