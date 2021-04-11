@@ -140,12 +140,10 @@ where
             let cell = self.widgets.at_mut(i);
             let weight = cell.weight();
             if weight == 0 {
-                let spec = MeasureSpec {
-                    width: measure_spec.width,
-                    height: MeasureConstraint::AtMost(
-                        max_main_axis_size - total_fixed_main_axis_size,
-                    ),
-                };
+                let spec = L::create_measure_spec(
+                    MeasureConstraint::AtMost(max_main_axis_size - total_fixed_main_axis_size),
+                    L::cross_axis_measure_spec(measure_spec),
+                );
 
                 let widget = cell.widget_mut();
                 widget.measure(spec);
