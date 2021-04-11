@@ -361,12 +361,12 @@ where
                     }
                 }),
 
-            InputEvent::PointerEvent(position, PointerEvent::Down) => {
+            InputEvent::PointerEvent(_position, PointerEvent::Down) => {
                 // Pointer down = start drag-scrolling
                 if let Some(idx) = self.fields.inner.test_input(event) {
                     // we give priority to our child
                     Some(idx + 1)
-                } else if self.bounding_box().contains(position) {
+                } else if self.fields.state.state() == Scroll::STATE_HOVERED {
                     // Avoid jumping when some events were handled by children.
                     self.fields.last_pointer_pos = None;
                     Some(0)
@@ -375,17 +375,8 @@ where
                 }
             }
 
-            InputEvent::PointerEvent(_, PointerEvent::Drag) => {
-                // TODO: we should check if the drag originated inside the scroll widget - even if handled by child?
-                if self.fields.state.state() == Scroll::STATE_HOVERED {
-                    Some(0)
-                } else {
-                    None
-                }
-            }
-
             // We only get Up if we handled Down
-            InputEvent::PointerEvent(_, PointerEvent::Up) => {
+            InputEvent::PointerEvent(_, PointerEvent::Drag | PointerEvent::Up) => {
                 if self.fields.state.state() == Scroll::STATE_HOVERED {
                     Some(0)
                 } else {
@@ -404,32 +395,29 @@ where
         match event {
             InputEvent::ScrollEvent(ScrollEvent::HorizontalScroll(dx)) => {
                 self.change_offset(PositionDelta { x: -dx, y: 0 });
-                true
             }
 
             InputEvent::ScrollEvent(ScrollEvent::VerticalScroll(dy)) => {
                 self.change_offset(PositionDelta { x: 0, y: -dy });
-                true
             }
 
-            InputEvent::PointerEvent(position, PointerEvent::Drag) if hovered => {
-                if let Some(last) = self.fields.last_pointer_pos {
+            InputEvent::PointerEvent(position, evt) if hovered => {
+                let last = self.fields.last_pointer_pos;
+                self.fields.last_pointer_pos = match evt {
+                    PointerEvent::Drag => Some(position),
+                    PointerEvent::Up => None,
+                    _ => return false,
+                };
+
+                if let Some(last) = last {
                     self.change_offset(last - position);
                 }
-                self.fields.last_pointer_pos = Some(position);
-                true
             }
 
-            InputEvent::PointerEvent(position, PointerEvent::Up) if hovered => {
-                if let Some(last) = self.fields.last_pointer_pos {
-                    self.change_offset(last - position);
-                }
-                self.fields.last_pointer_pos = None;
-                true
-            }
+            _ => return false,
+        };
 
-            _ => false,
-        }
+        true
     }
 }
 
