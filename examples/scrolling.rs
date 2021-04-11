@@ -178,11 +178,13 @@ fn main() {
         .build();
     let mut window = SimWindow::new("GUI demonstration", &output_settings);
 
+    // In this example, the size of the widgets can't change so it's enough to measure once.
+    gui.measure();
+
     loop {
         gui.canvas.target.clear(BinaryColor::Off).unwrap();
 
         gui.update();
-        gui.measure();
         gui.arrange();
         gui.draw().unwrap();
 
