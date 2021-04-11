@@ -212,7 +212,11 @@ where
         }
 
         match event {
-            InputEvent::Cancel => None,
+            InputEvent::Cancel => {
+                self.change_state(Button::STATE_IDLE);
+                None
+            }
+
             InputEvent::PointerEvent(position, PointerEvent::Down) => {
                 if let Some(idx) = self.fields.inner.test_input(event) {
                     // we give priority to our child
@@ -252,7 +256,10 @@ where
                     self.change_state(Button::STATE_IDLE);
                     Some(idx + 1)
                 } else if self.bounding_box().contains(position) {
-                    Some(0)
+                    self.change_state(Button::STATE_HOVERED);
+                    // We deliberately don't handle hover events. In case the button is partially
+                    // displayed, handling hover would route clicks that fall on the hidden parts.
+                    None
                 } else {
                     // Make sure we reset our state if we don't handle the pointer event.
                     // It's possible we were the target for the last one.
@@ -281,16 +288,12 @@ where
                 true
             }
             InputEvent::PointerEvent(_, pe) => match pe {
-                PointerEvent::Hover => {
-                    self.change_state(Button::STATE_HOVERED);
-                    false
-                }
+                PointerEvent::Hover | PointerEvent::Drag => false,
                 PointerEvent::Down => {
                     self.fire_on_pressed();
                     self.change_state(Button::STATE_PRESSED);
                     true
                 }
-                PointerEvent::Drag => false,
                 PointerEvent::Up => {
                     self.change_state(Button::STATE_HOVERED);
                     self.fire_on_clicked();
