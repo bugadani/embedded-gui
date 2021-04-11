@@ -481,6 +481,11 @@ where
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
         match event {
+            InputEvent::Cancel => {
+                self.fields.inner.test_input(InputEvent::Cancel);
+                None
+            }
+
             InputEvent::PointerEvent(position, PointerEvent::Hover) => {
                 // Need to keep track of hovered state because a Scroll event has no position
                 if self.bounding_box().contains(position) {
@@ -488,6 +493,7 @@ where
                     self.fields.inner.test_input(event).map(|idx| idx + 1)
                 } else {
                     self.change_state(Scroll::STATE_IDLE);
+                    self.fields.inner.test_input(InputEvent::Cancel);
                     None
                 }
             }
