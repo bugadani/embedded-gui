@@ -3,7 +3,7 @@ use embedded_graphics::{
     mono_font::{latin1, MonoTextStyle, MonoTextStyleBuilder},
     pixelcolor::PixelColor,
 };
-use embedded_gui::{geometry::BoundingBox, widgets::label::Label, WidgetState};
+use embedded_gui::{geometry::BoundingBox, widgets::label::Label};
 
 use crate::{themes::Theme, widgets::label::LabelStyle};
 
@@ -34,7 +34,6 @@ where
             },
             bounds: BoundingBox::default(),
             on_state_changed: |_, _| (),
-            state: WidgetState::default(),
         }
     }
 }

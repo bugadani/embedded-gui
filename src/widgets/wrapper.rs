@@ -1,6 +1,7 @@
 use crate::{
     data::{NoData, WidgetData},
     geometry::{measurement::MeasureSpec, BoundingBox},
+    state::WidgetState,
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
     Canvas, WidgetRenderer,
 };
@@ -81,12 +82,8 @@ where
     W: Widget,
     D: WidgetData,
 {
-    fn change_state(&mut self, state: u32) {
-        self.widget.change_state(state)
-    }
-
-    fn change_selection(&mut self, state: bool) {
-        self.widget.change_selection(state)
+    fn on_state_changed(&mut self, state: WidgetState) {
+        self.widget.on_state_changed(state);
     }
 }
 

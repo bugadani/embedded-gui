@@ -1,8 +1,8 @@
 use crate::{
     data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
+    state::WidgetState,
     widgets::{wrapper::Wrapper, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
-    WidgetState,
 };
 
 pub trait LabelProperties {
@@ -19,7 +19,6 @@ where
     pub bounds: BoundingBox,
     pub parent_index: usize,
     pub on_state_changed: fn(&mut Self, WidgetState),
-    pub state: WidgetState,
 }
 
 impl<S, P> Label<S, P>
@@ -45,18 +44,8 @@ where
     S: AsRef<str>,
     P: LabelProperties,
 {
-    fn change_state(&mut self, state: u32) {
-        // apply state
-        if self.state.change_state(state) {
-            (self.on_state_changed)(self, self.state);
-        }
-    }
-
-    fn change_selection(&mut self, state: bool) {
-        // apply state
-        if self.state.change_selection(state) {
-            (self.on_state_changed)(self, self.state);
-        }
+    fn on_state_changed(&mut self, state: WidgetState) {
+        (self.on_state_changed)(self, state);
     }
 
     fn is_selectable(&self) -> bool {

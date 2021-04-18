@@ -8,8 +8,8 @@ use crate::{
         controller::InputContext,
         event::{InputEvent, PointerEvent, ScrollEvent},
     },
+    state::{State, StateGroup, WidgetState},
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
-    WidgetState,
 };
 
 pub struct ScrollData {
@@ -204,9 +204,39 @@ impl<W, SD, D> ScrollFields<W, SD, D> {
     }
 }
 
+impl<W, SD, D> ScrollFields<W, SD, D>
+where
+    W: WidgetStateHolder,
+{
+    fn change_state(&mut self, state: impl State) {
+        if self.state.set_state(state) {
+            self.inner.on_state_changed(self.state);
+        }
+    }
+}
+
+pub struct ScrollStateGroup;
+impl StateGroup for ScrollStateGroup {
+    const MASK: u32 = 0x0000_0001;
+}
+
+pub struct Idle;
+impl State for Idle {
+    type Group = ScrollStateGroup;
+
+    const VALUE: u32 = 0x0000_0000;
+}
+
+pub struct Hovered;
+impl State for Hovered {
+    type Group = ScrollStateGroup;
+
+    const VALUE: u32 = 0x0000_0001;
+}
+
 impl Scroll<(), (), NoData> {
-    const STATE_IDLE: u32 = 0;
-    const STATE_HOVERED: u32 = 1;
+    const STATE_IDLE: Idle = Idle;
+    const STATE_HOVERED: Hovered = Hovered;
 }
 
 pub struct Scroll<W, SD, D = NoData, F = PointerFling>
@@ -397,12 +427,8 @@ where
     W: Widget,
     D: WidgetData,
 {
-    fn change_state(&mut self, state: u32) {
-        self.fields.state.change_state(state);
-    }
-
-    fn change_selection(&mut self, state: bool) {
-        self.fields.state.change_selection(state);
+    fn on_state_changed(&mut self, _state: WidgetState) {
+        // don't react to parent's state change
     }
 
     fn is_selectable(&self) -> bool {
@@ -492,10 +518,10 @@ where
             InputEvent::PointerEvent(position, PointerEvent::Hover) => {
                 // Need to keep track of hovered state because a Scroll event has no position
                 if self.bounding_box().contains(position) {
-                    self.change_state(Scroll::STATE_HOVERED);
+                    self.fields.change_state(Scroll::STATE_HOVERED);
                     self.fields.inner.test_input(event).map(|idx| idx + 1)
                 } else {
-                    self.change_state(Scroll::STATE_IDLE);
+                    self.fields.change_state(Scroll::STATE_IDLE);
                     self.fields.inner.test_input(InputEvent::Cancel);
                     None
                 }
@@ -507,7 +533,7 @@ where
                 .test_input(event)
                 .map(|idx| idx + 1)
                 .or_else(|| {
-                    if self.fields.state.state() == Scroll::STATE_HOVERED {
+                    if self.fields.state.has_state(Scroll::STATE_HOVERED) {
                         Some(0)
                     } else {
                         None
@@ -520,7 +546,7 @@ where
                     if let Some(idx) = self.fields.inner.test_input(event) {
                         // we give priority to our child
                         Some(idx + 1)
-                    } else if self.fields.state.state() == Scroll::STATE_HOVERED {
+                    } else if self.fields.state.has_state(Scroll::STATE_HOVERED) {
                         // Avoid jumping when some events were handled by children.
                         self.fields.last_pointer_pos = None;
                         Some(0)
@@ -534,7 +560,7 @@ where
 
             // We only get Up if we handled Down
             InputEvent::PointerEvent(_, PointerEvent::Drag | PointerEvent::Up) => {
-                if self.fields.state.state() == Scroll::STATE_HOVERED {
+                if self.fields.state.has_state(Scroll::STATE_HOVERED) {
                     Some(0)
                 } else {
                     None
@@ -548,7 +574,7 @@ where
     }
 
     fn handle_input(&mut self, _ctxt: InputContext, event: InputEvent) -> bool {
-        let hovered = self.fields.state.state() == Scroll::STATE_HOVERED;
+        let hovered = self.fields.state.has_state(Scroll::STATE_HOVERED);
         match event {
             InputEvent::ScrollEvent(ScrollEvent::HorizontalScroll(dx)) => {
                 self.change_offset(PositionDelta { x: -dx, y: 0 });

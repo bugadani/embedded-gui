@@ -2,8 +2,8 @@ use crate::{
     data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
     input::event::InputEvent,
+    state::WidgetState,
     widgets::{wrapper::Wrapper, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
-    WidgetState,
 };
 
 pub trait BorderProperties {
@@ -22,7 +22,6 @@ where
     pub border_properties: P,
     pub parent_index: usize,
     pub on_state_changed: fn(&mut Self, WidgetState),
-    pub state: WidgetState,
 }
 
 impl<W, P> Border<W, P>
@@ -39,7 +38,6 @@ where
             border_properties: P::default(),
             inner,
             on_state_changed: |_, _| (),
-            state: WidgetState::default(),
         }
     }
 
@@ -185,15 +183,10 @@ where
     W: Widget,
     P: BorderProperties,
 {
-    fn change_state(&mut self, state: u32) {
-        // propagate state to child widget
-        self.inner.change_state(state);
-        if self.state.change_state(state) {
-            (self.on_state_changed)(self, self.state);
-        }
+    fn on_state_changed(&mut self, state: WidgetState) {
+        (self.on_state_changed)(self, state);
+        self.inner.on_state_changed(state);
     }
-
-    fn change_selection(&mut self, _state: bool) {}
 
     fn is_selectable(&self) -> bool {
         false
