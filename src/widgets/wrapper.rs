@@ -1,7 +1,8 @@
 use crate::{
     data::{NoData, WidgetData},
+    geometry::{measurement::MeasureSpec, BoundingBox},
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
-    BoundingBox, Canvas, MeasureSpec, WidgetRenderer,
+    Canvas, WidgetRenderer,
 };
 
 pub struct Wrapper<W, D>

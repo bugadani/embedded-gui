@@ -12,6 +12,7 @@ use embedded_graphics_simulator::{
 };
 use embedded_gui::{
     data::BoundData,
+    geometry::Position,
     input::event::{InputEvent, PointerEvent, ScrollEvent},
     widgets::{
         label::Label,
@@ -19,7 +20,7 @@ use embedded_gui::{
         primitives::border::Border,
         scroll::Scroll,
     },
-    Position, Window,
+    Window,
 };
 
 fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {

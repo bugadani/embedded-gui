@@ -8,7 +8,10 @@ use embedded_graphics::{
     prelude::{Point, Size},
     primitives::Rectangle,
 };
-use embedded_gui::{BoundingBox, Canvas, MeasuredSize};
+use embedded_gui::{
+    geometry::{BoundingBox, MeasuredSize},
+    Canvas,
+};
 
 trait ToRectangle {
     fn to_rectangle(self) -> Rectangle;

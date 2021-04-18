@@ -1,114 +1,18 @@
 #![no_std]
 
 pub mod data;
+pub mod geometry;
 pub mod input;
 pub mod widgets;
 
-use core::ops::{Add, Neg, Sub};
-
 use crate::{
+    geometry::{measurement::MeasureSpec, MeasuredSize, Position},
     input::{
         controller::{DefaultInputController, InputController},
         event::InputEvent,
     },
     widgets::Widget,
 };
-
-#[derive(Clone, Copy, Debug)]
-pub struct Position {
-    pub x: i32,
-    pub y: i32,
-}
-
-impl Sub<Position> for Position {
-    type Output = PositionDelta;
-
-    fn sub(self, rhs: Position) -> Self::Output {
-        PositionDelta {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-        }
-    }
-}
-
-impl Sub<PositionDelta> for Position {
-    type Output = Position;
-
-    fn sub(self, rhs: PositionDelta) -> Self::Output {
-        Position {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct PositionDelta {
-    pub x: i32,
-    pub y: i32,
-}
-
-impl Add<PositionDelta> for Position {
-    type Output = Position;
-
-    fn add(self, rhs: PositionDelta) -> Self::Output {
-        Position {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-        }
-    }
-}
-
-impl Neg for PositionDelta {
-    type Output = PositionDelta;
-
-    fn neg(self) -> Self::Output {
-        PositionDelta {
-            x: -self.x,
-            y: -self.y,
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct MeasuredSize {
-    pub width: u32,
-    pub height: u32,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct BoundingBox {
-    pub position: Position,
-    pub size: MeasuredSize,
-}
-
-impl BoundingBox {
-    pub fn contains(&self, position: Position) -> bool {
-        position.x >= self.position.x
-            && position.y >= self.position.y
-            && position.x <= self.position.x + self.size.width as i32
-            && position.y <= self.position.y + self.size.height as i32
-    }
-
-    pub fn translate(self, by: PositionDelta) -> BoundingBox {
-        BoundingBox {
-            position: self.position + by,
-            size: self.size,
-        }
-    }
-}
-
-impl Default for BoundingBox {
-    fn default() -> Self {
-        Self {
-            position: Position { x: 0, y: 0 },
-            size: MeasuredSize {
-                width: 0,
-                height: 0,
-            },
-        }
-    }
-}
 
 pub trait WidgetRenderer<C: Canvas> {
     fn draw(&self, canvas: &mut C) -> Result<(), C::Error>;
@@ -118,53 +22,6 @@ pub trait Canvas {
     type Error;
 
     fn size(&self) -> MeasuredSize;
-}
-
-#[derive(Copy, Clone, Debug)]
-pub enum MeasureConstraint {
-    AtMost(u32),
-    Exactly(u32),
-    Unspecified,
-}
-
-impl MeasureConstraint {
-    pub fn shrink(self, by: u32) -> MeasureConstraint {
-        match self {
-            MeasureConstraint::AtMost(size) => MeasureConstraint::AtMost(size.saturating_sub(by)),
-            MeasureConstraint::Exactly(size) => MeasureConstraint::Exactly(size.saturating_sub(by)),
-            MeasureConstraint::Unspecified => MeasureConstraint::Unspecified,
-        }
-    }
-
-    pub fn apply_to_measured(self, measured: u32) -> u32 {
-        match self {
-            MeasureConstraint::AtMost(constraint) => constraint.min(measured),
-            MeasureConstraint::Exactly(constraint) => constraint,
-            MeasureConstraint::Unspecified => measured,
-        }
-    }
-
-    pub fn to_at_most(self) -> MeasureConstraint {
-        match self {
-            MeasureConstraint::AtMost(size) => MeasureConstraint::AtMost(size),
-            MeasureConstraint::Exactly(size) => MeasureConstraint::AtMost(size),
-            MeasureConstraint::Unspecified => MeasureConstraint::AtMost(u32::MAX),
-        }
-    }
-
-    pub fn largest(self) -> Option<u32> {
-        match self {
-            MeasureConstraint::AtMost(size) => Some(size),
-            MeasureConstraint::Exactly(size) => Some(size),
-            MeasureConstraint::Unspecified => None,
-        }
-    }
-}
-
-#[derive(Copy, Clone, Debug)]
-pub struct MeasureSpec {
-    width: MeasureConstraint,
-    height: MeasureConstraint,
 }
 
 #[derive(Copy, Clone, Default)]
@@ -253,10 +110,8 @@ where
     }
 
     pub fn measure(&mut self) {
-        self.root.measure(MeasureSpec {
-            width: MeasureConstraint::AtMost(self.canvas.size().width),
-            height: MeasureConstraint::AtMost(self.canvas.size().height),
-        });
+        self.root
+            .measure(MeasureSpec::from_measured_at_most(self.canvas.size()));
     }
 
     pub fn arrange(&mut self) {

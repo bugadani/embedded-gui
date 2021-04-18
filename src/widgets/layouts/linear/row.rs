@@ -1,6 +1,10 @@
 use object_chain::Chain;
 
 use crate::{
+    geometry::{
+        measurement::{MeasureConstraint, MeasureSpec},
+        BoundingBox, MeasuredSize, Position,
+    },
     widgets::{
         layouts::linear::{
             layout::{LayoutDirection, LinearLayout},
@@ -8,7 +12,6 @@ use crate::{
         },
         Widget,
     },
-    BoundingBox, MeasureConstraint, MeasureSpec, MeasuredSize, Position,
 };
 
 #[derive(Copy, Clone)]

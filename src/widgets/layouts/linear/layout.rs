@@ -1,6 +1,10 @@
 use object_chain::{ChainElement, Link};
 
 use crate::{
+    geometry::{
+        measurement::{MeasureConstraint, MeasureSpec},
+        BoundingBox, MeasuredSize, Position,
+    },
     input::event::InputEvent,
     widgets::{
         layouts::linear::{
@@ -8,7 +12,7 @@ use crate::{
         },
         ParentHolder, UpdateHandler, Widget, WidgetStateHolder,
     },
-    BoundingBox, Canvas, MeasureConstraint, MeasureSpec, MeasuredSize, Position, WidgetRenderer,
+    Canvas, WidgetRenderer,
 };
 
 pub trait LayoutDirection: Copy {

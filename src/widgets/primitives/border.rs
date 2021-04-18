@@ -1,8 +1,9 @@
 use crate::{
     data::WidgetData,
+    geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
     input::event::InputEvent,
     widgets::{wrapper::Wrapper, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
-    BoundingBox, MeasureSpec, MeasuredSize, Position, WidgetState,
+    WidgetState,
 };
 
 pub trait BorderProperties {

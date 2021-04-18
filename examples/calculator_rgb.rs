@@ -16,6 +16,7 @@ use embedded_graphics_simulator::{
 };
 use embedded_gui::{
     data::BoundData,
+    geometry::Position,
     input::event::{InputEvent, PointerEvent},
     widgets::{
         label::Label,
@@ -26,7 +27,7 @@ use embedded_gui::{
             spacing::Spacing,
         },
     },
-    Position, Window,
+    Window,
 };
 use heapless::{consts::U11, String};
 

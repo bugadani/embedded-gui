@@ -6,8 +6,9 @@ use embedded_graphics::{
     text::TextRenderer,
 };
 use embedded_gui::{
+    geometry::MeasuredSize,
     widgets::label::{Label, LabelProperties},
-    MeasuredSize, WidgetRenderer,
+    WidgetRenderer,
 };
 
 pub mod ascii;
