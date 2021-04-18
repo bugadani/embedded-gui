@@ -3,6 +3,7 @@
 pub mod data;
 pub mod geometry;
 pub mod input;
+pub mod state;
 pub mod widgets;
 
 use crate::{
@@ -22,38 +23,6 @@ pub trait Canvas {
     type Error;
 
     fn size(&self) -> MeasuredSize;
-}
-
-#[derive(Copy, Clone, Default)]
-pub struct WidgetState(u32);
-
-impl WidgetState {
-    const SELECTION_STATE_BITS: u32 = 0x8000_0000;
-    pub fn selected(self) -> bool {
-        (self.0 & Self::SELECTION_STATE_BITS) != 0
-    }
-
-    pub fn change_selection(&mut self, selected: bool) -> bool {
-        let old = self.0;
-        if selected {
-            self.0 |= Self::SELECTION_STATE_BITS
-        } else {
-            self.0 &= !Self::SELECTION_STATE_BITS
-        }
-
-        old != self.0
-    }
-
-    pub fn state(self) -> u32 {
-        self.0 & !Self::SELECTION_STATE_BITS
-    }
-
-    pub fn change_state(&mut self, state: u32) -> bool {
-        let old = self.0;
-        self.0 = state & !Self::SELECTION_STATE_BITS;
-
-        old != self.0
-    }
 }
 
 pub struct Window<C, W, I>

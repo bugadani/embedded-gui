@@ -2,8 +2,8 @@ use crate::{
     data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, Position},
     input::event::InputEvent,
+    state::WidgetState,
     widgets::{wrapper::Wrapper, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
-    WidgetState,
 };
 
 pub trait BackgroundProperties {

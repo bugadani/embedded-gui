@@ -5,8 +5,9 @@ use crate::{
         controller::InputContext,
         event::{InputEvent, PointerEvent},
     },
+    state::WidgetState,
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
-    Canvas, WidgetRenderer, WidgetState,
+    Canvas, WidgetRenderer,
 };
 
 // It's necessary to split off the non-data fields so that callbacks can work on the widget while

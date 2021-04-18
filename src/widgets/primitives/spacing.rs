@@ -2,8 +2,9 @@ use crate::{
     data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
     input::event::InputEvent,
+    state::WidgetState,
     widgets::{wrapper::Wrapper, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
-    Canvas, WidgetRenderer, WidgetState,
+    Canvas, WidgetRenderer,
 };
 
 #[derive(Default, Clone, Copy)]

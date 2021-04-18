@@ -8,8 +8,8 @@ use crate::{
         controller::InputContext,
         event::{InputEvent, PointerEvent, ScrollEvent},
     },
+    state::WidgetState,
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
-    WidgetState,
 };
 
 pub struct ScrollData {
