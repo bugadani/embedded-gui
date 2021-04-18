@@ -5,7 +5,7 @@ use crate::{
         controller::InputContext,
         event::{InputEvent, PointerEvent},
     },
-    state::{State, WidgetState},
+    state::{State, StateGroup, WidgetState},
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
     Canvas, WidgetRenderer,
 };
@@ -16,7 +16,6 @@ pub struct ButtonFields<W, D> {
     pub parent_index: usize,
     pub inner: W,
     pub on_clicked: fn(&mut D),
-    pub on_state_changed: fn(&mut Self, WidgetState),
     pub state: WidgetState,
 }
 
@@ -24,10 +23,9 @@ impl<W, D> ButtonFields<W, D>
 where
     W: Widget,
 {
-    pub fn change_state(&mut self, state: impl State) -> &mut Self {
+    fn change_state(&mut self, state: impl State) -> &mut Self {
         if self.state.set_state(state) {
             self.inner.on_state_changed(self.state);
-            (self.on_state_changed)(self, self.state);
         }
 
         self
@@ -35,10 +33,7 @@ where
 
     pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         if enabled {
-            if self.state.state() == Button::STATE_DISABLED {
-                // Don't want to override other states
-                self.change_state(Button::STATE_IDLE);
-            }
+            self.change_state(Button::STATE_ENABLED);
         } else {
             self.change_state(Button::STATE_DISABLED);
         }
@@ -55,11 +50,57 @@ where
     data_holder: WidgetDataHolder<ButtonFields<W, D::Data>, D>,
 }
 
+pub struct ButtonStateGroup;
+impl StateGroup for ButtonStateGroup {
+    const MASK: u32 = 0x0000_0003;
+}
+
+pub struct Idle;
+impl State for Idle {
+    type Group = ButtonStateGroup;
+
+    const VALUE: u32 = 0x0000_0000;
+}
+
+pub struct Hovered;
+impl State for Hovered {
+    type Group = ButtonStateGroup;
+
+    const VALUE: u32 = 0x0000_0001;
+}
+
+pub struct Pressed;
+impl State for Pressed {
+    type Group = ButtonStateGroup;
+
+    const VALUE: u32 = 0x0000_0002;
+}
+
+pub struct ButtonDisabledStateGroup;
+impl StateGroup for ButtonDisabledStateGroup {
+    const MASK: u32 = 0x0000_0004;
+}
+
+pub struct Enabled;
+impl State for Enabled {
+    type Group = ButtonDisabledStateGroup;
+
+    const VALUE: u32 = 0x0000_0000;
+}
+
+pub struct Disabled;
+impl State for Disabled {
+    type Group = ButtonDisabledStateGroup;
+
+    const VALUE: u32 = 0x0000_0004;
+}
+
 impl Button<(), NoData> {
-    pub const STATE_IDLE: u32 = 0;
-    pub const STATE_HOVERED: u32 = 1;
-    pub const STATE_PRESSED: u32 = 2;
-    pub const STATE_DISABLED: u32 = 3;
+    pub const STATE_IDLE: Idle = Idle;
+    pub const STATE_HOVERED: Hovered = Hovered;
+    pub const STATE_PRESSED: Pressed = Pressed;
+    pub const STATE_DISABLED: Disabled = Disabled;
+    pub const STATE_ENABLED: Enabled = Enabled;
 }
 
 impl<W> Button<W, NoData>
@@ -72,7 +113,6 @@ where
                 parent_index: 0,
                 inner,
                 on_clicked: |_| (),
-                on_state_changed: |_, _| (),
                 state: WidgetState::default(),
             },
             data_holder: WidgetDataHolder::default(),
@@ -88,7 +128,6 @@ where
                 parent_index: self.fields.parent_index,
                 inner: self.fields.inner,
                 on_clicked: |_| (),
-                on_state_changed: |_, _| (),
                 state: self.fields.state,
             },
             data_holder: WidgetDataHolder::new(data),
@@ -108,7 +147,6 @@ where
 
     pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
         self.fields.set_enabled(enabled);
-
         self
     }
 
@@ -128,7 +166,6 @@ where
         self
     }
 
-    fn fire_on_pressed(&mut self) {}
     fn fire_on_clicked(&mut self) {
         let callback = self.fields.on_clicked;
         self.data_holder.data.update(callback);
@@ -142,19 +179,6 @@ where
 {
     fn on_state_changed(&mut self, _state: WidgetState) {
         // don't react to parent's state change
-    }
-
-    fn change_selection(&mut self, state: bool) {
-        // apply state
-        if self.fields.state.change_selection(state) {
-            let button_fields = &mut self.fields;
-            (button_fields.on_state_changed)(button_fields, button_fields.state);
-        }
-        if !state {
-            // while this isn't correct (i.e. deselecting by keyboard removes hover state)
-            // it might be good enough
-            self.change_state(Button::STATE_IDLE);
-        }
     }
 
     fn is_selectable(&self) -> bool {
@@ -209,13 +233,13 @@ where
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
-        if self.fields.state.state() == Button::STATE_DISABLED {
+        if self.fields.state.has_state(Button::STATE_DISABLED) {
             return None;
         }
 
         match event {
             InputEvent::Cancel => {
-                self.change_state(Button::STATE_IDLE);
+                self.fields.change_state(Button::STATE_IDLE);
                 None
             }
 
@@ -232,20 +256,20 @@ where
 
             InputEvent::PointerEvent(position, PointerEvent::Drag) => {
                 if self.bounding_box().contains(position) {
-                    if self.fields.state.state() != Button::STATE_PRESSED {
-                        self.change_state(Button::STATE_HOVERED);
+                    if !self.fields.state.has_state(Button::STATE_PRESSED) {
+                        self.fields.change_state(Button::STATE_HOVERED);
                     }
                     Some(0)
                 } else {
                     // Drag outside = cancel
-                    self.change_state(Button::STATE_IDLE);
+                    self.fields.change_state(Button::STATE_IDLE);
                     None
                 }
             }
 
             // We only get Up if we handled Down
             InputEvent::PointerEvent(_, PointerEvent::Up) => {
-                if self.fields.state.state() == Button::STATE_PRESSED {
+                if self.fields.state.has_state(Button::STATE_PRESSED) {
                     Some(0)
                 } else {
                     None
@@ -255,17 +279,17 @@ where
             InputEvent::PointerEvent(position, PointerEvent::Hover) => {
                 if let Some(idx) = self.fields.inner.test_input(event) {
                     // we give priority to our child
-                    self.change_state(Button::STATE_IDLE);
+                    self.fields.change_state(Button::STATE_IDLE);
                     Some(idx + 1)
                 } else if self.bounding_box().contains(position) {
-                    self.change_state(Button::STATE_HOVERED);
+                    self.fields.change_state(Button::STATE_HOVERED);
                     // We deliberately don't handle hover events. In case the button is partially
                     // displayed, handling hover would route clicks that fall on the hidden parts.
                     None
                 } else {
                     // Make sure we reset our state if we don't handle the pointer event.
                     // It's possible we were the target for the last one.
-                    self.change_state(Button::STATE_IDLE);
+                    self.fields.change_state(Button::STATE_IDLE);
                     None
                 }
             }
@@ -278,26 +302,25 @@ where
     }
 
     fn handle_input(&mut self, _ctxt: InputContext, event: InputEvent) -> bool {
-        if self.fields.state.state() == Button::STATE_DISABLED {
+        if self.fields.state.has_state(Button::STATE_DISABLED) {
             return false;
         }
 
         match event {
             InputEvent::Cancel => {
-                if self.fields.state.state() == Button::STATE_PRESSED {
-                    self.change_state(Button::STATE_HOVERED);
+                if self.fields.state.has_state(Button::STATE_PRESSED) {
+                    self.fields.change_state(Button::STATE_HOVERED);
                 }
                 true
             }
             InputEvent::PointerEvent(_, pe) => match pe {
                 PointerEvent::Hover | PointerEvent::Drag => false,
                 PointerEvent::Down => {
-                    self.fire_on_pressed();
-                    self.change_state(Button::STATE_PRESSED);
+                    self.fields.change_state(Button::STATE_PRESSED);
                     true
                 }
                 PointerEvent::Up => {
-                    self.change_state(Button::STATE_HOVERED);
+                    self.fields.change_state(Button::STATE_HOVERED);
                     self.fire_on_clicked();
                     true
                 }

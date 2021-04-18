@@ -75,11 +75,14 @@ where
                         .text_color(S::Idle::LABEL_COLOR)
                         .font(S::font())
                         .on_state_changed(|label, state| {
-                            label.set_text_color(match state.state() {
-                                Button::STATE_DISABLED => S::Disabled::LABEL_COLOR,
-                                Button::STATE_HOVERED => S::Hovered::LABEL_COLOR,
-                                Button::STATE_PRESSED => S::Pressed::LABEL_COLOR,
-                                _ => S::Idle::LABEL_COLOR,
+                            label.set_text_color(if state.has_state(Button::STATE_DISABLED) {
+                                S::Disabled::LABEL_COLOR
+                            } else if state.has_state(Button::STATE_HOVERED) {
+                                S::Hovered::LABEL_COLOR
+                            } else if state.has_state(Button::STATE_PRESSED) {
+                                S::Pressed::LABEL_COLOR
+                            } else {
+                                S::Idle::LABEL_COLOR
                             });
                         }),
                 )
@@ -88,21 +91,27 @@ where
             )
             .border_color(S::Idle::BORDER_COLOR)
             .on_state_changed(|button, state| {
-                button.set_border_color(match state.state() {
-                    Button::STATE_DISABLED => S::Disabled::BORDER_COLOR,
-                    Button::STATE_HOVERED => S::Hovered::BORDER_COLOR,
-                    Button::STATE_PRESSED => S::Pressed::BORDER_COLOR,
-                    _ => S::Idle::BORDER_COLOR,
+                button.set_border_color(if state.has_state(Button::STATE_DISABLED) {
+                    S::Disabled::BORDER_COLOR
+                } else if state.has_state(Button::STATE_HOVERED) {
+                    S::Hovered::BORDER_COLOR
+                } else if state.has_state(Button::STATE_PRESSED) {
+                    S::Pressed::BORDER_COLOR
+                } else {
+                    S::Idle::BORDER_COLOR
                 });
             }),
         )
         .background_color(S::Idle::BACKGROUND_COLOR)
         .on_state_changed(|button, state| {
-            button.set_background_color(match state.state() {
-                Button::STATE_DISABLED => S::Disabled::BACKGROUND_COLOR,
-                Button::STATE_HOVERED => S::Hovered::BACKGROUND_COLOR,
-                Button::STATE_PRESSED => S::Pressed::BACKGROUND_COLOR,
-                _ => S::Idle::BACKGROUND_COLOR,
+            button.set_background_color(if state.has_state(Button::STATE_DISABLED) {
+                S::Disabled::BACKGROUND_COLOR
+            } else if state.has_state(Button::STATE_HOVERED) {
+                S::Hovered::BACKGROUND_COLOR
+            } else if state.has_state(Button::STATE_PRESSED) {
+                S::Pressed::BACKGROUND_COLOR
+            } else {
+                S::Idle::BACKGROUND_COLOR
             });
         }),
     )

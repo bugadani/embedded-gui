@@ -86,10 +86,12 @@ fn update_button_background<W: Widget>(
     widget: &mut Background<W, BackgroundStyle<BinaryColor>>,
     state: WidgetState,
 ) {
-    match state.state() {
-        Button::STATE_HOVERED => widget.set_background_color(BinaryColor::Off),
-        Button::STATE_PRESSED => widget.set_background_color(BinaryColor::On),
-        _ => widget.set_background_color(BinaryColor::Off),
+    if state.has_state(Button::STATE_HOVERED) {
+        widget.set_background_color(BinaryColor::Off)
+    } else if state.has_state(Button::STATE_PRESSED) {
+        widget.set_background_color(BinaryColor::On)
+    } else {
+        widget.set_background_color(BinaryColor::Off)
     };
 }
 
@@ -97,10 +99,12 @@ fn update_button_border<W: Widget>(
     widget: &mut Border<W, BorderStyle<BinaryColor>>,
     state: WidgetState,
 ) {
-    match state.state() {
-        Button::STATE_HOVERED => widget.set_border_color(BinaryColor::On),
-        Button::STATE_PRESSED => widget.set_border_color(BinaryColor::Off),
-        _ => widget.set_border_color(BinaryColor::Off),
+    if state.has_state(Button::STATE_HOVERED) {
+        widget.set_border_color(BinaryColor::On)
+    } else if state.has_state(Button::STATE_PRESSED) {
+        widget.set_border_color(BinaryColor::Off)
+    } else {
+        widget.set_border_color(BinaryColor::Off)
     };
 }
 
