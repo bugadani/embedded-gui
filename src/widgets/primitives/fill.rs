@@ -4,6 +4,7 @@ use crate::{
         BoundingBox, MeasuredSize, Position,
     },
     input::event::InputEvent,
+    state::WidgetState,
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
     Canvas, WidgetRenderer,
 };
@@ -189,12 +190,9 @@ where
     H: HorizontalAlignment,
     V: VerticalAlignment,
 {
-    fn change_state(&mut self, state: u32) {
-        // propagate state to child widget
-        self.inner.change_state(state);
+    fn on_state_changed(&mut self, state: WidgetState) {
+        self.inner.on_state_changed(state);
     }
-
-    fn change_selection(&mut self, _state: bool) {}
 
     fn is_selectable(&self) -> bool {
         false

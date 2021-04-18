@@ -20,7 +20,6 @@ pub struct Spacing<W> {
     pub spacing: SpacingSpec,
     pub parent_index: usize,
     pub on_state_changed: fn(&mut Self, WidgetState),
-    pub state: WidgetState,
 }
 
 impl<W> Spacing<W>
@@ -33,7 +32,6 @@ where
             spacing: SpacingSpec::default(),
             inner,
             on_state_changed: |_, _| (),
-            state: WidgetState::default(),
         }
     }
 
@@ -108,17 +106,10 @@ impl<W> WidgetStateHolder for Spacing<W>
 where
     W: Widget,
 {
-    fn change_state(&mut self, state: u32) {
-        // propagate state to child widget
-        self.inner.change_state(state);
-
-        // apply state
-        if self.state.change_state(state) {
-            (self.on_state_changed)(self, self.state);
-        }
+    fn on_state_changed(&mut self, state: WidgetState) {
+        (self.on_state_changed)(self, state);
+        self.inner.on_state_changed(state);
     }
-
-    fn change_selection(&mut self, _state: bool) {}
 
     fn is_selectable(&self) -> bool {
         false

@@ -6,6 +6,7 @@ use crate::{
         BoundingBox, MeasuredSize, Position,
     },
     input::event::InputEvent,
+    state::WidgetState,
     widgets::{
         layouts::linear::{
             Cell, CellWeight, ElementSpacing, LinearLayoutChainElement, NoSpacing, WithSpacing,
@@ -253,9 +254,7 @@ impl<CE, L, ES> ParentHolder for LinearLayout<CE, L, ES> {
 }
 
 impl<CE, L, ES> WidgetStateHolder for LinearLayout<CE, L, ES> {
-    fn change_state(&mut self, _state: u32) {}
-
-    fn change_selection(&mut self, _state: bool) {}
+    fn on_state_changed(&mut self, _state: WidgetState) {}
 }
 
 impl<CE, L, ES> UpdateHandler for LinearLayout<CE, L, ES> {}

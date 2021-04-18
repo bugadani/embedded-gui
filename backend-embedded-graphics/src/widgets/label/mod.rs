@@ -106,7 +106,6 @@ where
             bounds: self.bounds,
             label_properties,
             on_state_changed: |_, _| (),
-            state: self.state,
         }
     }
 
@@ -120,7 +119,6 @@ where
             bounds: self.bounds,
             label_properties: props,
             on_state_changed: |_, _| (),
-            state: self.state,
         }
     }
 }

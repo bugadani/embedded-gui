@@ -2,6 +2,7 @@ use crate::{
     data::{NoData, WidgetData},
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
     input::{controller::InputContext, event::InputEvent},
+    state::WidgetState,
 };
 
 pub mod button;
@@ -106,8 +107,8 @@ where
 }
 
 pub trait WidgetStateHolder {
-    fn change_state(&mut self, state: u32);
-    fn change_selection(&mut self, state: bool);
+    fn on_state_changed(&mut self, state: WidgetState);
+
     fn is_selectable(&self) -> bool {
         true
     }

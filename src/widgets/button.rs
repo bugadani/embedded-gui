@@ -5,7 +5,7 @@ use crate::{
         controller::InputContext,
         event::{InputEvent, PointerEvent},
     },
-    state::WidgetState,
+    state::{State, WidgetState},
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
     Canvas, WidgetRenderer,
 };
@@ -24,9 +24,9 @@ impl<W, D> ButtonFields<W, D>
 where
     W: Widget,
 {
-    pub fn change_state(&mut self, state: u32) -> &mut Self {
-        if self.state.change_state(state) {
-            self.inner.change_state(state);
+    pub fn change_state(&mut self, state: impl State) -> &mut Self {
+        if self.state.set_state(state) {
+            self.inner.on_state_changed(self.state);
             (self.on_state_changed)(self, self.state);
         }
 
@@ -140,8 +140,8 @@ where
     W: Widget,
     D: WidgetData,
 {
-    fn change_state(&mut self, state: u32) {
-        self.fields.change_state(state);
+    fn on_state_changed(&mut self, _state: WidgetState) {
+        // don't react to parent's state change
     }
 
     fn change_selection(&mut self, state: bool) {

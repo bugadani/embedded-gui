@@ -397,12 +397,8 @@ where
     W: Widget,
     D: WidgetData,
 {
-    fn change_state(&mut self, state: u32) {
-        self.fields.state.change_state(state);
-    }
-
-    fn change_selection(&mut self, state: bool) {
-        self.fields.state.change_selection(state);
+    fn on_state_changed(&mut self, _state: WidgetState) {
+        // don't react to parent's state change
     }
 
     fn is_selectable(&self) -> bool {
