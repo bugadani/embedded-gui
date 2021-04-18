@@ -2,7 +2,7 @@ use embedded_graphics::{
     mono_font::{ascii, MonoTextStyle, MonoTextStyleBuilder},
     pixelcolor::PixelColor,
 };
-use embedded_gui::{widgets::label::Label, BoundingBox, WidgetState};
+use embedded_gui::{geometry::BoundingBox, widgets::label::Label, WidgetState};
 
 use crate::{themes::Theme, widgets::label::LabelStyle};
 

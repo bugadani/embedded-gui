@@ -1,11 +1,12 @@
 use crate::{
     data::{NoData, WidgetData},
+    geometry::{BoundingBox, Position},
     input::{
         controller::InputContext,
         event::{InputEvent, PointerEvent},
     },
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
-    BoundingBox, Canvas, MeasureSpec, Position, WidgetRenderer, WidgetState,
+    Canvas, MeasureSpec, WidgetRenderer, WidgetState,
 };
 
 // It's necessary to split off the non-data fields so that callbacks can work on the widget while

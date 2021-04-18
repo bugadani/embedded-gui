@@ -1,7 +1,8 @@
 use crate::{
     data::{NoData, WidgetData},
+    geometry::{BoundingBox, Position},
     input::{controller::InputContext, event::InputEvent},
-    BoundingBox, MeasureSpec, MeasuredSize, Position,
+    MeasureSpec, MeasuredSize,
 };
 
 pub mod button;

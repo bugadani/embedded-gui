@@ -1,12 +1,12 @@
 use crate::{
     data::{NoData, WidgetData},
+    geometry::{BoundingBox, Position, PositionDelta},
     input::{
         controller::InputContext,
         event::{InputEvent, PointerEvent, ScrollEvent},
     },
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
-    BoundingBox, MeasureConstraint, MeasureSpec, MeasuredSize, Position, PositionDelta,
-    WidgetState,
+    MeasureConstraint, MeasureSpec, MeasuredSize, WidgetState,
 };
 
 pub struct ScrollData {

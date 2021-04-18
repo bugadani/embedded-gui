@@ -1,7 +1,8 @@
 use crate::{
     data::WidgetData,
+    geometry::{BoundingBox, MeasuredSize},
     widgets::{wrapper::Wrapper, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
-    BoundingBox, MeasureSpec, MeasuredSize, WidgetState,
+    MeasureSpec, WidgetState,
 };
 
 pub trait LabelProperties {
