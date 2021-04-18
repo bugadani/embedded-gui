@@ -1,8 +1,11 @@
 use crate::{
-    geometry::{BoundingBox, Position},
+    geometry::{
+        measurement::{MeasureConstraint, MeasureSpec},
+        BoundingBox, MeasuredSize, Position,
+    },
     input::event::InputEvent,
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
-    Canvas, MeasureConstraint, MeasureSpec, MeasuredSize, WidgetRenderer,
+    Canvas, WidgetRenderer,
 };
 
 pub trait HorizontalAlignment {
