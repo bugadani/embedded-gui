@@ -1,3 +1,5 @@
+use crate::geometry::MeasuredSize;
+
 #[derive(Copy, Clone, Debug)]
 pub enum MeasureConstraint {
     AtMost(u32),
@@ -43,4 +45,20 @@ impl MeasureConstraint {
 pub struct MeasureSpec {
     pub width: MeasureConstraint,
     pub height: MeasureConstraint,
+}
+
+impl MeasureSpec {
+    pub fn from_measured_at_most(MeasuredSize { width, height }: MeasuredSize) -> Self {
+        Self {
+            width: MeasureConstraint::AtMost(width),
+            height: MeasureConstraint::AtMost(height),
+        }
+    }
+
+    pub fn from_measured_exactly(MeasuredSize { width, height }: MeasuredSize) -> Self {
+        Self {
+            width: MeasureConstraint::Exactly(width),
+            height: MeasureConstraint::Exactly(height),
+        }
+    }
 }

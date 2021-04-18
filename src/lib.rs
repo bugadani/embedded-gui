@@ -6,10 +6,7 @@ pub mod input;
 pub mod widgets;
 
 use crate::{
-    geometry::{
-        measurement::{MeasureConstraint, MeasureSpec},
-        MeasuredSize, Position,
-    },
+    geometry::{measurement::MeasureSpec, MeasuredSize, Position},
     input::{
         controller::{DefaultInputController, InputController},
         event::InputEvent,
@@ -113,10 +110,8 @@ where
     }
 
     pub fn measure(&mut self) {
-        self.root.measure(MeasureSpec {
-            width: MeasureConstraint::AtMost(self.canvas.size().width),
-            height: MeasureConstraint::AtMost(self.canvas.size().height),
-        });
+        self.root
+            .measure(MeasureSpec::from_measured_at_most(self.canvas.size()));
     }
 
     pub fn arrange(&mut self) {
