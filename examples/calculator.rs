@@ -2,11 +2,11 @@ use std::{fmt::Write, thread, time::Duration};
 
 use backend_embedded_graphics::{
     themes::default,
-    widgets::label::{ascii::LabelConstructor, LabelStyling},
+    widgets::label::{ascii::LabelConstructor, MonoFontLabelStyling},
     EgCanvas,
 };
 use embedded_graphics::{
-    draw_target::DrawTarget, mono_font::ascii::Font10x20, pixelcolor::BinaryColor,
+    draw_target::DrawTarget, mono_font::ascii::FONT_10X20, pixelcolor::BinaryColor,
     prelude::Size as EgSize,
 };
 use embedded_graphics_simulator::{
@@ -211,7 +211,7 @@ fn main() {
             Column::new(Cell::new(
                 FillParent::horizontal(
                     Label::new(String::<U11>::from("0"))
-                        .font(Font10x20)
+                        .font(&FONT_10X20)
                         .bind(&calculator)
                         .on_data_changed(|label, calc| {
                             label.text.clear();

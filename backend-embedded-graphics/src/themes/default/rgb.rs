@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use embedded_graphics::{
-    mono_font::ascii::Font6x10,
+    mono_font::{ascii::FONT_6X10, MonoFont},
     pixelcolor::{Rgb555, Rgb565, Rgb888, RgbColor, WebColors},
 };
 
@@ -58,16 +58,12 @@ impl<C> ButtonStyle<C> for PrimaryButtonStyle<C>
 where
     C: WebColors + Theme,
 {
-    type Font = Font6x10;
-
     type Disabled = PrimaryButtonDisabled<C>;
     type Idle = PrimaryButtonIdle<C>;
     type Hovered = PrimaryButtonHovered<C>;
     type Pressed = PrimaryButtonPressed<C>;
 
-    fn font() -> Self::Font {
-        Font6x10
-    }
+    const FONT: MonoFont<'static, 'static> = FONT_6X10;
 }
 
 // endregion
@@ -120,16 +116,12 @@ impl<C> ButtonStyle<C> for SecondaryButtonStyle<C>
 where
     C: WebColors,
 {
-    type Font = Font6x10;
-
     type Disabled = SecondaryButtonDisabled<C>;
     type Idle = SecondaryButtonIdle<C>;
     type Hovered = SecondaryButtonHovered<C>;
     type Pressed = SecondaryButtonPressed<C>;
 
-    fn font() -> Self::Font {
-        Font6x10
-    }
+    const FONT: MonoFont<'static, 'static> = FONT_6X10;
 }
 
 // endregion

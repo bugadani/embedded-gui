@@ -1,3 +1,10 @@
+use crate::{
+    themes::Theme,
+    widgets::{
+        label::{ascii::LabelConstructor, LabelStyle, LabelStyling, MonoFontLabelStyling},
+        primitives::{background::BackgroundStyle, border::BorderStyle},
+    },
+};
 use embedded_graphics::{
     mono_font::{MonoFont, MonoTextStyle},
     pixelcolor::PixelColor,
@@ -9,14 +16,6 @@ use embedded_gui::widgets::{
         background::Background,
         border::Border,
         fill::{Center, FillParent, HorizontalAndVertical},
-    },
-};
-
-use crate::{
-    themes::Theme,
-    widgets::{
-        label::{ascii::LabelConstructor, LabelStyle, LabelStyling},
-        primitives::{background::BackgroundStyle, border::BorderStyle},
     },
 };
 
@@ -35,22 +34,20 @@ pub trait ButtonStateColors<C: PixelColor> {
 }
 
 pub trait ButtonStyle<C: PixelColor> {
-    type Font: MonoFont;
-
     type Disabled: ButtonStateColors<C>;
     type Idle: ButtonStateColors<C>;
     type Hovered: ButtonStateColors<C>;
     type Pressed: ButtonStateColors<C>;
 
-    fn font() -> Self::Font;
+    const FONT: MonoFont<'static, 'static>;
 }
 
 #[allow(type_alias_bounds)]
-pub type StyledButton<C, S: ButtonStyle<C>> = Button<
+pub type StyledButton<'a, 'b, 'c, C> = Button<
     Background<
         Border<
             FillParent<
-                Label<&'static str, LabelStyle<MonoTextStyle<C, S::Font>>>,
+                Label<&'static str, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>,
                 HorizontalAndVertical,
                 Center,
                 Center,
@@ -60,7 +57,7 @@ pub type StyledButton<C, S: ButtonStyle<C>> = Button<
         BackgroundStyle<C>,
     >,
 >;
-pub fn button<C, S>(label: &'static str) -> StyledButton<C, S>
+pub fn button<C, S>(label: &'static str) -> StyledButton<C>
 where
     C: DefaultTheme,
     S: ButtonStyle<C>,
@@ -73,7 +70,7 @@ where
                 FillParent::both(
                     Label::new(label)
                         .text_color(S::Idle::LABEL_COLOR)
-                        .font(S::font())
+                        .font(&S::FONT)
                         .on_state_changed(|label, state| {
                             label.set_text_color(if state.has_state(Button::STATE_DISABLED) {
                                 S::Disabled::LABEL_COLOR
@@ -117,7 +114,7 @@ where
     )
 }
 
-pub fn primary_button<C>(label: &'static str) -> StyledButton<C, <C as DefaultTheme>::PrimaryButton>
+pub fn primary_button<C>(label: &'static str) -> StyledButton<C>
 where
     C: DefaultTheme,
     BorderStyle<C>: Default,
@@ -126,9 +123,7 @@ where
     button::<C, <C as DefaultTheme>::PrimaryButton>(label)
 }
 
-pub fn secondary_button<C>(
-    label: &'static str,
-) -> StyledButton<C, <C as DefaultTheme>::SecondaryButton>
+pub fn secondary_button<C>(label: &'static str) -> StyledButton<C>
 where
     C: DefaultTheme,
     BorderStyle<C>: Default,

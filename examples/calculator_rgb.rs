@@ -2,12 +2,12 @@ use std::{fmt::Write, thread, time::Duration};
 
 use backend_embedded_graphics::{
     themes::default,
-    widgets::label::{ascii::LabelConstructor, LabelStyling},
+    widgets::label::{ascii::LabelConstructor, LabelStyling, MonoFontLabelStyling},
     EgCanvas,
 };
 use embedded_graphics::{
     draw_target::DrawTarget,
-    mono_font::ascii::Font10x20,
+    mono_font::ascii::FONT_10X20,
     pixelcolor::{Rgb888, RgbColor, WebColors},
     prelude::Size as EgSize,
 };
@@ -232,7 +232,7 @@ fn main() {
                 Spacing::new(
                     FillParent::horizontal(
                         Label::new(String::<U11>::from("0"))
-                            .font(Font10x20)
+                            .font(&FONT_10X20)
                             .text_color(Rgb888::BLACK)
                             .bind(&calculator)
                             .on_data_changed(|label, calc| {

@@ -3,7 +3,7 @@ use embedded_graphics::{
     mono_font::{MonoFont, MonoTextStyle, MonoTextStyleBuilder},
     pixelcolor::PixelColor,
     prelude::Point,
-    text::TextRenderer,
+    text::{renderer::TextRenderer, Baseline},
 };
 use embedded_gui::{
     geometry::MeasuredSize,
@@ -23,9 +23,8 @@ where
     renderer: T,
 }
 
-impl<C, F> LabelStyle<MonoTextStyle<C, F>>
+impl<'a, 'b, 'c, C> LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>
 where
-    F: MonoFont,
     C: PixelColor,
 {
     /// Customize the text color
@@ -36,7 +35,10 @@ where
     }
 
     /// Customize the font
-    pub fn font<F2: MonoFont>(self, font: F2) -> LabelStyle<MonoTextStyle<C, F2>> {
+    pub fn font<'a2, 'b2, 'c2>(
+        self,
+        font: &'a2 MonoFont<'b2, 'c2>,
+    ) -> LabelStyle<MonoTextStyle<'a2, 'b2, 'c2, C>> {
         LabelStyle {
             renderer: MonoTextStyleBuilder::from(&self.renderer)
                 .font(font)
@@ -51,7 +53,11 @@ where
     C: PixelColor,
 {
     fn measure_text(&self, text: &str) -> MeasuredSize {
-        let metrics = self.renderer.measure_string(text, Point::zero());
+        let metrics = self.renderer.measure_string(
+            text,
+            Point::zero(),
+            embedded_graphics::text::Baseline::Top,
+        );
 
         MeasuredSize {
             width: metrics.bounding_box.size.width,
@@ -60,14 +66,12 @@ where
     }
 }
 
-pub trait LabelStyling<F, C, S>: Sized
+pub trait LabelStyling<C, S>: Sized
 where
     S: AsRef<str>,
-    F: MonoFont,
     C: PixelColor,
 {
     type Color;
-    type Font;
 
     fn text_color(mut self, color: Self::Color) -> Self {
         self.set_text_color(color);
@@ -76,37 +80,27 @@ where
 
     fn set_text_color(&mut self, color: Self::Color) -> &mut Self;
 
-    fn font<F2: MonoFont>(self, font: F2) -> Label<S, LabelStyle<MonoTextStyle<C, F2>>>;
+    fn text_renderer<T: TextRenderer>(self, renderer: T) -> Label<S, LabelStyle<T>>;
 
     fn style<P>(self, props: P) -> Label<S, P>
     where
         P: LabelProperties;
 }
 
-impl<F, C, S> LabelStyling<F, C, S> for Label<S, LabelStyle<MonoTextStyle<C, F>>>
+impl<'a, 'b, 'c, C, S> LabelStyling<C, S> for Label<S, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>
 where
     S: AsRef<str>,
-    F: MonoFont,
     C: PixelColor,
 {
     type Color = C;
-    type Font = F;
 
     fn set_text_color(&mut self, color: Self::Color) -> &mut Self {
         self.label_properties.text_color(color);
         self
     }
 
-    fn font<F2: MonoFont>(self, font: F2) -> Label<S, LabelStyle<MonoTextStyle<C, F2>>> {
-        let label_properties = self.label_properties.font(font);
-
-        Label {
-            parent_index: self.parent_index,
-            text: self.text,
-            bounds: self.bounds,
-            label_properties,
-            on_state_changed: |_, _| (),
-        }
+    fn text_renderer<T: TextRenderer>(self, renderer: T) -> Label<S, LabelStyle<T>> {
+        self.style(LabelStyle { renderer })
     }
 
     fn style<P>(self, props: P) -> Label<S, P>
@@ -123,6 +117,36 @@ where
     }
 }
 
+/// Font settings specific to `MonoFont`'s renderer.
+pub trait MonoFontLabelStyling<C, S>: Sized
+where
+    S: AsRef<str>,
+    C: PixelColor,
+{
+    fn font<'a, 'b, 'c>(
+        self,
+        font: &'a MonoFont<'b, 'c>,
+    ) -> Label<S, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>;
+}
+
+impl<'a, 'b, 'c, C, S> MonoFontLabelStyling<C, S>
+    for Label<S, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>
+where
+    S: AsRef<str>,
+    C: PixelColor,
+{
+    fn font<'a2, 'b2, 'c2>(
+        self,
+        font: &'a2 MonoFont<'b2, 'c2>,
+    ) -> Label<S, LabelStyle<MonoTextStyle<'a2, 'b2, 'c2, C>>> {
+        let renderer = MonoTextStyleBuilder::from(&self.label_properties.renderer)
+            .font(font)
+            .build();
+
+        self.style(LabelStyle { renderer })
+    }
+}
+
 impl<S, F, C, DT> WidgetRenderer<EgCanvas<DT>> for Label<S, LabelStyle<F>>
 where
     S: AsRef<str>,
@@ -136,6 +160,7 @@ where
             .draw_string(
                 self.text.as_ref(),
                 Point::new(self.bounds.position.x, self.bounds.position.y),
+                Baseline::Top,
                 &mut canvas.target,
             )
             .map(|_| ())

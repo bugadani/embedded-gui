@@ -1,4 +1,7 @@
-use embedded_graphics::{mono_font::ascii::Font6x10, pixelcolor::BinaryColor};
+use embedded_graphics::{
+    mono_font::{ascii::FONT_6X10, MonoFont},
+    pixelcolor::BinaryColor,
+};
 
 use crate::themes::{
     default::{ButtonStateColors, ButtonStyle, DefaultTheme},
@@ -38,16 +41,12 @@ impl ButtonStateColors<BinaryColor> for PrimaryButtonPressed {
 
 pub struct PrimaryButtonStyle;
 impl ButtonStyle<BinaryColor> for PrimaryButtonStyle {
-    type Font = Font6x10;
-
     type Disabled = PrimaryButtonDisabled;
     type Idle = PrimaryButtonIdle;
     type Hovered = PrimaryButtonHovered;
     type Pressed = PrimaryButtonPressed;
 
-    fn font() -> Self::Font {
-        Font6x10
-    }
+    const FONT: MonoFont<'static, 'static> = FONT_6X10;
 }
 
 // endregion
@@ -85,16 +84,12 @@ impl ButtonStateColors<BinaryColor> for SecondaryButtonPressed {
 
 pub struct SecondaryButtonStyle;
 impl ButtonStyle<BinaryColor> for SecondaryButtonStyle {
-    type Font = Font6x10;
-
     type Disabled = SecondaryButtonDisabled;
     type Idle = SecondaryButtonIdle;
     type Hovered = SecondaryButtonHovered;
     type Pressed = SecondaryButtonPressed;
 
-    fn font() -> Self::Font {
-        Font6x10
-    }
+    const FONT: MonoFont<'static, 'static> = FONT_6X10;
 }
 
 // endregion
