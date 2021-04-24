@@ -6,14 +6,16 @@ use embedded_gui::{geometry::BoundingBox, widgets::label::Label};
 
 use crate::{themes::Theme, widgets::label::LabelStyle};
 
-pub trait LabelConstructor<S, C> {
-    fn new(text: S) -> Label<S, LabelStyle<MonoTextStyle<C, latin1::Font6x10>>>
-    where
-        C: PixelColor,
-        S: AsRef<str>;
+pub trait LabelConstructor<'a, 'b, 'c, S, C>
+where
+    S: AsRef<str>,
+    C: PixelColor,
+{
+    fn new(text: S) -> Label<S, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>;
 }
 
-impl<C, S> LabelConstructor<S, C> for Label<S, LabelStyle<MonoTextStyle<C, latin1::Font6x10>>>
+impl<'a, 'b, 'c, C, S> LabelConstructor<'a, 'b, 'c, S, C>
+    for Label<S, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>
 where
     S: AsRef<str>,
     C: PixelColor + Theme,
@@ -24,7 +26,7 @@ where
             text,
             label_properties: LabelStyle {
                 renderer: MonoTextStyleBuilder::new()
-                    .font(latin1::Font6x10)
+                    .font(&latin1::FONT_6X10)
                     .text_color(<C as Theme>::TEXT_COLOR)
                     .build(),
             },
