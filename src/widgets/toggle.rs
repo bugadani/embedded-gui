@@ -15,7 +15,7 @@ use crate::{
 pub struct ToggleFields<W, D> {
     pub parent_index: usize,
     pub inner: W,
-    pub on_clicked: fn(&mut D),
+    pub on_selected_changed: fn(bool, &mut D),
     pub on_state_changed: fn(&mut Self, WidgetState),
     pub state: WidgetState,
 }
@@ -57,7 +57,7 @@ where
     }
 }
 
-pub struct Toggle<W, D = ()>
+pub struct Toggle<W, D, const MANUAL_UNCHECK: bool>
 where
     D: WidgetData,
 {
@@ -129,7 +129,7 @@ impl State for Disabled {
     const VALUE: u32 = 0x0000_0008;
 }
 
-impl Toggle<(), ()> {
+impl Toggle<(), (), true> {
     pub const STATE_IDLE: Idle = Idle;
     pub const STATE_HOVERED: Hovered = Hovered;
     pub const STATE_PRESSED: Pressed = Pressed;
@@ -140,7 +140,7 @@ impl Toggle<(), ()> {
     pub const STATE_UNCHECKED: Unchecked = Unchecked;
 }
 
-impl<W> Toggle<W, ()>
+impl<W> Toggle<W, (), true>
 where
     W: Widget,
 {
@@ -149,15 +149,20 @@ where
             fields: ToggleFields {
                 parent_index: 0,
                 inner,
-                on_clicked: |_| (),
+                on_selected_changed: |_, _| (),
                 on_state_changed: |_, _| (),
                 state: WidgetState::default(),
             },
             data_holder: WidgetDataHolder::default(),
         }
     }
+}
 
-    pub fn bind<D>(self, data: D) -> Toggle<W, D>
+impl<W, const MANUAL_UNCHECK: bool> Toggle<W, (), MANUAL_UNCHECK>
+where
+    W: Widget,
+{
+    pub fn bind<D>(self, data: D) -> Toggle<W, D, MANUAL_UNCHECK>
     where
         D: WidgetData,
     {
@@ -165,7 +170,7 @@ where
             fields: ToggleFields {
                 parent_index: self.fields.parent_index,
                 inner: self.fields.inner,
-                on_clicked: |_| (),
+                on_selected_changed: |_, _| (),
                 on_state_changed: |_, _| (),
                 state: self.fields.state,
             },
@@ -174,7 +179,20 @@ where
     }
 }
 
-impl<W, D> Toggle<W, D>
+impl<W, D> Toggle<W, D, true>
+where
+    W: Widget,
+    D: WidgetData,
+{
+    pub fn disallow_manual_uncheck(self) -> Toggle<W, D, false> {
+        Toggle {
+            fields: self.fields,
+            data_holder: self.data_holder,
+        }
+    }
+}
+
+impl<W, D, const MANUAL_UNCHECK: bool> Toggle<W, D, MANUAL_UNCHECK>
 where
     W: Widget,
     D: WidgetData,
@@ -209,24 +227,28 @@ where
         self
     }
 
-    pub fn on_clicked(mut self, callback: fn(&mut D::Data)) -> Self
+    pub fn on_selected_changed(mut self, callback: fn(bool, &mut D::Data)) -> Self
     where
         D: WidgetData,
     {
-        self.fields.on_clicked = callback;
+        self.fields.on_selected_changed = callback;
         self
     }
 
-    fn fire_on_clicked(&mut self) {
+    fn fire_on_selected_changed(&mut self) {
         let is_checked = self.fields.state.has_state(Toggle::STATE_CHECKED);
-        self.fields.set_checked(!is_checked);
+        if MANUAL_UNCHECK || !is_checked {
+            self.fields.set_checked(!is_checked);
 
-        let callback = self.fields.on_clicked;
-        self.data_holder.data.update(callback);
+            let callback = self.fields.on_selected_changed;
+            self.data_holder
+                .data
+                .update(|data| callback(!is_checked, data));
+        }
     }
 }
 
-impl<W, D> WidgetStateHolder for Toggle<W, D>
+impl<W, D, const MANUAL_UNCHECK: bool> WidgetStateHolder for Toggle<W, D, MANUAL_UNCHECK>
 where
     W: Widget,
     D: WidgetData,
@@ -240,7 +262,7 @@ where
     }
 }
 
-impl<W, D> Widget for Toggle<W, D>
+impl<W, D, const MANUAL_UNCHECK: bool> Widget for Toggle<W, D, MANUAL_UNCHECK>
 where
     W: Widget,
     D: WidgetData,
@@ -375,7 +397,7 @@ where
                 }
                 PointerEvent::Up => {
                     self.fields.change_state(Toggle::STATE_HOVERED);
-                    self.fire_on_clicked();
+                    self.fire_on_selected_changed();
                     true
                 }
             },
@@ -387,7 +409,7 @@ where
     }
 }
 
-impl<W, D> UpdateHandler for Toggle<W, D>
+impl<W, D, const MANUAL_UNCHECK: bool> UpdateHandler for Toggle<W, D, MANUAL_UNCHECK>
 where
     W: Widget,
     D: WidgetData,
@@ -397,7 +419,7 @@ where
     }
 }
 
-impl<W, D> ParentHolder for Toggle<W, D>
+impl<W, D, const MANUAL_UNCHECK: bool> ParentHolder for Toggle<W, D, MANUAL_UNCHECK>
 where
     W: Widget,
     D: WidgetData,
@@ -411,7 +433,7 @@ where
     }
 }
 
-impl<C, W, D> WidgetRenderer<C> for Toggle<W, D>
+impl<C, W, D, const MANUAL_UNCHECK: bool> WidgetRenderer<C> for Toggle<W, D, MANUAL_UNCHECK>
 where
     W: Widget + WidgetRenderer<C>,
     C: Canvas,

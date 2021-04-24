@@ -1,4 +1,4 @@
-//! Radio button.
+//! A radio button.
 
 use crate::{
     data::WidgetData,
@@ -9,6 +9,14 @@ use crate::{
 
 pub trait RadioButtonProperties {
     type Color;
+
+    fn set_background_color(&mut self, color: Self::Color) -> &mut Self;
+
+    fn set_border_color(&mut self, color: Self::Color) -> &mut Self;
+
+    fn set_check_mark_color(&mut self, color: Self::Color) -> &mut Self;
+
+    fn set_selected(&mut self, selected: bool) -> &mut Self;
 
     fn measure(&self, spec: MeasureSpec) -> MeasuredSize;
 }
@@ -37,6 +45,46 @@ where
             bounds: BoundingBox::default(),
             on_state_changed: |_, _| (),
         }
+    }
+
+    pub fn background_color(mut self, color: P::Color) -> Self {
+        self.set_background_color(color);
+        self
+    }
+
+    pub fn set_background_color(&mut self, color: P::Color) -> &mut Self {
+        self.radio_properties.set_background_color(color);
+        self
+    }
+
+    pub fn border_color(mut self, color: P::Color) -> Self {
+        self.set_border_color(color);
+        self
+    }
+
+    pub fn set_border_color(&mut self, color: P::Color) -> &mut Self {
+        self.radio_properties.set_border_color(color);
+        self
+    }
+
+    pub fn check_mark_color(mut self, color: P::Color) -> Self {
+        self.set_check_mark_color(color);
+        self
+    }
+
+    pub fn set_check_mark_color(&mut self, color: P::Color) -> &mut Self {
+        self.radio_properties.set_check_mark_color(color);
+        self
+    }
+
+    pub fn selected(mut self, selected: bool) -> Self {
+        self.set_selected(selected);
+        self
+    }
+
+    pub fn set_selected(&mut self, selected: bool) -> &mut Self {
+        self.radio_properties.set_selected(selected);
+        self
     }
 
     pub fn on_state_changed(mut self, callback: fn(&mut Self, WidgetState)) -> Self {

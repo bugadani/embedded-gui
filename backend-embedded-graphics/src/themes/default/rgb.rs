@@ -6,7 +6,10 @@ use embedded_graphics::{
 };
 
 use crate::themes::{
-    default::{ButtonStateColors, ButtonStyle, CheckBoxStateColors, CheckBoxStyles, DefaultTheme},
+    default::{
+        ButtonStateColors, ButtonStyle, CheckBoxStateColors, CheckBoxVisualStyle, DefaultTheme,
+        RadioButtonStateColors, RadioButtonVisualStyle,
+    },
     Theme,
 };
 
@@ -173,7 +176,7 @@ where
 }
 
 pub struct CheckBoxStyle<C>(PhantomData<C>);
-impl<C> CheckBoxStyles<C> for CheckBoxStyle<C>
+impl<C> CheckBoxVisualStyle<C> for CheckBoxStyle<C>
 where
     C: WebColors,
 {
@@ -181,6 +184,66 @@ where
     type Idle = CheckBoxIdle;
     type Hovered = CheckBoxHovered;
     type Pressed = CheckBoxPressed;
+
+    const FONT: MonoFont<'static, 'static> = FONT_6X10;
+}
+// endregion
+
+// region: RadioButton
+pub struct RadioButtonDisabled;
+pub struct RadioButtonIdle;
+pub struct RadioButtonHovered;
+pub struct RadioButtonPressed;
+
+impl<C> RadioButtonStateColors<C> for RadioButtonDisabled
+where
+    C: WebColors,
+{
+    const LABEL_COLOR: C = C::CSS_GRAY;
+    const BORDER_COLOR: C = C::CSS_GRAY;
+    const BACKGROUND_COLOR: C = C::CSS_DARK_GRAY;
+    const CHECK_MARK_COLOR: C = C::CSS_STEEL_BLUE;
+}
+
+impl<C> RadioButtonStateColors<C> for RadioButtonIdle
+where
+    C: WebColors,
+{
+    const LABEL_COLOR: C = C::BLACK;
+    const BORDER_COLOR: C = C::BLACK;
+    const BACKGROUND_COLOR: C = C::WHITE;
+    const CHECK_MARK_COLOR: C = C::CSS_DODGER_BLUE;
+}
+
+impl<C> RadioButtonStateColors<C> for RadioButtonHovered
+where
+    C: WebColors,
+{
+    const LABEL_COLOR: C = C::BLACK;
+    const BORDER_COLOR: C = C::BLACK;
+    const BACKGROUND_COLOR: C = C::CSS_LIGHT_GRAY;
+    const CHECK_MARK_COLOR: C = C::CSS_DODGER_BLUE;
+}
+
+impl<C> RadioButtonStateColors<C> for RadioButtonPressed
+where
+    C: WebColors,
+{
+    const LABEL_COLOR: C = C::BLACK;
+    const BORDER_COLOR: C = C::BLACK;
+    const BACKGROUND_COLOR: C = C::CSS_DARK_GRAY;
+    const CHECK_MARK_COLOR: C = C::CSS_DODGER_BLUE;
+}
+
+pub struct RadioButtonStyle<C>(PhantomData<C>);
+impl<C> RadioButtonVisualStyle<C> for RadioButtonStyle<C>
+where
+    C: WebColors,
+{
+    type Disabled = RadioButtonDisabled;
+    type Idle = RadioButtonIdle;
+    type Hovered = RadioButtonHovered;
+    type Pressed = RadioButtonPressed;
 
     const FONT: MonoFont<'static, 'static> = FONT_6X10;
 }
@@ -197,6 +260,7 @@ impl DefaultTheme for Rgb888 {
     type SecondaryButton = SecondaryButtonStyle<Self>;
 
     type CheckBox = CheckBoxStyle<Self>;
+    type RadioButton = RadioButtonStyle<Self>;
 }
 
 impl Theme for Rgb555 {
@@ -210,6 +274,7 @@ impl DefaultTheme for Rgb555 {
     type SecondaryButton = SecondaryButtonStyle<Self>;
 
     type CheckBox = CheckBoxStyle<Self>;
+    type RadioButton = RadioButtonStyle<Self>;
 }
 
 impl Theme for Rgb565 {
@@ -223,4 +288,5 @@ impl DefaultTheme for Rgb565 {
     type SecondaryButton = SecondaryButtonStyle<Self>;
 
     type CheckBox = CheckBoxStyle<Self>;
+    type RadioButton = RadioButtonStyle<Self>;
 }

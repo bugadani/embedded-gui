@@ -14,6 +14,7 @@ use embedded_graphics_simulator::{
     sdl2::MouseButton, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window as SimWindow,
 };
 use embedded_gui::{
+    data::BoundData,
     geometry::Position,
     input::event::{InputEvent, PointerEvent},
     widgets::{
@@ -75,6 +76,8 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
 fn main() {
     let display = SimulatorDisplay::new(EgSize::new(192, 160));
 
+    let radio = BoundData::new(0, |_| ());
+
     let mut gui = Window::new(
         EgCanvas::new(display),
         Spacing::new(
@@ -88,7 +91,32 @@ fn main() {
                     .checked(true)
                     .enabled(false),
             ))
-            .add(Cell::new(default::checkbox("Check me"))),
+            .add(Cell::new(default::checkbox("Check me")))
+            .add(Cell::new(
+                default::radio_button("Can't select me")
+                    .bind(&radio)
+                    .on_selected_changed(|_, data| *data = 0)
+                    .on_data_changed(|radio, data| {
+                        radio.set_checked(*data == 0);
+                    })
+                    .enabled(false),
+            ))
+            .add(Cell::new(
+                default::radio_button("Select me")
+                    .bind(&radio)
+                    .on_selected_changed(|_, data| *data = 0)
+                    .on_data_changed(|radio, data| {
+                        radio.set_checked(*data == 0);
+                    }),
+            ))
+            .add(Cell::new(
+                default::radio_button("... or me!")
+                    .bind(&radio)
+                    .on_selected_changed(|_, data| *data = 1)
+                    .on_data_changed(|radio, data| {
+                        radio.set_checked(*data == 1);
+                    }),
+            )),
         )
         .all(2),
     );
