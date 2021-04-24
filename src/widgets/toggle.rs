@@ -190,6 +190,17 @@ where
         self
     }
 
+    pub fn checked(mut self, checked: bool) -> Self {
+        self.set_checked(checked);
+        self
+    }
+
+    pub fn set_checked(&mut self, checked: bool) -> &mut Self {
+        self.fields.set_checked(checked);
+
+        self
+    }
+
     pub fn on_data_changed(mut self, callback: fn(&mut ToggleFields<W, D::Data>, &D::Data)) -> Self
     where
         D: WidgetData,
@@ -207,11 +218,8 @@ where
     }
 
     fn fire_on_clicked(&mut self) {
-        if self.fields.state.has_state(Toggle::STATE_CHECKED) {
-            self.fields.state.set_state(Toggle::STATE_UNCHECKED);
-        } else {
-            self.fields.state.set_state(Toggle::STATE_CHECKED);
-        }
+        let is_checked = self.fields.state.has_state(Toggle::STATE_CHECKED);
+        self.fields.set_checked(!is_checked);
 
         let callback = self.fields.on_clicked;
         self.data_holder.data.update(callback);

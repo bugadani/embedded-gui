@@ -3,13 +3,20 @@
 use crate::{
     data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
-    input::{controller::InputContext, event::InputEvent},
     state::WidgetState,
     widgets::{wrapper::Wrapper, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
 };
 
 pub trait CheckBoxProperties {
     type Color;
+
+    fn set_background_color(&mut self, color: Self::Color) -> &mut Self;
+
+    fn set_border_color(&mut self, color: Self::Color) -> &mut Self;
+
+    fn set_check_mark_color(&mut self, color: Self::Color) -> &mut Self;
+
+    fn set_checked(&mut self, checked: bool) -> &mut Self;
 
     fn measure(&self, spec: MeasureSpec) -> MeasuredSize;
 }
@@ -38,6 +45,46 @@ where
             bounds: BoundingBox::default(),
             on_state_changed: |_, _| (),
         }
+    }
+
+    pub fn background_color(mut self, color: P::Color) -> Self {
+        self.set_background_color(color);
+        self
+    }
+
+    pub fn set_background_color(&mut self, color: P::Color) -> &mut Self {
+        self.checkbox_properties.set_background_color(color);
+        self
+    }
+
+    pub fn border_color(mut self, color: P::Color) -> Self {
+        self.set_border_color(color);
+        self
+    }
+
+    pub fn set_border_color(&mut self, color: P::Color) -> &mut Self {
+        self.checkbox_properties.set_border_color(color);
+        self
+    }
+
+    pub fn check_mark_color(mut self, color: P::Color) -> Self {
+        self.set_check_mark_color(color);
+        self
+    }
+
+    pub fn set_check_mark_color(&mut self, color: P::Color) -> &mut Self {
+        self.checkbox_properties.set_check_mark_color(color);
+        self
+    }
+
+    pub fn checked(mut self, checked: bool) -> Self {
+        self.set_checked(checked);
+        self
+    }
+
+    pub fn set_checked(&mut self, checked: bool) -> &mut Self {
+        self.checkbox_properties.set_checked(checked);
+        self
     }
 
     pub fn on_state_changed(mut self, callback: fn(&mut Self, WidgetState)) -> Self {
@@ -80,14 +127,6 @@ where
         let size = self.checkbox_properties.measure(measure_spec);
 
         self.set_measured_size(size)
-    }
-
-    fn test_input(&mut self, event: InputEvent) -> Option<usize> {
-        todo!()
-    }
-
-    fn handle_input(&mut self, _ctxt: InputContext, _event: InputEvent) -> bool {
-        todo!()
     }
 }
 

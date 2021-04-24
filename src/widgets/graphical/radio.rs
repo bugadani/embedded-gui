@@ -3,7 +3,6 @@
 use crate::{
     data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
-    input::{controller::InputContext, event::InputEvent},
     state::WidgetState,
     widgets::{wrapper::Wrapper, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
 };
@@ -80,14 +79,6 @@ where
         let size = self.radio_properties.measure(measure_spec);
 
         self.set_measured_size(size)
-    }
-
-    fn test_input(&mut self, event: InputEvent) -> Option<usize> {
-        todo!()
-    }
-
-    fn handle_input(&mut self, _ctxt: InputContext, _event: InputEvent) -> bool {
-        todo!()
     }
 }
 

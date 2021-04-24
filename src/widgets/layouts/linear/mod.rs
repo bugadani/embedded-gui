@@ -2,6 +2,7 @@ pub use object_chain::{Chain, ChainElement, Link};
 
 use crate::{
     input::event::InputEvent,
+    state::WidgetState,
     widgets::{layouts::linear::layout::LayoutDirection, Widget},
     Canvas, Position, WidgetRenderer,
 };
@@ -132,6 +133,8 @@ pub trait LinearLayoutChainElement {
     fn arrange<L>(&mut self, position: Position, direction: L, spacing: u32) -> Position
     where
         L: LayoutDirection;
+
+    fn on_state_changed(&mut self, state: WidgetState);
 }
 
 impl<W, CW> LinearLayoutChainElement for Chain<Cell<W, CW>>
@@ -166,6 +169,10 @@ where
         self.object.inner.arrange(position);
 
         L::arrange(position, self.object.inner.bounding_box(), spacing)
+    }
+
+    fn on_state_changed(&mut self, state: WidgetState) {
+        self.object.inner.on_state_changed(state);
     }
 }
 
@@ -213,6 +220,11 @@ where
         self.object.inner.arrange(next_pos);
 
         L::arrange(next_pos, self.object.inner.bounding_box(), spacing)
+    }
+
+    fn on_state_changed(&mut self, state: WidgetState) {
+        self.object.inner.on_state_changed(state);
+        self.parent.on_state_changed(state);
     }
 }
 
