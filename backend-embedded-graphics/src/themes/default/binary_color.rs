@@ -4,7 +4,10 @@ use embedded_graphics::{
 };
 
 use crate::themes::{
-    default::{ButtonStateColors, ButtonStyle, DefaultTheme},
+    default::{
+        ButtonStateColors, ButtonStyle, CheckBoxStateColors, CheckBoxVisualStyle, DefaultTheme,
+        RadioButtonStateColors, RadioButtonVisualStyle,
+    },
     Theme,
 };
 
@@ -94,6 +97,96 @@ impl ButtonStyle<BinaryColor> for SecondaryButtonStyle {
 
 // endregion
 
+// region: CheckBox
+pub struct CheckBoxDisabled;
+pub struct CheckBoxIdle;
+pub struct CheckBoxHovered;
+pub struct CheckBoxPressed;
+
+impl CheckBoxStateColors<BinaryColor> for CheckBoxDisabled {
+    const LABEL_COLOR: BinaryColor = BinaryColor::Off;
+    const BORDER_COLOR: BinaryColor = BinaryColor::Off;
+    const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
+    const CHECK_MARK_COLOR: BinaryColor = BinaryColor::On;
+}
+
+impl CheckBoxStateColors<BinaryColor> for CheckBoxIdle {
+    const LABEL_COLOR: BinaryColor = BinaryColor::Off;
+    const BORDER_COLOR: BinaryColor = BinaryColor::Off;
+    const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
+    const CHECK_MARK_COLOR: BinaryColor = BinaryColor::On;
+}
+
+impl CheckBoxStateColors<BinaryColor> for CheckBoxHovered {
+    const LABEL_COLOR: BinaryColor = BinaryColor::Off;
+    const BORDER_COLOR: BinaryColor = BinaryColor::Off;
+    const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
+    const CHECK_MARK_COLOR: BinaryColor = BinaryColor::On;
+}
+
+impl CheckBoxStateColors<BinaryColor> for CheckBoxPressed {
+    const LABEL_COLOR: BinaryColor = BinaryColor::Off;
+    const BORDER_COLOR: BinaryColor = BinaryColor::Off;
+    const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
+    const CHECK_MARK_COLOR: BinaryColor = BinaryColor::On;
+}
+
+pub struct CheckBoxStyle;
+impl CheckBoxVisualStyle<BinaryColor> for CheckBoxStyle {
+    type Disabled = CheckBoxDisabled;
+    type Idle = CheckBoxIdle;
+    type Hovered = CheckBoxHovered;
+    type Pressed = CheckBoxPressed;
+
+    const FONT: MonoFont<'static, 'static> = FONT_6X10;
+}
+// endregion
+
+// region: RadioButton
+pub struct RadioButtonDisabled;
+pub struct RadioButtonIdle;
+pub struct RadioButtonHovered;
+pub struct RadioButtonPressed;
+
+impl RadioButtonStateColors<BinaryColor> for RadioButtonDisabled {
+    const LABEL_COLOR: BinaryColor = BinaryColor::Off;
+    const BORDER_COLOR: BinaryColor = BinaryColor::Off;
+    const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
+    const CHECK_MARK_COLOR: BinaryColor = BinaryColor::On;
+}
+
+impl RadioButtonStateColors<BinaryColor> for RadioButtonIdle {
+    const LABEL_COLOR: BinaryColor = BinaryColor::Off;
+    const BORDER_COLOR: BinaryColor = BinaryColor::Off;
+    const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
+    const CHECK_MARK_COLOR: BinaryColor = BinaryColor::On;
+}
+
+impl RadioButtonStateColors<BinaryColor> for RadioButtonHovered {
+    const LABEL_COLOR: BinaryColor = BinaryColor::Off;
+    const BORDER_COLOR: BinaryColor = BinaryColor::Off;
+    const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
+    const CHECK_MARK_COLOR: BinaryColor = BinaryColor::On;
+}
+
+impl RadioButtonStateColors<BinaryColor> for RadioButtonPressed {
+    const LABEL_COLOR: BinaryColor = BinaryColor::Off;
+    const BORDER_COLOR: BinaryColor = BinaryColor::Off;
+    const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
+    const CHECK_MARK_COLOR: BinaryColor = BinaryColor::On;
+}
+
+pub struct RadioButtonStyle;
+impl RadioButtonVisualStyle<BinaryColor> for RadioButtonStyle {
+    type Disabled = RadioButtonDisabled;
+    type Idle = RadioButtonIdle;
+    type Hovered = RadioButtonHovered;
+    type Pressed = RadioButtonPressed;
+
+    const FONT: MonoFont<'static, 'static> = FONT_6X10;
+}
+// endregion
+
 impl Theme for BinaryColor {
     const TEXT_COLOR: BinaryColor = BinaryColor::On;
     const BORDER_COLOR: BinaryColor = BinaryColor::On;
@@ -103,4 +196,7 @@ impl Theme for BinaryColor {
 impl DefaultTheme for BinaryColor {
     type PrimaryButton = PrimaryButtonStyle;
     type SecondaryButton = SecondaryButtonStyle;
+
+    type CheckBox = CheckBoxStyle;
+    type RadioButton = RadioButtonStyle;
 }

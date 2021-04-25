@@ -71,7 +71,7 @@ where
     pub fn new(init: D, on_changed: F) -> Self {
         Self {
             inner: RefCell::new(BoundDataInner {
-                version: 0,
+                version: 1, // Make sure update fires always after creation
                 data: init,
                 on_changed,
             }),

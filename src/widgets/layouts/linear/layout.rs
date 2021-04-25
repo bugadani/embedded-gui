@@ -253,8 +253,13 @@ impl<CE, L, ES> ParentHolder for LinearLayout<CE, L, ES> {
     }
 }
 
-impl<CE, L, ES> WidgetStateHolder for LinearLayout<CE, L, ES> {
-    fn on_state_changed(&mut self, _state: WidgetState) {}
+impl<CE, L, ES> WidgetStateHolder for LinearLayout<CE, L, ES>
+where
+    CE: LinearLayoutChainElement + ChainElement,
+{
+    fn on_state_changed(&mut self, state: WidgetState) {
+        self.widgets.on_state_changed(state);
+    }
 }
 
 impl<CE, L, ES> UpdateHandler for LinearLayout<CE, L, ES> {}

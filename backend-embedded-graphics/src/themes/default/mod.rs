@@ -1,6 +1,7 @@
 use crate::{
     themes::Theme,
     widgets::{
+        graphical::{checkbox::CheckBoxStyle, radio::RadioButtonStyle},
         label::{ascii::LabelConstructor, LabelStyle, LabelStyling, MonoFontLabelStyling},
         primitives::{background::BackgroundStyle, border::BorderStyle},
     },
@@ -11,12 +12,18 @@ use embedded_graphics::{
 };
 use embedded_gui::widgets::{
     button::Button,
-    label::Label,
+    graphical::{
+        checkbox::{CheckBox, CheckBoxProperties},
+        radio::{RadioButton, RadioButtonProperties},
+    },
+    label::{Label, LabelProperties},
+    layouts::linear::{layout::LinearLayout, row::Row, Cell, Chain, Link, WithSpacing},
     primitives::{
         background::Background,
         border::Border,
         fill::{Center, FillParent, HorizontalAndVertical},
     },
+    toggle::Toggle,
 };
 
 pub mod binary_color;
@@ -25,6 +32,9 @@ pub mod rgb;
 pub trait DefaultTheme: Theme {
     type PrimaryButton: ButtonStyle<Self>;
     type SecondaryButton: ButtonStyle<Self>;
+
+    type CheckBox: CheckBoxVisualStyle<Self>;
+    type RadioButton: RadioButtonVisualStyle<Self>;
 }
 
 pub trait ButtonStateColors<C: PixelColor> {
@@ -42,7 +52,70 @@ pub trait ButtonStyle<C: PixelColor> {
     const FONT: MonoFont<'static, 'static>;
 }
 
-#[allow(type_alias_bounds)]
+pub trait CheckBoxStateColors<C: PixelColor> {
+    const LABEL_COLOR: C;
+    const BORDER_COLOR: C;
+    const BACKGROUND_COLOR: C;
+    const CHECK_MARK_COLOR: C;
+
+    fn apply_check_box<P: CheckBoxProperties<Color = C>>(check_box: &mut CheckBox<P>) {
+        check_box
+            .set_background_color(Self::BACKGROUND_COLOR)
+            .set_border_color(Self::BORDER_COLOR)
+            .set_check_mark_color(Self::CHECK_MARK_COLOR);
+    }
+
+    fn apply_label<S, T>(label: &mut Label<S, T>)
+    where
+        S: AsRef<str>,
+        Label<S, T>: LabelStyling<S, Color = C>,
+        T: LabelProperties,
+    {
+        label.set_text_color(Self::LABEL_COLOR);
+    }
+}
+
+pub trait CheckBoxVisualStyle<C: PixelColor> {
+    type Disabled: CheckBoxStateColors<C>;
+    type Idle: CheckBoxStateColors<C>;
+    type Hovered: CheckBoxStateColors<C>;
+    type Pressed: CheckBoxStateColors<C>;
+
+    const FONT: MonoFont<'static, 'static>;
+}
+
+pub trait RadioButtonStateColors<C: PixelColor> {
+    const LABEL_COLOR: C;
+    const BORDER_COLOR: C;
+    const BACKGROUND_COLOR: C;
+    const CHECK_MARK_COLOR: C;
+
+    fn apply_radio_button<P: RadioButtonProperties<Color = C>>(radio_button: &mut RadioButton<P>) {
+        radio_button
+            .set_background_color(Self::BACKGROUND_COLOR)
+            .set_border_color(Self::BORDER_COLOR)
+            .set_check_mark_color(Self::CHECK_MARK_COLOR);
+    }
+
+    fn apply_label<S, T>(label: &mut Label<S, T>)
+    where
+        S: AsRef<str>,
+        Label<S, T>: LabelStyling<S, Color = C>,
+        T: LabelProperties,
+    {
+        label.set_text_color(Self::LABEL_COLOR);
+    }
+}
+
+pub trait RadioButtonVisualStyle<C: PixelColor> {
+    type Disabled: RadioButtonStateColors<C>;
+    type Idle: RadioButtonStateColors<C>;
+    type Hovered: RadioButtonStateColors<C>;
+    type Pressed: RadioButtonStateColors<C>;
+
+    const FONT: MonoFont<'static, 'static>;
+}
+
 pub type StyledButton<'a, 'b, 'c, C> = Button<
     Background<
         Border<
@@ -57,6 +130,7 @@ pub type StyledButton<'a, 'b, 'c, C> = Button<
         BackgroundStyle<C>,
     >,
 >;
+
 pub fn button<C, S>(label: &'static str) -> StyledButton<C>
 where
     C: DefaultTheme,
@@ -130,4 +204,137 @@ where
     BackgroundStyle<C>: Default,
 {
     button::<C, <C as DefaultTheme>::SecondaryButton>(label)
+}
+
+pub type StyledCheckBox<'a, 'b, 'c, C> = Toggle<
+    LinearLayout<
+        Link<
+            Cell<Label<&'static str, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>>,
+            Chain<Cell<CheckBox<CheckBoxStyle<C>>>>,
+        >,
+        Row,
+        WithSpacing,
+    >,
+    (),
+    true,
+>;
+
+fn styled_checkbox<C, S>(label: &'static str) -> StyledCheckBox<C>
+where
+    C: DefaultTheme,
+    S: CheckBoxVisualStyle<C>,
+    CheckBoxStyle<C>: Default,
+{
+    Toggle::new(
+        Row::new(Cell::new(
+            CheckBox::<CheckBoxStyle<C>>::new()
+                .background_color(S::Idle::BACKGROUND_COLOR)
+                .border_color(S::Idle::BORDER_COLOR)
+                .check_mark_color(S::Idle::CHECK_MARK_COLOR)
+                .on_state_changed(|check_box, state| {
+                    check_box.set_checked(state.has_state(Toggle::STATE_CHECKED));
+
+                    if state.has_state(Toggle::STATE_DISABLED) {
+                        S::Disabled::apply_check_box(check_box);
+                    } else if state.has_state(Toggle::STATE_HOVERED) {
+                        S::Hovered::apply_check_box(check_box);
+                    } else if state.has_state(Toggle::STATE_PRESSED) {
+                        S::Pressed::apply_check_box(check_box);
+                    } else {
+                        S::Idle::apply_check_box(check_box);
+                    };
+                }),
+        ))
+        .spacing(1)
+        .add(Cell::new(
+            Label::new(label)
+                .text_color(S::Idle::LABEL_COLOR)
+                .on_state_changed(|label, state| {
+                    if state.has_state(Toggle::STATE_DISABLED) {
+                        S::Disabled::apply_label(label);
+                    } else if state.has_state(Toggle::STATE_HOVERED) {
+                        S::Hovered::apply_label(label);
+                    } else if state.has_state(Toggle::STATE_PRESSED) {
+                        S::Pressed::apply_label(label);
+                    } else {
+                        S::Idle::apply_label(label);
+                    };
+                }),
+        )),
+    )
+}
+
+pub fn checkbox<C>(label: &'static str) -> StyledCheckBox<C>
+where
+    C: DefaultTheme,
+    CheckBoxStyle<C>: Default,
+{
+    styled_checkbox::<C, <C as DefaultTheme>::CheckBox>(label)
+}
+
+pub type StyledRadioButton<'a, 'b, 'c, C> = Toggle<
+    LinearLayout<
+        Link<
+            Cell<Label<&'static str, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>>,
+            Chain<Cell<RadioButton<RadioButtonStyle<C>>>>,
+        >,
+        Row,
+        WithSpacing,
+    >,
+    (),
+    false,
+>;
+
+fn styled_radio_button<C, S>(label: &'static str) -> StyledRadioButton<C>
+where
+    C: DefaultTheme,
+    S: RadioButtonVisualStyle<C>,
+    RadioButtonStyle<C>: Default,
+{
+    Toggle::new(
+        Row::new(Cell::new(
+            RadioButton::<RadioButtonStyle<C>>::new()
+                .background_color(S::Idle::BACKGROUND_COLOR)
+                .border_color(S::Idle::BORDER_COLOR)
+                .check_mark_color(S::Idle::CHECK_MARK_COLOR)
+                .on_state_changed(|radio_button, state| {
+                    radio_button.set_selected(state.has_state(Toggle::STATE_CHECKED));
+
+                    if state.has_state(Toggle::STATE_DISABLED) {
+                        S::Disabled::apply_radio_button(radio_button);
+                    } else if state.has_state(Toggle::STATE_HOVERED) {
+                        S::Hovered::apply_radio_button(radio_button);
+                    } else if state.has_state(Toggle::STATE_PRESSED) {
+                        S::Pressed::apply_radio_button(radio_button);
+                    } else {
+                        S::Idle::apply_radio_button(radio_button);
+                    };
+                }),
+        ))
+        .spacing(1)
+        .add(Cell::new(
+            Label::new(label)
+                .text_color(S::Idle::LABEL_COLOR)
+                .on_state_changed(|label, state| {
+                    if state.has_state(Toggle::STATE_DISABLED) {
+                        S::Disabled::apply_label(label);
+                    } else if state.has_state(Toggle::STATE_HOVERED) {
+                        S::Hovered::apply_label(label);
+                    } else if state.has_state(Toggle::STATE_PRESSED) {
+                        S::Pressed::apply_label(label);
+                    } else {
+                        S::Idle::apply_label(label);
+                    };
+                }),
+        )),
+    )
+    .disallow_manual_uncheck()
+}
+
+pub fn radio_button<C>(label: &'static str) -> StyledRadioButton<C>
+where
+    C: DefaultTheme,
+    RadioButtonStyle<C>: Default,
+{
+    styled_radio_button::<C, <C as DefaultTheme>::RadioButton>(label)
 }

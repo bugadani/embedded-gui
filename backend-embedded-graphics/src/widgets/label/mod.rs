@@ -66,10 +66,9 @@ where
     }
 }
 
-pub trait LabelStyling<C, S>: Sized
+pub trait LabelStyling<S>: Sized
 where
     S: AsRef<str>,
-    C: PixelColor,
 {
     type Color;
 
@@ -87,7 +86,7 @@ where
         P: LabelProperties;
 }
 
-impl<'a, 'b, 'c, C, S> LabelStyling<C, S> for Label<S, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>
+impl<'a, 'b, 'c, C, S> LabelStyling<S> for Label<S, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>
 where
     S: AsRef<str>,
     C: PixelColor,
