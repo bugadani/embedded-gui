@@ -1,7 +1,7 @@
 use std::{thread, time::Duration};
 
 use backend_embedded_graphics::{
-    themes::default,
+    themes::default::DefaultTheme,
     widgets::label::{ascii::LabelConstructor, LabelStyling},
     EgCanvas,
 };
@@ -85,15 +85,15 @@ fn main() {
                 Label::new("Checkboxes and radio buttons").text_color(Rgb888::BLACK),
             ))
             .spacing(1)
-            .add(Cell::new(default::checkbox("Inactive").active(false)))
+            .add(Cell::new(DefaultTheme::check_box("Inactive").active(false)))
             .add(Cell::new(
-                default::checkbox("Inactive, checked")
+                DefaultTheme::check_box("Inactive, checked")
                     .checked(true)
                     .active(false),
             ))
-            .add(Cell::new(default::checkbox("Check me")))
+            .add(Cell::new(DefaultTheme::check_box("Check me")))
             .add(Cell::new(
-                default::radio_button("Can't select me")
+                DefaultTheme::radio_button("Can't select me")
                     .bind(&radio)
                     .on_selected_changed(|_, data| *data = 0)
                     .on_data_changed(|radio, data| {
@@ -102,7 +102,7 @@ fn main() {
                     .active(false),
             ))
             .add(Cell::new(
-                default::radio_button("Select me")
+                DefaultTheme::radio_button("Select me")
                     .bind(&radio)
                     .on_selected_changed(|_, data| *data = 0)
                     .on_data_changed(|radio, data| {
@@ -110,7 +110,7 @@ fn main() {
                     }),
             ))
             .add(Cell::new(
-                default::radio_button("... or me!")
+                DefaultTheme::radio_button("... or me!")
                     .bind(&radio)
                     .on_selected_changed(|_, data| *data = 1)
                     .on_data_changed(|radio, data| {

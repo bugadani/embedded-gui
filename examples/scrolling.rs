@@ -1,7 +1,7 @@
 use std::{thread, time::Duration};
 
 use backend_embedded_graphics::{
-    themes::default::primary_button, widgets::label::ascii::LabelConstructor, EgCanvas,
+    themes::default::DefaultTheme, widgets::label::ascii::LabelConstructor, EgCanvas,
 };
 use embedded_graphics::{
     draw_target::DrawTarget, pixelcolor::BinaryColor, prelude::Size as EgSize,
@@ -117,7 +117,7 @@ fn main() {
                         }),
                 ))
                 .add(Cell::new(
-                    primary_button("Reset")
+                    DefaultTheme::primary_button("Reset")
                         .bind(&scroll_data)
                         .on_clicked(|data| data.reset = true),
                 )),
@@ -132,9 +132,11 @@ fn main() {
                         .add(Cell::new(Label::new("r")))
                         .add(Cell::new(Label::new("o")))
                         .add(Cell::new(
-                            primary_button("l").bind(&scroll_data).on_clicked(|data| {
-                                println!("Clicked at scroll offset: {}", data.current)
-                            }),
+                            DefaultTheme::primary_button("l")
+                                .bind(&scroll_data)
+                                .on_clicked(|data| {
+                                    println!("Clicked at scroll offset: {}", data.current)
+                                }),
                         ))
                         .add(Cell::new(Label::new("l")))
                         .add(Cell::new(Label::new("o")))

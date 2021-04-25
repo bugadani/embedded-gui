@@ -1,7 +1,7 @@
 use std::{fmt::Write, thread, time::Duration};
 
 use backend_embedded_graphics::{
-    themes::default,
+    themes::default::DefaultTheme,
     widgets::label::{ascii::LabelConstructor, MonoFontLabelStyling},
     EgCanvas,
 };
@@ -225,7 +225,7 @@ fn main() {
                 Cell::new(
                     Row::new(
                         Cell::new(
-                            default::primary_button("CE")
+                            DefaultTheme::primary_button("CE")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.clear()),
                         )
@@ -234,7 +234,7 @@ fn main() {
                     .spacing(1)
                     .add(
                         Cell::new(
-                            default::secondary_button("<")
+                            DefaultTheme::secondary_button("<")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.delete_digit()),
                         )
@@ -242,7 +242,7 @@ fn main() {
                     )
                     .add(
                         Cell::new(
-                            default::primary_button("/")
+                            DefaultTheme::primary_button("/")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.set_op(Op::Divide)),
                         )
@@ -255,7 +255,7 @@ fn main() {
                 Cell::new(
                     Row::new(
                         Cell::new(
-                            default::secondary_button("7")
+                            DefaultTheme::secondary_button("7")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.add_digit(7)),
                         )
@@ -264,7 +264,7 @@ fn main() {
                     .spacing(1)
                     .add(
                         Cell::new(
-                            default::secondary_button("8")
+                            DefaultTheme::secondary_button("8")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.add_digit(8)),
                         )
@@ -272,7 +272,7 @@ fn main() {
                     )
                     .add(
                         Cell::new(
-                            default::secondary_button("9")
+                            DefaultTheme::secondary_button("9")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.add_digit(9)),
                         )
@@ -280,7 +280,7 @@ fn main() {
                     )
                     .add(
                         Cell::new(
-                            default::primary_button("x")
+                            DefaultTheme::primary_button("x")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.set_op(Op::Multiply)),
                         )
@@ -293,7 +293,7 @@ fn main() {
                 Cell::new(
                     Row::new(
                         Cell::new(
-                            default::secondary_button("4")
+                            DefaultTheme::secondary_button("4")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.add_digit(4)),
                         )
@@ -302,7 +302,7 @@ fn main() {
                     .spacing(1)
                     .add(
                         Cell::new(
-                            default::secondary_button("5")
+                            DefaultTheme::secondary_button("5")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.add_digit(5)),
                         )
@@ -310,7 +310,7 @@ fn main() {
                     )
                     .add(
                         Cell::new(
-                            default::secondary_button("6")
+                            DefaultTheme::secondary_button("6")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.add_digit(6)),
                         )
@@ -318,7 +318,7 @@ fn main() {
                     )
                     .add(
                         Cell::new(
-                            default::primary_button("-")
+                            DefaultTheme::primary_button("-")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.set_op(Op::Subtract)),
                         )
@@ -331,7 +331,7 @@ fn main() {
                 Cell::new(
                     Row::new(
                         Cell::new(
-                            default::secondary_button("1")
+                            DefaultTheme::secondary_button("1")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.add_digit(1)),
                         )
@@ -340,7 +340,7 @@ fn main() {
                     .spacing(1)
                     .add(
                         Cell::new(
-                            default::secondary_button("2")
+                            DefaultTheme::secondary_button("2")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.add_digit(2)),
                         )
@@ -348,7 +348,7 @@ fn main() {
                     )
                     .add(
                         Cell::new(
-                            default::secondary_button("3")
+                            DefaultTheme::secondary_button("3")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.add_digit(3)),
                         )
@@ -356,7 +356,7 @@ fn main() {
                     )
                     .add(
                         Cell::new(
-                            default::primary_button("+")
+                            DefaultTheme::primary_button("+")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.set_op(Op::Add)),
                         )
@@ -369,7 +369,7 @@ fn main() {
                 Cell::new(
                     Row::new(
                         Cell::new(
-                            default::secondary_button("0")
+                            DefaultTheme::secondary_button("0")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.add_digit(0)),
                         )
@@ -378,7 +378,7 @@ fn main() {
                     .spacing(1)
                     .add(
                         Cell::new(
-                            default::primary_button("=")
+                            DefaultTheme::primary_button("=")
                                 .bind(&calculator)
                                 .on_clicked(|calculator| calculator.update()),
                         )
