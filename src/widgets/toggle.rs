@@ -6,6 +6,7 @@ use crate::{
         event::{InputEvent, PointerEvent},
     },
     state::{State, StateGroup, WidgetState},
+    state_group,
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
     Canvas, MeasureSpec, Position, WidgetRenderer,
 };
@@ -32,11 +33,11 @@ where
         self
     }
 
-    pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
-        if enabled {
-            self.change_state(Toggle::STATE_ENABLED);
+    pub fn set_active(&mut self, active: bool) -> &mut Self {
+        if active {
+            self.change_state(Toggle::STATE_ACTIVE);
         } else {
-            self.change_state(Toggle::STATE_DISABLED);
+            self.change_state(Toggle::STATE_INACTIVE);
         }
 
         self
@@ -65,76 +66,28 @@ where
     data_holder: WidgetDataHolder<ToggleFields<W, D::Data>, D>,
 }
 
-pub struct ToggleStateGroup;
-impl StateGroup for ToggleStateGroup {
-    const MASK: u32 = 0x0000_0003;
-}
-
-pub struct Idle;
-impl State for Idle {
-    type Group = ToggleStateGroup;
-
-    const VALUE: u32 = 0x0000_0000;
-}
-
-pub struct Hovered;
-impl State for Hovered {
-    type Group = ToggleStateGroup;
-
-    const VALUE: u32 = 0x0000_0001;
-}
-
-pub struct Pressed;
-impl State for Pressed {
-    type Group = ToggleStateGroup;
-
-    const VALUE: u32 = 0x0000_0002;
-}
-
-pub struct ToggleCheckedStateGroup;
-impl StateGroup for ToggleCheckedStateGroup {
-    const MASK: u32 = 0x0000_0004;
-}
-
-pub struct Unchecked;
-impl State for Unchecked {
-    type Group = ToggleCheckedStateGroup;
-
-    const VALUE: u32 = 0x0000_0000;
-}
-
-pub struct Checked;
-impl State for Checked {
-    type Group = ToggleCheckedStateGroup;
-
-    const VALUE: u32 = 0x0000_0004;
-}
-
-pub struct ToggleDisabledStateGroup;
-impl StateGroup for ToggleDisabledStateGroup {
-    const MASK: u32 = 0x0000_0008;
-}
-
-pub struct Enabled;
-impl State for Enabled {
-    type Group = ToggleDisabledStateGroup;
-
-    const VALUE: u32 = 0x0000_0000;
-}
-
-pub struct Disabled;
-impl State for Disabled {
-    type Group = ToggleDisabledStateGroup;
-
-    const VALUE: u32 = 0x0000_0008;
+state_group! {
+    [ToggleStateGroup: 0x0000_0003] = {
+        Idle = 0,
+        Hovered = 0x0000_0001,
+        Pressed = 0x0000_0002,
+    }
+    [ToggleCheckedStateGroup: 0x0000_0004] = {
+        Unchecked = 0,
+        Checked = 0x0000_0004,
+    }
+    [ToggleInactiveStateGroup: 0x0000_0008] = {
+        Active = 0,
+        Inactive = 0x0000_0008
+    }
 }
 
 impl Toggle<(), (), true> {
     pub const STATE_IDLE: Idle = Idle;
     pub const STATE_HOVERED: Hovered = Hovered;
     pub const STATE_PRESSED: Pressed = Pressed;
-    pub const STATE_DISABLED: Disabled = Disabled;
-    pub const STATE_ENABLED: Enabled = Enabled;
+    pub const STATE_INACTIVE: Inactive = Inactive;
+    pub const STATE_ACTIVE: Active = Active;
 
     pub const STATE_CHECKED: Checked = Checked;
     pub const STATE_UNCHECKED: Unchecked = Unchecked;
@@ -197,13 +150,13 @@ where
     W: Widget,
     D: WidgetData,
 {
-    pub fn enabled(mut self, enabled: bool) -> Self {
-        self.set_enabled(enabled);
+    pub fn active(mut self, active: bool) -> Self {
+        self.set_active(active);
         self
     }
 
-    pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
-        self.fields.set_enabled(enabled);
+    pub fn set_active(&mut self, active: bool) -> &mut Self {
+        self.fields.set_active(active);
 
         self
     }
@@ -309,7 +262,7 @@ where
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
-        if self.fields.state.has_state(Toggle::STATE_DISABLED) {
+        if self.fields.state.has_state(Toggle::STATE_INACTIVE) {
             return None;
         }
 
@@ -378,7 +331,7 @@ where
     }
 
     fn handle_input(&mut self, _ctxt: InputContext, event: InputEvent) -> bool {
-        if self.fields.state.has_state(Toggle::STATE_DISABLED) {
+        if self.fields.state.has_state(Toggle::STATE_INACTIVE) {
             return false;
         }
 

@@ -6,6 +6,7 @@ use crate::{
         event::{InputEvent, PointerEvent},
     },
     state::{State, StateGroup, WidgetState},
+    state_group,
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
     Canvas, WidgetRenderer,
 };
@@ -31,11 +32,11 @@ where
         self
     }
 
-    pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
-        if enabled {
-            self.change_state(Button::STATE_ENABLED);
+    pub fn set_active(&mut self, active: bool) -> &mut Self {
+        if active {
+            self.change_state(Button::STATE_ACTIVE);
         } else {
-            self.change_state(Button::STATE_DISABLED);
+            self.change_state(Button::STATE_INACTIVE);
         }
 
         self
@@ -50,57 +51,25 @@ where
     data_holder: WidgetDataHolder<ButtonFields<W, D::Data>, D>,
 }
 
-pub struct ButtonStateGroup;
-impl StateGroup for ButtonStateGroup {
-    const MASK: u32 = 0x0000_0003;
-}
+state_group! {
+    [ButtonStateGroup: 0x0000_0003] = {
+        Idle = 0,
+        Hovered = 0x0000_0001,
+        Pressed = 0x0000_0002,
+    }
 
-pub struct Idle;
-impl State for Idle {
-    type Group = ButtonStateGroup;
-
-    const VALUE: u32 = 0x0000_0000;
-}
-
-pub struct Hovered;
-impl State for Hovered {
-    type Group = ButtonStateGroup;
-
-    const VALUE: u32 = 0x0000_0001;
-}
-
-pub struct Pressed;
-impl State for Pressed {
-    type Group = ButtonStateGroup;
-
-    const VALUE: u32 = 0x0000_0002;
-}
-
-pub struct ButtonDisabledStateGroup;
-impl StateGroup for ButtonDisabledStateGroup {
-    const MASK: u32 = 0x0000_0004;
-}
-
-pub struct Enabled;
-impl State for Enabled {
-    type Group = ButtonDisabledStateGroup;
-
-    const VALUE: u32 = 0x0000_0000;
-}
-
-pub struct Disabled;
-impl State for Disabled {
-    type Group = ButtonDisabledStateGroup;
-
-    const VALUE: u32 = 0x0000_0004;
+    [ButtonInactiveStateGroup: 0x0000_0004] = {
+        Active = 0,
+        Inactive = 0x0000_0004,
+    }
 }
 
 impl Button<(), ()> {
     pub const STATE_IDLE: Idle = Idle;
     pub const STATE_HOVERED: Hovered = Hovered;
     pub const STATE_PRESSED: Pressed = Pressed;
-    pub const STATE_DISABLED: Disabled = Disabled;
-    pub const STATE_ENABLED: Enabled = Enabled;
+    pub const STATE_INACTIVE: Inactive = Inactive;
+    pub const STATE_ACTIVE: Active = Active;
 }
 
 impl<W> Button<W, ()>
@@ -140,13 +109,13 @@ where
     W: Widget,
     D: WidgetData,
 {
-    pub fn enabled(mut self, enabled: bool) -> Self {
-        self.set_enabled(enabled);
+    pub fn active(mut self, active: bool) -> Self {
+        self.set_active(active);
         self
     }
 
-    pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
-        self.fields.set_enabled(enabled);
+    pub fn set_active(&mut self, active: bool) -> &mut Self {
+        self.fields.set_active(active);
         self
     }
 
@@ -233,7 +202,7 @@ where
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
-        if self.fields.state.has_state(Button::STATE_DISABLED) {
+        if self.fields.state.has_state(Button::STATE_INACTIVE) {
             return None;
         }
 
@@ -302,7 +271,7 @@ where
     }
 
     fn handle_input(&mut self, _ctxt: InputContext, event: InputEvent) -> bool {
-        if self.fields.state.has_state(Button::STATE_DISABLED) {
+        if self.fields.state.has_state(Button::STATE_INACTIVE) {
             return false;
         }
 

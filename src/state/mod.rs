@@ -1,4 +1,5 @@
 //! Visual state container.
+mod selection;
 
 pub trait StateGroup {
     const MASK: u32;
@@ -10,7 +11,28 @@ pub trait State {
     const VALUE: u32;
 }
 
-mod selection;
+#[macro_export]
+macro_rules! state_group {
+    ($([$group:ident: $mask:literal] = {
+        $($state:ident = $value:literal),+ $(,)?
+    })+) => {
+        $(
+            pub struct $group;
+            impl StateGroup for $group {
+                const MASK: u32 = $mask;
+            }
+
+            $(
+                pub struct $state;
+                impl State for $state {
+                    type Group = $group;
+
+                    const VALUE: u32 = $value;
+                }
+            )+
+        )+
+    };
+}
 
 #[derive(Copy, Clone, Default)]
 pub struct WidgetState(u32);

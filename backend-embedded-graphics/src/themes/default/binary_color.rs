@@ -13,12 +13,12 @@ use crate::themes::{
 
 // region: Primary button
 
-pub struct PrimaryButtonDisabled;
+pub struct PrimaryButtonInactive;
 pub struct PrimaryButtonIdle;
 pub struct PrimaryButtonHovered;
 pub struct PrimaryButtonPressed;
 
-impl ButtonStateColors<BinaryColor> for PrimaryButtonDisabled {
+impl ButtonStateColors<BinaryColor> for PrimaryButtonInactive {
     const LABEL_COLOR: BinaryColor = BinaryColor::Off;
     const BORDER_COLOR: BinaryColor = BinaryColor::On;
     const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
@@ -44,7 +44,7 @@ impl ButtonStateColors<BinaryColor> for PrimaryButtonPressed {
 
 pub struct PrimaryButtonStyle;
 impl ButtonStyle<BinaryColor> for PrimaryButtonStyle {
-    type Disabled = PrimaryButtonDisabled;
+    type Inactive = PrimaryButtonInactive;
     type Idle = PrimaryButtonIdle;
     type Hovered = PrimaryButtonHovered;
     type Pressed = PrimaryButtonPressed;
@@ -56,12 +56,12 @@ impl ButtonStyle<BinaryColor> for PrimaryButtonStyle {
 
 // region: Secondary button
 
-pub struct SecondaryButtonDisabled;
+pub struct SecondaryButtonInactive;
 pub struct SecondaryButtonIdle;
 pub struct SecondaryButtonHovered;
 pub struct SecondaryButtonPressed;
 
-impl ButtonStateColors<BinaryColor> for SecondaryButtonDisabled {
+impl ButtonStateColors<BinaryColor> for SecondaryButtonInactive {
     const LABEL_COLOR: BinaryColor = BinaryColor::On;
     const BORDER_COLOR: BinaryColor = BinaryColor::Off;
     const BACKGROUND_COLOR: BinaryColor = BinaryColor::Off;
@@ -87,7 +87,7 @@ impl ButtonStateColors<BinaryColor> for SecondaryButtonPressed {
 
 pub struct SecondaryButtonStyle;
 impl ButtonStyle<BinaryColor> for SecondaryButtonStyle {
-    type Disabled = SecondaryButtonDisabled;
+    type Inactive = SecondaryButtonInactive;
     type Idle = SecondaryButtonIdle;
     type Hovered = SecondaryButtonHovered;
     type Pressed = SecondaryButtonPressed;
@@ -98,12 +98,12 @@ impl ButtonStyle<BinaryColor> for SecondaryButtonStyle {
 // endregion
 
 // region: CheckBox
-pub struct CheckBoxDisabled;
+pub struct CheckBoxInactive;
 pub struct CheckBoxIdle;
 pub struct CheckBoxHovered;
 pub struct CheckBoxPressed;
 
-impl CheckBoxStateColors<BinaryColor> for CheckBoxDisabled {
+impl CheckBoxStateColors<BinaryColor> for CheckBoxInactive {
     const LABEL_COLOR: BinaryColor = BinaryColor::Off;
     const BORDER_COLOR: BinaryColor = BinaryColor::Off;
     const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
@@ -133,7 +133,7 @@ impl CheckBoxStateColors<BinaryColor> for CheckBoxPressed {
 
 pub struct CheckBoxStyle;
 impl CheckBoxVisualStyle<BinaryColor> for CheckBoxStyle {
-    type Disabled = CheckBoxDisabled;
+    type Inactive = CheckBoxInactive;
     type Idle = CheckBoxIdle;
     type Hovered = CheckBoxHovered;
     type Pressed = CheckBoxPressed;
@@ -143,12 +143,12 @@ impl CheckBoxVisualStyle<BinaryColor> for CheckBoxStyle {
 // endregion
 
 // region: RadioButton
-pub struct RadioButtonDisabled;
+pub struct RadioButtonInactive;
 pub struct RadioButtonIdle;
 pub struct RadioButtonHovered;
 pub struct RadioButtonPressed;
 
-impl RadioButtonStateColors<BinaryColor> for RadioButtonDisabled {
+impl RadioButtonStateColors<BinaryColor> for RadioButtonInactive {
     const LABEL_COLOR: BinaryColor = BinaryColor::Off;
     const BORDER_COLOR: BinaryColor = BinaryColor::Off;
     const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
@@ -178,7 +178,7 @@ impl RadioButtonStateColors<BinaryColor> for RadioButtonPressed {
 
 pub struct RadioButtonStyle;
 impl RadioButtonVisualStyle<BinaryColor> for RadioButtonStyle {
-    type Disabled = RadioButtonDisabled;
+    type Inactive = RadioButtonInactive;
     type Idle = RadioButtonIdle;
     type Hovered = RadioButtonHovered;
     type Pressed = RadioButtonPressed;

@@ -408,7 +408,7 @@ fn main() {
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.update())
                             .on_data_changed(|button, calculator| {
-                                button.set_enabled(calculator.op_valid());
+                                button.set_active(calculator.op_valid());
                             }),
                     )
                     .weight(1),
