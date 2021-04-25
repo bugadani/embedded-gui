@@ -47,8 +47,6 @@ pub trait ButtonStateColors<C: PixelColor> {
 
     fn apply_label<S, T>(label: &mut Label<S, T>)
     where
-        S: AsRef<str>,
-        T: LabelProperties,
         Label<S, T>: LabelStyling<S, Color = C>,
     {
         label.set_text_color(Self::LABEL_COLOR);
@@ -79,8 +77,6 @@ pub trait ButtonStyle<C: PixelColor> {
 
     fn apply_label<S, T>(label: &mut Label<S, T>, state: WidgetState)
     where
-        S: AsRef<str>,
-        T: LabelProperties,
         Label<S, T>: LabelStyling<S, Color = C>,
     {
         if state.has_state(Button::STATE_INACTIVE) {
@@ -140,8 +136,6 @@ pub trait CheckBoxStateColors<C: PixelColor> {
 
     fn apply_label<S, T>(label: &mut Label<S, T>)
     where
-        S: AsRef<str>,
-        T: LabelProperties,
         Label<S, T>: LabelStyling<S, Color = C>,
     {
         label.set_text_color(Self::LABEL_COLOR);
@@ -174,9 +168,7 @@ pub trait CheckBoxVisualStyle<C: PixelColor> {
 
     fn apply_label<S, T>(label: &mut Label<S, T>, state: WidgetState)
     where
-        S: AsRef<str>,
         Label<S, T>: LabelStyling<S, Color = C>,
-        T: LabelProperties,
     {
         if state.has_state(Toggle::STATE_INACTIVE) {
             Self::Inactive::apply_label(label);
@@ -205,9 +197,7 @@ pub trait RadioButtonStateColors<C: PixelColor> {
 
     fn apply_label<S, T>(label: &mut Label<S, T>)
     where
-        S: AsRef<str>,
         Label<S, T>: LabelStyling<S, Color = C>,
-        T: LabelProperties,
     {
         label.set_text_color(Self::LABEL_COLOR);
     }

@@ -9,11 +9,7 @@ pub trait LabelProperties {
     fn measure_text(&self, text: &str) -> MeasuredSize;
 }
 
-pub struct Label<S, P>
-where
-    S: AsRef<str>,
-    P: LabelProperties,
-{
+pub struct Label<S, P> {
     pub text: S,
     pub label_properties: P,
     pub bounds: BoundingBox,

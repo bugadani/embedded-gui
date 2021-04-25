@@ -66,10 +66,7 @@ where
     }
 }
 
-pub trait LabelStyling<S>: Sized
-where
-    S: AsRef<str>,
-{
+pub trait LabelStyling<S>: Sized {
     type Color;
 
     fn text_color(mut self, color: Self::Color) -> Self {
