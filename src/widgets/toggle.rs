@@ -97,14 +97,16 @@ impl<W> Toggle<W, (), true>
 where
     W: Widget,
 {
-    pub fn new(inner: W) -> Self {
+    pub fn new(mut inner: W) -> Self {
+        let state = WidgetState::default();
+        inner.on_state_changed(state);
         Toggle {
             fields: ToggleFields {
                 parent_index: 0,
                 inner,
                 on_selected_changed: |_, _| (),
                 on_state_changed: |_, _| (),
-                state: WidgetState::default(),
+                state,
             },
             data_holder: WidgetDataHolder::default(),
         }

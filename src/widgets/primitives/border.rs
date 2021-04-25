@@ -41,6 +41,18 @@ where
         }
     }
 
+    pub fn bind<D>(self, data: D) -> Wrapper<Border<W, P>, D>
+    where
+        D: WidgetData,
+    {
+        Wrapper::wrap(self, data)
+    }
+}
+
+impl<W, P> Border<W, P>
+where
+    P: BorderProperties,
+{
     pub fn border_color(mut self, color: P::Color) -> Self {
         self.set_border_color(color);
         self
@@ -54,13 +66,6 @@ where
     pub fn on_state_changed(mut self, callback: fn(&mut Self, WidgetState)) -> Self {
         self.on_state_changed = callback;
         self
-    }
-
-    pub fn bind<D>(self, data: D) -> Wrapper<Border<W, P>, D>
-    where
-        D: WidgetData,
-    {
-        Wrapper::wrap(self, data)
     }
 }
 

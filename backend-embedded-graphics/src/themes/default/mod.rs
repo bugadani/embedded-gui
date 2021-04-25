@@ -10,20 +10,23 @@ use embedded_graphics::{
     mono_font::{MonoFont, MonoTextStyle},
     pixelcolor::PixelColor,
 };
-use embedded_gui::widgets::{
-    button::Button,
-    graphical::{
-        checkbox::{CheckBox, CheckBoxProperties},
-        radio::{RadioButton, RadioButtonProperties},
+use embedded_gui::{
+    state::WidgetState,
+    widgets::{
+        button::Button,
+        graphical::{
+            checkbox::{CheckBox, CheckBoxProperties},
+            radio::{RadioButton, RadioButtonProperties},
+        },
+        label::{Label, LabelProperties},
+        layouts::linear::{layout::LinearLayout, row::Row, Cell, Chain, Link, WithSpacing},
+        primitives::{
+            background::{Background, BackgroundProperties},
+            border::{Border, BorderProperties},
+            fill::{Center, FillParent, HorizontalAndVertical},
+        },
+        toggle::Toggle,
     },
-    label::{Label, LabelProperties},
-    layouts::linear::{layout::LinearLayout, row::Row, Cell, Chain, Link, WithSpacing},
-    primitives::{
-        background::Background,
-        border::Border,
-        fill::{Center, FillParent, HorizontalAndVertical},
-    },
-    toggle::Toggle,
 };
 
 pub mod binary_color;
@@ -41,6 +44,29 @@ pub trait ButtonStateColors<C: PixelColor> {
     const LABEL_COLOR: C;
     const BORDER_COLOR: C;
     const BACKGROUND_COLOR: C;
+
+    fn apply_label<S, T>(label: &mut Label<S, T>)
+    where
+        S: AsRef<str>,
+        T: LabelProperties,
+        Label<S, T>: LabelStyling<S, Color = C>,
+    {
+        label.set_text_color(Self::LABEL_COLOR);
+    }
+
+    fn apply_background<W, T>(background: &mut Background<W, T>)
+    where
+        T: BackgroundProperties<Color = C>,
+    {
+        background.set_background_color(Self::BACKGROUND_COLOR);
+    }
+
+    fn apply_border<W, T>(border: &mut Border<W, T>)
+    where
+        T: BorderProperties<Color = C>,
+    {
+        border.set_border_color(Self::BORDER_COLOR);
+    }
 }
 
 pub trait ButtonStyle<C: PixelColor> {
@@ -50,6 +76,53 @@ pub trait ButtonStyle<C: PixelColor> {
     type Pressed: ButtonStateColors<C>;
 
     const FONT: MonoFont<'static, 'static>;
+
+    fn apply_label<S, T>(label: &mut Label<S, T>, state: WidgetState)
+    where
+        S: AsRef<str>,
+        T: LabelProperties,
+        Label<S, T>: LabelStyling<S, Color = C>,
+    {
+        if state.has_state(Button::STATE_INACTIVE) {
+            Self::Inactive::apply_label(label);
+        } else if state.has_state(Button::STATE_HOVERED) {
+            Self::Hovered::apply_label(label);
+        } else if state.has_state(Button::STATE_PRESSED) {
+            Self::Pressed::apply_label(label);
+        } else {
+            Self::Idle::apply_label(label);
+        };
+    }
+
+    fn apply_border<W, T>(border: &mut Border<W, T>, state: WidgetState)
+    where
+        T: BorderProperties<Color = C>,
+    {
+        if state.has_state(Button::STATE_INACTIVE) {
+            Self::Inactive::apply_border(border);
+        } else if state.has_state(Button::STATE_HOVERED) {
+            Self::Hovered::apply_border(border);
+        } else if state.has_state(Button::STATE_PRESSED) {
+            Self::Pressed::apply_border(border);
+        } else {
+            Self::Idle::apply_border(border);
+        };
+    }
+
+    fn apply_background<W, T>(background: &mut Background<W, T>, state: WidgetState)
+    where
+        T: BackgroundProperties<Color = C>,
+    {
+        if state.has_state(Button::STATE_INACTIVE) {
+            Self::Inactive::apply_background(background);
+        } else if state.has_state(Button::STATE_HOVERED) {
+            Self::Hovered::apply_background(background);
+        } else if state.has_state(Button::STATE_PRESSED) {
+            Self::Pressed::apply_background(background);
+        } else {
+            Self::Idle::apply_background(background);
+        };
+    }
 }
 
 pub trait CheckBoxStateColors<C: PixelColor> {
@@ -68,8 +141,8 @@ pub trait CheckBoxStateColors<C: PixelColor> {
     fn apply_label<S, T>(label: &mut Label<S, T>)
     where
         S: AsRef<str>,
-        Label<S, T>: LabelStyling<S, Color = C>,
         T: LabelProperties,
+        Label<S, T>: LabelStyling<S, Color = C>,
     {
         label.set_text_color(Self::LABEL_COLOR);
     }
@@ -82,6 +155,39 @@ pub trait CheckBoxVisualStyle<C: PixelColor> {
     type Pressed: CheckBoxStateColors<C>;
 
     const FONT: MonoFont<'static, 'static>;
+
+    fn apply_check_box<P: CheckBoxProperties<Color = C>>(
+        check_box: &mut CheckBox<P>,
+        state: WidgetState,
+    ) {
+        check_box.set_checked(state.has_state(Toggle::STATE_CHECKED));
+        if state.has_state(Toggle::STATE_INACTIVE) {
+            Self::Inactive::apply_check_box(check_box);
+        } else if state.has_state(Toggle::STATE_HOVERED) {
+            Self::Hovered::apply_check_box(check_box);
+        } else if state.has_state(Toggle::STATE_PRESSED) {
+            Self::Pressed::apply_check_box(check_box);
+        } else {
+            Self::Idle::apply_check_box(check_box);
+        };
+    }
+
+    fn apply_label<S, T>(label: &mut Label<S, T>, state: WidgetState)
+    where
+        S: AsRef<str>,
+        Label<S, T>: LabelStyling<S, Color = C>,
+        T: LabelProperties,
+    {
+        if state.has_state(Toggle::STATE_INACTIVE) {
+            Self::Inactive::apply_label(label);
+        } else if state.has_state(Toggle::STATE_HOVERED) {
+            Self::Hovered::apply_label(label);
+        } else if state.has_state(Toggle::STATE_PRESSED) {
+            Self::Pressed::apply_label(label);
+        } else {
+            Self::Idle::apply_label(label);
+        };
+    }
 }
 
 pub trait RadioButtonStateColors<C: PixelColor> {
@@ -114,6 +220,40 @@ pub trait RadioButtonVisualStyle<C: PixelColor> {
     type Pressed: RadioButtonStateColors<C>;
 
     const FONT: MonoFont<'static, 'static>;
+
+    fn apply_radio_button<P: RadioButtonProperties<Color = C>>(
+        radio_button: &mut RadioButton<P>,
+        state: WidgetState,
+    ) {
+        radio_button.set_selected(state.has_state(Toggle::STATE_CHECKED));
+
+        if state.has_state(Toggle::STATE_INACTIVE) {
+            Self::Inactive::apply_radio_button(radio_button);
+        } else if state.has_state(Toggle::STATE_HOVERED) {
+            Self::Hovered::apply_radio_button(radio_button);
+        } else if state.has_state(Toggle::STATE_PRESSED) {
+            Self::Pressed::apply_radio_button(radio_button);
+        } else {
+            Self::Idle::apply_radio_button(radio_button);
+        };
+    }
+
+    fn apply_label<S, T>(label: &mut Label<S, T>, state: WidgetState)
+    where
+        S: AsRef<str>,
+        T: LabelProperties,
+        Label<S, T>: LabelStyling<S, Color = C>,
+    {
+        if state.has_state(Toggle::STATE_INACTIVE) {
+            Self::Inactive::apply_label(label);
+        } else if state.has_state(Toggle::STATE_HOVERED) {
+            Self::Hovered::apply_label(label);
+        } else if state.has_state(Toggle::STATE_PRESSED) {
+            Self::Pressed::apply_label(label);
+        } else {
+            Self::Idle::apply_label(label);
+        };
+    }
 }
 
 pub type StyledButton<'a, 'b, 'c, C> = Button<
@@ -141,49 +281,20 @@ where
     Button::new(
         Background::new(
             Border::new(
-                FillParent::both(
-                    Label::new(label)
-                        .text_color(S::Idle::LABEL_COLOR)
-                        .font(&S::FONT)
-                        .on_state_changed(|label, state| {
-                            label.set_text_color(if state.has_state(Button::STATE_INACTIVE) {
-                                S::Inactive::LABEL_COLOR
-                            } else if state.has_state(Button::STATE_HOVERED) {
-                                S::Hovered::LABEL_COLOR
-                            } else if state.has_state(Button::STATE_PRESSED) {
-                                S::Pressed::LABEL_COLOR
-                            } else {
-                                S::Idle::LABEL_COLOR
-                            });
-                        }),
-                )
+                FillParent::both(Label::new(label).font(&S::FONT).on_state_changed(
+                    |label, state| {
+                        S::apply_label(label, state);
+                    },
+                ))
                 .align_horizontal(Center)
                 .align_vertical(Center),
             )
-            .border_color(S::Idle::BORDER_COLOR)
-            .on_state_changed(|button, state| {
-                button.set_border_color(if state.has_state(Button::STATE_INACTIVE) {
-                    S::Inactive::BORDER_COLOR
-                } else if state.has_state(Button::STATE_HOVERED) {
-                    S::Hovered::BORDER_COLOR
-                } else if state.has_state(Button::STATE_PRESSED) {
-                    S::Pressed::BORDER_COLOR
-                } else {
-                    S::Idle::BORDER_COLOR
-                });
+            .on_state_changed(|border, state| {
+                S::apply_border(border, state);
             }),
         )
-        .background_color(S::Idle::BACKGROUND_COLOR)
-        .on_state_changed(|button, state| {
-            button.set_background_color(if state.has_state(Button::STATE_INACTIVE) {
-                S::Inactive::BACKGROUND_COLOR
-            } else if state.has_state(Button::STATE_HOVERED) {
-                S::Hovered::BACKGROUND_COLOR
-            } else if state.has_state(Button::STATE_PRESSED) {
-                S::Pressed::BACKGROUND_COLOR
-            } else {
-                S::Idle::BACKGROUND_COLOR
-            });
+        .on_state_changed(|background, state| {
+            S::apply_background(background, state);
         }),
     )
 }
@@ -227,40 +338,16 @@ where
 {
     Toggle::new(
         Row::new(Cell::new(
-            CheckBox::<CheckBoxStyle<C>>::new()
-                .background_color(S::Idle::BACKGROUND_COLOR)
-                .border_color(S::Idle::BORDER_COLOR)
-                .check_mark_color(S::Idle::CHECK_MARK_COLOR)
-                .on_state_changed(|check_box, state| {
-                    check_box.set_checked(state.has_state(Toggle::STATE_CHECKED));
-
-                    if state.has_state(Toggle::STATE_INACTIVE) {
-                        S::Inactive::apply_check_box(check_box);
-                    } else if state.has_state(Toggle::STATE_HOVERED) {
-                        S::Hovered::apply_check_box(check_box);
-                    } else if state.has_state(Toggle::STATE_PRESSED) {
-                        S::Pressed::apply_check_box(check_box);
-                    } else {
-                        S::Idle::apply_check_box(check_box);
-                    };
-                }),
+            CheckBox::<CheckBoxStyle<C>>::new().on_state_changed(|check_box, state| {
+                S::apply_check_box(check_box, state);
+            }),
         ))
         .spacing(1)
-        .add(Cell::new(
-            Label::new(label)
-                .text_color(S::Idle::LABEL_COLOR)
-                .on_state_changed(|label, state| {
-                    if state.has_state(Toggle::STATE_INACTIVE) {
-                        S::Inactive::apply_label(label);
-                    } else if state.has_state(Toggle::STATE_HOVERED) {
-                        S::Hovered::apply_label(label);
-                    } else if state.has_state(Toggle::STATE_PRESSED) {
-                        S::Pressed::apply_label(label);
-                    } else {
-                        S::Idle::apply_label(label);
-                    };
-                }),
-        )),
+        .add(Cell::new(Label::new(label).on_state_changed(
+            |label, state| {
+                S::apply_label(label, state);
+            },
+        ))),
     )
 }
 
@@ -293,40 +380,16 @@ where
 {
     Toggle::new(
         Row::new(Cell::new(
-            RadioButton::<RadioButtonStyle<C>>::new()
-                .background_color(S::Idle::BACKGROUND_COLOR)
-                .border_color(S::Idle::BORDER_COLOR)
-                .check_mark_color(S::Idle::CHECK_MARK_COLOR)
-                .on_state_changed(|radio_button, state| {
-                    radio_button.set_selected(state.has_state(Toggle::STATE_CHECKED));
-
-                    if state.has_state(Toggle::STATE_INACTIVE) {
-                        S::Inactive::apply_radio_button(radio_button);
-                    } else if state.has_state(Toggle::STATE_HOVERED) {
-                        S::Hovered::apply_radio_button(radio_button);
-                    } else if state.has_state(Toggle::STATE_PRESSED) {
-                        S::Pressed::apply_radio_button(radio_button);
-                    } else {
-                        S::Idle::apply_radio_button(radio_button);
-                    };
-                }),
+            RadioButton::<RadioButtonStyle<C>>::new().on_state_changed(|radio_button, state| {
+                S::apply_radio_button(radio_button, state);
+            }),
         ))
         .spacing(1)
-        .add(Cell::new(
-            Label::new(label)
-                .text_color(S::Idle::LABEL_COLOR)
-                .on_state_changed(|label, state| {
-                    if state.has_state(Toggle::STATE_INACTIVE) {
-                        S::Inactive::apply_label(label);
-                    } else if state.has_state(Toggle::STATE_HOVERED) {
-                        S::Hovered::apply_label(label);
-                    } else if state.has_state(Toggle::STATE_PRESSED) {
-                        S::Pressed::apply_label(label);
-                    } else {
-                        S::Idle::apply_label(label);
-                    };
-                }),
-        )),
+        .add(Cell::new(Label::new(label).on_state_changed(
+            |label, state| {
+                S::apply_label(label, state);
+            },
+        ))),
     )
     .disallow_manual_uncheck()
 }

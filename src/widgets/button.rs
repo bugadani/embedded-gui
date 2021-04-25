@@ -76,13 +76,15 @@ impl<W> Button<W, ()>
 where
     W: Widget,
 {
-    pub fn new(inner: W) -> Self {
+    pub fn new(mut inner: W) -> Self {
+        let state = WidgetState::default();
+        inner.on_state_changed(state);
         Button {
             fields: ButtonFields {
                 parent_index: 0,
                 inner,
                 on_clicked: |_| (),
-                state: WidgetState::default(),
+                state,
             },
             data_holder: WidgetDataHolder::default(),
         }
