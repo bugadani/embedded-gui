@@ -271,21 +271,17 @@ where
     Button::new(
         Background::new(
             Border::new(
-                FillParent::both(Label::new(label).font(&S::FONT).on_state_changed(
-                    |label, state| {
-                        S::apply_label(label, state);
-                    },
-                ))
+                FillParent::both(
+                    Label::new(label)
+                        .font(&S::FONT)
+                        .on_state_changed(S::apply_label),
+                )
                 .align_horizontal(Center)
                 .align_vertical(Center),
             )
-            .on_state_changed(|border, state| {
-                S::apply_border(border, state);
-            }),
+            .on_state_changed(S::apply_border),
         )
-        .on_state_changed(|background, state| {
-            S::apply_background(background, state);
-        }),
+        .on_state_changed(S::apply_background),
     )
 }
 
@@ -328,16 +324,12 @@ where
 {
     Toggle::new(
         Row::new(Cell::new(
-            CheckBox::<CheckBoxStyle<C>>::new().on_state_changed(|check_box, state| {
-                S::apply_check_box(check_box, state);
-            }),
+            CheckBox::<CheckBoxStyle<C>>::new().on_state_changed(S::apply_check_box),
         ))
         .spacing(1)
-        .add(Cell::new(Label::new(label).on_state_changed(
-            |label, state| {
-                S::apply_label(label, state);
-            },
-        ))),
+        .add(Cell::new(
+            Label::new(label).on_state_changed(S::apply_label),
+        )),
     )
 }
 
@@ -370,16 +362,12 @@ where
 {
     Toggle::new(
         Row::new(Cell::new(
-            RadioButton::<RadioButtonStyle<C>>::new().on_state_changed(|radio_button, state| {
-                S::apply_radio_button(radio_button, state);
-            }),
+            RadioButton::<RadioButtonStyle<C>>::new().on_state_changed(S::apply_radio_button),
         ))
         .spacing(1)
-        .add(Cell::new(Label::new(label).on_state_changed(
-            |label, state| {
-                S::apply_label(label, state);
-            },
-        ))),
+        .add(Cell::new(
+            Label::new(label).on_state_changed(S::apply_label),
+        )),
     )
     .disallow_manual_uncheck()
 }
