@@ -11,30 +11,30 @@ pub struct CheckBoxHovered;
 pub struct CheckBoxPressed;
 
 impl CheckBoxStateColors<BinaryColor> for CheckBoxInactive {
-    const LABEL_COLOR: BinaryColor = BinaryColor::Off;
-    const BORDER_COLOR: BinaryColor = BinaryColor::Off;
-    const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
+    const LABEL_COLOR: BinaryColor = BinaryColor::On;
+    const BORDER_COLOR: BinaryColor = BinaryColor::On;
+    const BACKGROUND_COLOR: BinaryColor = BinaryColor::Off;
     const CHECK_MARK_COLOR: BinaryColor = BinaryColor::On;
 }
 
 impl CheckBoxStateColors<BinaryColor> for CheckBoxIdle {
-    const LABEL_COLOR: BinaryColor = BinaryColor::Off;
-    const BORDER_COLOR: BinaryColor = BinaryColor::Off;
-    const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
+    const LABEL_COLOR: BinaryColor = BinaryColor::On;
+    const BORDER_COLOR: BinaryColor = BinaryColor::On;
+    const BACKGROUND_COLOR: BinaryColor = BinaryColor::Off;
     const CHECK_MARK_COLOR: BinaryColor = BinaryColor::On;
 }
 
 impl CheckBoxStateColors<BinaryColor> for CheckBoxHovered {
-    const LABEL_COLOR: BinaryColor = BinaryColor::Off;
-    const BORDER_COLOR: BinaryColor = BinaryColor::Off;
-    const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
+    const LABEL_COLOR: BinaryColor = BinaryColor::On;
+    const BORDER_COLOR: BinaryColor = BinaryColor::On;
+    const BACKGROUND_COLOR: BinaryColor = BinaryColor::Off;
     const CHECK_MARK_COLOR: BinaryColor = BinaryColor::On;
 }
 
 impl CheckBoxStateColors<BinaryColor> for CheckBoxPressed {
-    const LABEL_COLOR: BinaryColor = BinaryColor::Off;
-    const BORDER_COLOR: BinaryColor = BinaryColor::Off;
-    const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
+    const LABEL_COLOR: BinaryColor = BinaryColor::On;
+    const BORDER_COLOR: BinaryColor = BinaryColor::On;
+    const BACKGROUND_COLOR: BinaryColor = BinaryColor::Off;
     const CHECK_MARK_COLOR: BinaryColor = BinaryColor::On;
 }
 

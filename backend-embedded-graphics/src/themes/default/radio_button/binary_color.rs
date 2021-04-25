@@ -11,30 +11,30 @@ pub struct RadioButtonHovered;
 pub struct RadioButtonPressed;
 
 impl RadioButtonStateColors<BinaryColor> for RadioButtonInactive {
-    const LABEL_COLOR: BinaryColor = BinaryColor::Off;
-    const BORDER_COLOR: BinaryColor = BinaryColor::Off;
-    const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
+    const LABEL_COLOR: BinaryColor = BinaryColor::On;
+    const BORDER_COLOR: BinaryColor = BinaryColor::On;
+    const BACKGROUND_COLOR: BinaryColor = BinaryColor::Off;
     const CHECK_MARK_COLOR: BinaryColor = BinaryColor::On;
 }
 
 impl RadioButtonStateColors<BinaryColor> for RadioButtonIdle {
-    const LABEL_COLOR: BinaryColor = BinaryColor::Off;
-    const BORDER_COLOR: BinaryColor = BinaryColor::Off;
-    const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
+    const LABEL_COLOR: BinaryColor = BinaryColor::On;
+    const BORDER_COLOR: BinaryColor = BinaryColor::On;
+    const BACKGROUND_COLOR: BinaryColor = BinaryColor::Off;
     const CHECK_MARK_COLOR: BinaryColor = BinaryColor::On;
 }
 
 impl RadioButtonStateColors<BinaryColor> for RadioButtonHovered {
-    const LABEL_COLOR: BinaryColor = BinaryColor::Off;
-    const BORDER_COLOR: BinaryColor = BinaryColor::Off;
-    const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
+    const LABEL_COLOR: BinaryColor = BinaryColor::On;
+    const BORDER_COLOR: BinaryColor = BinaryColor::On;
+    const BACKGROUND_COLOR: BinaryColor = BinaryColor::Off;
     const CHECK_MARK_COLOR: BinaryColor = BinaryColor::On;
 }
 
 impl RadioButtonStateColors<BinaryColor> for RadioButtonPressed {
-    const LABEL_COLOR: BinaryColor = BinaryColor::Off;
-    const BORDER_COLOR: BinaryColor = BinaryColor::Off;
-    const BACKGROUND_COLOR: BinaryColor = BinaryColor::On;
+    const LABEL_COLOR: BinaryColor = BinaryColor::On;
+    const BORDER_COLOR: BinaryColor = BinaryColor::On;
+    const BACKGROUND_COLOR: BinaryColor = BinaryColor::Off;
     const CHECK_MARK_COLOR: BinaryColor = BinaryColor::On;
 }
 

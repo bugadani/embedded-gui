@@ -6,11 +6,12 @@ use backend_embedded_graphics::{
     EgCanvas,
 };
 use embedded_graphics::{
-    draw_target::DrawTarget, pixelcolor::BinaryColor, prelude::Size as EgSize,
+    draw_target::DrawTarget,
+    pixelcolor::{Rgb888, RgbColor},
+    prelude::Size as EgSize,
 };
 use embedded_graphics_simulator::{
-    sdl2::MouseButton, BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent,
-    Window as SimWindow,
+    sdl2::MouseButton, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window as SimWindow,
 };
 use embedded_gui::{
     data::BoundData,
@@ -81,7 +82,7 @@ fn main() {
         EgCanvas::new(display),
         Spacing::new(
             Column::new(Cell::new(
-                Label::new("Checkboxes and radio buttons").text_color(BinaryColor::On),
+                Label::new("Checkboxes and radio buttons").text_color(Rgb888::BLACK),
             ))
             .spacing(1)
             .add(Cell::new(DefaultTheme::check_box("Inactive").active(false)))
@@ -128,13 +129,11 @@ fn main() {
 
     print_type_of(&gui.root);
 
-    let output_settings = OutputSettingsBuilder::new()
-        .theme(BinaryColorTheme::OledBlue)
-        .build();
+    let output_settings = OutputSettingsBuilder::new().scale(2).build();
     let mut window = SimWindow::new("Checkboxes and radio buttons", &output_settings);
 
     loop {
-        gui.canvas.target.clear(BinaryColor::Off).unwrap();
+        gui.canvas.target.clear(Rgb888::WHITE).unwrap();
 
         gui.update();
         gui.measure();
