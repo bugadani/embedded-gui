@@ -1,6 +1,7 @@
 use crate::{
     geometry::{
-        measurement::{MeasureConstraint, MeasureSpec},
+        axis_order::{AxisOrder, Horizontal as HorizontalHelper, Vertical as VerticalHelper},
+        measurement::MeasureSpec,
         BoundingBox, MeasuredSize, Position,
     },
     input::event::InputEvent,
@@ -55,42 +56,41 @@ impl VerticalAlignment for Center {
 }
 
 pub trait FillDirection {
-    fn measure<W: Widget>(widget: &mut W, child_size: MeasuredSize, measure_spec: MeasureSpec);
+    type AxisOrder: AxisOrder;
+
+    fn measure<W: Widget>(widget: &mut W, child_size: MeasuredSize, measure_spec: MeasureSpec) {
+        let main_child_size =
+            <Self::AxisOrder as AxisOrder>::main_axis(child_size.width, child_size.height);
+        let cross_child_size =
+            <Self::AxisOrder as AxisOrder>::cross_axis(child_size.width, child_size.height);
+        let main_spec =
+            <Self::AxisOrder as AxisOrder>::main_axis(measure_spec.width, measure_spec.height);
+
+        let main = main_spec.largest().unwrap_or(main_child_size);
+        let (width, height) = <Self::AxisOrder as AxisOrder>::merge(main, cross_child_size);
+
+        widget.set_measured_size(MeasuredSize { width, height })
+    }
 }
+
 pub struct Horizontal;
 pub struct Vertical;
 pub struct HorizontalAndVertical;
 
-fn stretch_with_constraint(size: u32, constraint: MeasureConstraint) -> u32 {
-    match constraint {
-        MeasureConstraint::AtMost(constraint) => constraint,
-        MeasureConstraint::Exactly(constraint) => constraint,
-        MeasureConstraint::Unspecified => size,
-    }
-}
-
 impl FillDirection for Horizontal {
-    fn measure<W: Widget>(widget: &mut W, child_size: MeasuredSize, measure_spec: MeasureSpec) {
-        let height = child_size.height;
-        let width = stretch_with_constraint(child_size.width, measure_spec.width);
-
-        widget.set_measured_size(MeasuredSize { width, height })
-    }
+    type AxisOrder = HorizontalHelper;
 }
 
 impl FillDirection for Vertical {
-    fn measure<W: Widget>(widget: &mut W, child_size: MeasuredSize, measure_spec: MeasureSpec) {
-        let height = stretch_with_constraint(child_size.height, measure_spec.height);
-        let width = child_size.width;
-
-        widget.set_measured_size(MeasuredSize { width, height })
-    }
+    type AxisOrder = VerticalHelper;
 }
 
 impl FillDirection for HorizontalAndVertical {
+    type AxisOrder = HorizontalHelper; // This isn't true but it's not used
+
     fn measure<W: Widget>(widget: &mut W, child_size: MeasuredSize, measure_spec: MeasureSpec) {
-        let width = stretch_with_constraint(child_size.width, measure_spec.width);
-        let height = stretch_with_constraint(child_size.height, measure_spec.height);
+        let width = measure_spec.width.largest().unwrap_or(child_size.width);
+        let height = measure_spec.height.largest().unwrap_or(child_size.height);
 
         widget.set_measured_size(MeasuredSize { width, height })
     }
