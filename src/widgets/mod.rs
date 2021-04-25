@@ -1,5 +1,5 @@
 use crate::{
-    data::{NoData, WidgetData},
+    data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
     input::{controller::InputContext, event::InputEvent},
     state::WidgetState,
@@ -60,7 +60,7 @@ pub trait Widget: WidgetStateHolder + ParentHolder + UpdateHandler {
     }
 }
 
-pub struct WidgetDataHolder<W, D = NoData>
+pub struct WidgetDataHolder<W, D = ()>
 where
     D: WidgetData,
 {
@@ -69,17 +69,17 @@ where
     pub on_data_changed: fn(&mut W, &D::Data),
 }
 
-impl<W> Default for WidgetDataHolder<W, NoData> {
+impl<W> Default for WidgetDataHolder<W, ()> {
     fn default() -> Self {
         Self {
-            data: NoData::default(),
+            data: (),
             last_version: (),
             on_data_changed: |_, _| (),
         }
     }
 }
 
-impl<W> WidgetDataHolder<W, NoData> {
+impl<W> WidgetDataHolder<W, ()> {
     pub fn new<D>(data: D) -> WidgetDataHolder<W, D>
     where
         D: WidgetData,

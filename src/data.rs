@@ -34,15 +34,7 @@ where
     }
 }
 
-pub struct NoData;
-
-impl Default for NoData {
-    fn default() -> Self {
-        Self
-    }
-}
-
-impl WidgetData for NoData {
+impl WidgetData for () {
     type Data = ();
     type Version = ();
 

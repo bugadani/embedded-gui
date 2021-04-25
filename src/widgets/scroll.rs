@@ -1,5 +1,5 @@
 use crate::{
-    data::{NoData, WidgetData},
+    data::WidgetData,
     geometry::{
         measurement::{MeasureConstraint, MeasureSpec},
         BoundingBox, MeasuredSize, Position, PositionDelta,
@@ -234,12 +234,12 @@ impl State for Hovered {
     const VALUE: u32 = 0x0000_0001;
 }
 
-impl Scroll<(), (), NoData> {
+impl Scroll<(), (), ()> {
     const STATE_IDLE: Idle = Idle;
     const STATE_HOVERED: Hovered = Hovered;
 }
 
-pub struct Scroll<W, SD, D = NoData, F = PointerFling>
+pub struct Scroll<W, SD, D = (), F = PointerFling>
 where
     D: WidgetData,
 {
@@ -248,7 +248,7 @@ where
     fling_controller: F,
 }
 
-impl<W> Scroll<W, Horizontal, NoData, PointerFling>
+impl<W> Scroll<W, Horizontal, (), PointerFling>
 where
     W: Widget,
 {
@@ -272,7 +272,7 @@ where
     }
 }
 
-impl<W> Scroll<W, Vertical, NoData, PointerFling>
+impl<W> Scroll<W, Vertical, (), PointerFling>
 where
     W: Widget,
 {
@@ -328,7 +328,7 @@ where
     }
 }
 
-impl<W, SD, F> Scroll<W, SD, NoData, F>
+impl<W, SD, F> Scroll<W, SD, (), F>
 where
     W: Widget,
 {

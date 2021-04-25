@@ -1,5 +1,5 @@
 use crate::{
-    data::{NoData, WidgetData},
+    data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox},
     state::WidgetState,
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
@@ -14,7 +14,7 @@ where
     pub data_holder: WidgetDataHolder<W, D>,
 }
 
-impl Wrapper<(), NoData> {
+impl Wrapper<(), ()> {
     pub fn wrap<W: Widget, D: WidgetData>(widget: W, data: D) -> Wrapper<W, D> {
         Wrapper {
             widget,

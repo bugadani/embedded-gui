@@ -1,5 +1,5 @@
 use crate::{
-    data::{NoData, WidgetData},
+    data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, Position},
     input::{
         controller::InputContext,
@@ -42,7 +42,7 @@ where
     }
 }
 
-pub struct Button<W, D = NoData>
+pub struct Button<W, D = ()>
 where
     D: WidgetData,
 {
@@ -95,7 +95,7 @@ impl State for Disabled {
     const VALUE: u32 = 0x0000_0004;
 }
 
-impl Button<(), NoData> {
+impl Button<(), ()> {
     pub const STATE_IDLE: Idle = Idle;
     pub const STATE_HOVERED: Hovered = Hovered;
     pub const STATE_PRESSED: Pressed = Pressed;
@@ -103,7 +103,7 @@ impl Button<(), NoData> {
     pub const STATE_ENABLED: Enabled = Enabled;
 }
 
-impl<W> Button<W, NoData>
+impl<W> Button<W, ()>
 where
     W: Widget,
 {
