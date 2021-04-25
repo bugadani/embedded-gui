@@ -85,11 +85,11 @@ fn main() {
                 Label::new("Checkboxes and radio buttons").text_color(Rgb888::BLACK),
             ))
             .spacing(1)
-            .add(Cell::new(default::checkbox("Disabled").enabled(false)))
+            .add(Cell::new(default::checkbox("Inactive").active(false)))
             .add(Cell::new(
-                default::checkbox("Disabled, checked")
+                default::checkbox("Inactive, checked")
                     .checked(true)
-                    .enabled(false),
+                    .active(false),
             ))
             .add(Cell::new(default::checkbox("Check me")))
             .add(Cell::new(
@@ -99,7 +99,7 @@ fn main() {
                     .on_data_changed(|radio, data| {
                         radio.set_checked(*data == 0);
                     })
-                    .enabled(false),
+                    .active(false),
             ))
             .add(Cell::new(
                 default::radio_button("Select me")

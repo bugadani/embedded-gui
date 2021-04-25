@@ -32,11 +32,11 @@ where
         self
     }
 
-    pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
-        if enabled {
-            self.change_state(Button::STATE_ENABLED);
+    pub fn set_active(&mut self, active: bool) -> &mut Self {
+        if active {
+            self.change_state(Button::STATE_ACTIVE);
         } else {
-            self.change_state(Button::STATE_DISABLED);
+            self.change_state(Button::STATE_INACTIVE);
         }
 
         self
@@ -58,9 +58,9 @@ state_group! {
         Pressed = 0x0000_0002,
     }
 
-    [ButtonDisabledStateGroup: 0x0000_0004] = {
-        Enabled = 0,
-        Disabled = 0x0000_0004,
+    [ButtonInactiveStateGroup: 0x0000_0004] = {
+        Active = 0,
+        Inactive = 0x0000_0004,
     }
 }
 
@@ -68,8 +68,8 @@ impl Button<(), ()> {
     pub const STATE_IDLE: Idle = Idle;
     pub const STATE_HOVERED: Hovered = Hovered;
     pub const STATE_PRESSED: Pressed = Pressed;
-    pub const STATE_DISABLED: Disabled = Disabled;
-    pub const STATE_ENABLED: Enabled = Enabled;
+    pub const STATE_INACTIVE: Inactive = Inactive;
+    pub const STATE_ACTIVE: Active = Active;
 }
 
 impl<W> Button<W, ()>
@@ -109,13 +109,13 @@ where
     W: Widget,
     D: WidgetData,
 {
-    pub fn enabled(mut self, enabled: bool) -> Self {
-        self.set_enabled(enabled);
+    pub fn active(mut self, active: bool) -> Self {
+        self.set_active(active);
         self
     }
 
-    pub fn set_enabled(&mut self, enabled: bool) -> &mut Self {
-        self.fields.set_enabled(enabled);
+    pub fn set_active(&mut self, active: bool) -> &mut Self {
+        self.fields.set_active(active);
         self
     }
 
@@ -202,7 +202,7 @@ where
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
-        if self.fields.state.has_state(Button::STATE_DISABLED) {
+        if self.fields.state.has_state(Button::STATE_INACTIVE) {
             return None;
         }
 
@@ -271,7 +271,7 @@ where
     }
 
     fn handle_input(&mut self, _ctxt: InputContext, event: InputEvent) -> bool {
-        if self.fields.state.has_state(Button::STATE_DISABLED) {
+        if self.fields.state.has_state(Button::STATE_INACTIVE) {
             return false;
         }
 

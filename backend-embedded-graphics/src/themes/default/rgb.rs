@@ -15,12 +15,12 @@ use crate::themes::{
 
 // region: Primary button
 
-pub struct PrimaryButtonDisabled<C>(PhantomData<C>);
+pub struct PrimaryButtonInactive<C>(PhantomData<C>);
 pub struct PrimaryButtonIdle<C>(PhantomData<C>);
 pub struct PrimaryButtonHovered<C>(PhantomData<C>);
 pub struct PrimaryButtonPressed<C>(PhantomData<C>);
 
-impl<C> ButtonStateColors<C> for PrimaryButtonDisabled<C>
+impl<C> ButtonStateColors<C> for PrimaryButtonInactive<C>
 where
     C: WebColors,
 {
@@ -61,7 +61,7 @@ impl<C> ButtonStyle<C> for PrimaryButtonStyle<C>
 where
     C: WebColors + Theme,
 {
-    type Disabled = PrimaryButtonDisabled<C>;
+    type Inactive = PrimaryButtonInactive<C>;
     type Idle = PrimaryButtonIdle<C>;
     type Hovered = PrimaryButtonHovered<C>;
     type Pressed = PrimaryButtonPressed<C>;
@@ -73,12 +73,12 @@ where
 
 // region: Secondary button
 
-pub struct SecondaryButtonDisabled<C>(PhantomData<C>);
+pub struct SecondaryButtonInactive<C>(PhantomData<C>);
 pub struct SecondaryButtonIdle<C>(PhantomData<C>);
 pub struct SecondaryButtonHovered<C>(PhantomData<C>);
 pub struct SecondaryButtonPressed<C>(PhantomData<C>);
 
-impl<C> ButtonStateColors<C> for SecondaryButtonDisabled<C>
+impl<C> ButtonStateColors<C> for SecondaryButtonInactive<C>
 where
     C: WebColors,
 {
@@ -119,7 +119,7 @@ impl<C> ButtonStyle<C> for SecondaryButtonStyle<C>
 where
     C: WebColors,
 {
-    type Disabled = SecondaryButtonDisabled<C>;
+    type Inactive = SecondaryButtonInactive<C>;
     type Idle = SecondaryButtonIdle<C>;
     type Hovered = SecondaryButtonHovered<C>;
     type Pressed = SecondaryButtonPressed<C>;
@@ -130,12 +130,12 @@ where
 // endregion
 
 // region: CheckBox
-pub struct CheckBoxDisabled;
+pub struct CheckBoxInactive;
 pub struct CheckBoxIdle;
 pub struct CheckBoxHovered;
 pub struct CheckBoxPressed;
 
-impl<C> CheckBoxStateColors<C> for CheckBoxDisabled
+impl<C> CheckBoxStateColors<C> for CheckBoxInactive
 where
     C: WebColors,
 {
@@ -180,7 +180,7 @@ impl<C> CheckBoxVisualStyle<C> for CheckBoxStyle<C>
 where
     C: WebColors,
 {
-    type Disabled = CheckBoxDisabled;
+    type Inactive = CheckBoxInactive;
     type Idle = CheckBoxIdle;
     type Hovered = CheckBoxHovered;
     type Pressed = CheckBoxPressed;
@@ -190,12 +190,12 @@ where
 // endregion
 
 // region: RadioButton
-pub struct RadioButtonDisabled;
+pub struct RadioButtonInactive;
 pub struct RadioButtonIdle;
 pub struct RadioButtonHovered;
 pub struct RadioButtonPressed;
 
-impl<C> RadioButtonStateColors<C> for RadioButtonDisabled
+impl<C> RadioButtonStateColors<C> for RadioButtonInactive
 where
     C: WebColors,
 {
@@ -240,7 +240,7 @@ impl<C> RadioButtonVisualStyle<C> for RadioButtonStyle<C>
 where
     C: WebColors,
 {
-    type Disabled = RadioButtonDisabled;
+    type Inactive = RadioButtonInactive;
     type Idle = RadioButtonIdle;
     type Hovered = RadioButtonHovered;
     type Pressed = RadioButtonPressed;
