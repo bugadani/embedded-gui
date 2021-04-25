@@ -6,6 +6,7 @@ use crate::{
         event::{InputEvent, PointerEvent},
     },
     state::{State, StateGroup, WidgetState},
+    state_group,
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
     Canvas, WidgetRenderer,
 };
@@ -50,49 +51,17 @@ where
     data_holder: WidgetDataHolder<ButtonFields<W, D::Data>, D>,
 }
 
-pub struct ButtonStateGroup;
-impl StateGroup for ButtonStateGroup {
-    const MASK: u32 = 0x0000_0003;
-}
+state_group! {
+    [ButtonStateGroup: 0x0000_0003] = {
+        Idle = 0,
+        Hovered = 0x0000_0001,
+        Pressed = 0x0000_0002,
+    }
 
-pub struct Idle;
-impl State for Idle {
-    type Group = ButtonStateGroup;
-
-    const VALUE: u32 = 0x0000_0000;
-}
-
-pub struct Hovered;
-impl State for Hovered {
-    type Group = ButtonStateGroup;
-
-    const VALUE: u32 = 0x0000_0001;
-}
-
-pub struct Pressed;
-impl State for Pressed {
-    type Group = ButtonStateGroup;
-
-    const VALUE: u32 = 0x0000_0002;
-}
-
-pub struct ButtonDisabledStateGroup;
-impl StateGroup for ButtonDisabledStateGroup {
-    const MASK: u32 = 0x0000_0004;
-}
-
-pub struct Enabled;
-impl State for Enabled {
-    type Group = ButtonDisabledStateGroup;
-
-    const VALUE: u32 = 0x0000_0000;
-}
-
-pub struct Disabled;
-impl State for Disabled {
-    type Group = ButtonDisabledStateGroup;
-
-    const VALUE: u32 = 0x0000_0004;
+    [ButtonDisabledStateGroup: 0x0000_0004] = {
+        Enabled = 0,
+        Disabled = 0x0000_0004,
+    }
 }
 
 impl Button<(), ()> {

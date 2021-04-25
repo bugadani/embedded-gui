@@ -6,6 +6,7 @@ use crate::{
         event::{InputEvent, PointerEvent},
     },
     state::{State, StateGroup, WidgetState},
+    state_group,
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
     Canvas, MeasureSpec, Position, WidgetRenderer,
 };
@@ -65,68 +66,20 @@ where
     data_holder: WidgetDataHolder<ToggleFields<W, D::Data>, D>,
 }
 
-pub struct ToggleStateGroup;
-impl StateGroup for ToggleStateGroup {
-    const MASK: u32 = 0x0000_0003;
-}
-
-pub struct Idle;
-impl State for Idle {
-    type Group = ToggleStateGroup;
-
-    const VALUE: u32 = 0x0000_0000;
-}
-
-pub struct Hovered;
-impl State for Hovered {
-    type Group = ToggleStateGroup;
-
-    const VALUE: u32 = 0x0000_0001;
-}
-
-pub struct Pressed;
-impl State for Pressed {
-    type Group = ToggleStateGroup;
-
-    const VALUE: u32 = 0x0000_0002;
-}
-
-pub struct ToggleCheckedStateGroup;
-impl StateGroup for ToggleCheckedStateGroup {
-    const MASK: u32 = 0x0000_0004;
-}
-
-pub struct Unchecked;
-impl State for Unchecked {
-    type Group = ToggleCheckedStateGroup;
-
-    const VALUE: u32 = 0x0000_0000;
-}
-
-pub struct Checked;
-impl State for Checked {
-    type Group = ToggleCheckedStateGroup;
-
-    const VALUE: u32 = 0x0000_0004;
-}
-
-pub struct ToggleDisabledStateGroup;
-impl StateGroup for ToggleDisabledStateGroup {
-    const MASK: u32 = 0x0000_0008;
-}
-
-pub struct Enabled;
-impl State for Enabled {
-    type Group = ToggleDisabledStateGroup;
-
-    const VALUE: u32 = 0x0000_0000;
-}
-
-pub struct Disabled;
-impl State for Disabled {
-    type Group = ToggleDisabledStateGroup;
-
-    const VALUE: u32 = 0x0000_0008;
+state_group! {
+    [ToggleStateGroup: 0x0000_0003] = {
+        Idle = 0,
+        Hovered = 0x0000_0001,
+        Pressed = 0x0000_0002,
+    }
+    [ToggleCheckedStateGroup: 0x0000_0004] = {
+        Unchecked = 0,
+        Checked = 0x0000_0004,
+    }
+    [ToggleDisabledStateGroup: 0x0000_0008] = {
+        Enabled = 0,
+        Disabled = 0x0000_0008
+    }
 }
 
 impl Toggle<(), (), true> {

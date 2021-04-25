@@ -9,6 +9,7 @@ use crate::{
         event::{InputEvent, PointerEvent, ScrollEvent},
     },
     state::{State, StateGroup, WidgetState},
+    state_group,
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
 };
 
@@ -215,23 +216,11 @@ where
     }
 }
 
-pub struct ScrollStateGroup;
-impl StateGroup for ScrollStateGroup {
-    const MASK: u32 = 0x0000_0001;
-}
-
-pub struct Idle;
-impl State for Idle {
-    type Group = ScrollStateGroup;
-
-    const VALUE: u32 = 0x0000_0000;
-}
-
-pub struct Hovered;
-impl State for Hovered {
-    type Group = ScrollStateGroup;
-
-    const VALUE: u32 = 0x0000_0001;
+state_group! {
+    [ScrollStateGroup: 0x0000_0001] = {
+        Idle = 0,
+        Hovered = 0x0000_0001,
+    }
 }
 
 impl Scroll<(), (), ()> {
