@@ -21,6 +21,7 @@ use embedded_gui::{
         layouts::linear::{column::Column, row::Row, Cell},
         primitives::border::Border,
         scroll::Scroll,
+        WidgetStateHolder,
     },
     Window,
 };
@@ -86,6 +87,7 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
 struct ScrollData {
     current: i32,
     max: i32,
+    viewport_size: i32,
     reset: bool,
 }
 
@@ -96,6 +98,7 @@ fn main() {
         ScrollData {
             current: 0,
             max: 0,
+            viewport_size: 0,
             reset: false,
         },
         |_| (),
@@ -168,6 +171,7 @@ fn main() {
                         .on_scroll_changed(|data, pos| {
                             data.current = pos.offset;
                             data.max = pos.maximum_offset;
+                            data.viewport_size = pos.viewport_size;
                             data.reset = false;
                         })
                         .on_data_changed(|scroll, data| {
@@ -181,7 +185,32 @@ fn main() {
             )
             .weight(1),
         )
-        .add(Cell::new(DefaultTheme::vertical_scrollbar())),
+        .add(Cell::new(
+            DefaultTheme::vertical_scrollbar()
+                .bind(&scroll_data)
+                .on_data_changed(|scrollbar, data| {
+                    // TODO: this might be a common use case to create a connector type
+                    let scrollbar_height = scrollbar.bounds.size.height;
+                    let scrollview_height = data.viewport_size as u32;
+                    let scrollview_data_height = (data.max + data.viewport_size) as u32;
+
+                    if scrollview_data_height > 0 {
+                        scrollbar.properties.set_length(
+                            (scrollbar_height * scrollview_height) / scrollview_data_height,
+                        );
+                        fn map(x: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> i32 {
+                            ((y1 - y0) * (x - x0)) / (x1 - x0) + y0
+                        }
+                        scrollbar.set_value(map(
+                            data.current,
+                            0,
+                            data.max,
+                            0,
+                            *scrollbar.limits.end(),
+                        ));
+                    }
+                }),
+        )),
     );
 
     let output_settings = OutputSettingsBuilder::new()

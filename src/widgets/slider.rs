@@ -74,6 +74,10 @@ where
         ((y1 - y0) * (x - x0)) / (x1 - x0) + y0
     }
 
+    pub fn set_value(&mut self, value: i32) {
+        self.value = value;
+    }
+
     pub fn slider_bounds(&self) -> BoundingBox {
         let total_size = SP::Direction::main_axis_size(self.bounds);
         let slider_length = self.properties.length();
@@ -132,17 +136,19 @@ where
     }
 }
 
-// TODO: This only applies to scrollbars
-// pub fn set_length(&mut self, length: u32) -> &mut Self {
-//     let MeasuredSize { width, height } = self.slider_bounds.size;
-//
-//     let (_, cross) = SD::xy_to_main_cross(width, height);
-//     let (width, height) = SD::main_cross_to_xy(length, cross);
-//
-//     self.slider_bounds.size = MeasuredSize { width, height };
-//
-//     self
-// }
+impl<SP, D> Slider<SP, D>
+where
+    SP: SliderProperties,
+    D: WidgetData,
+{
+    pub fn on_data_changed(mut self, callback: fn(&mut SliderFields<SP>, &D::Data)) -> Self
+    where
+        D: WidgetData,
+    {
+        self.data_holder.on_data_changed = callback;
+        self
+    }
+}
 
 impl<SP, D> WidgetStateHolder for Slider<SP, D>
 where
