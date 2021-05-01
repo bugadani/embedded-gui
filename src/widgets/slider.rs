@@ -50,8 +50,11 @@ impl SliderDirection for Vertical {
 pub trait SliderProperties {
     type Direction: SliderDirection;
 
-    /// Size of the draggable area.
-    fn slider_size(&self) -> MeasuredSize;
+    /// Cross axis size of the draggable area.
+    const THICKNESS: u32;
+
+    /// Size of the range of values represented by the draggable slider.
+    fn length(&self) -> u32;
 }
 
 pub struct SliderFields<SP> {
@@ -140,16 +143,10 @@ where
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
         // Measure depends on platform specifics
-        let MeasuredSize {
-            width: slider_width,
-            height: slider_height,
-        } = self.fields.properties.slider_size();
-        let (_, cross) = SP::Direction::xy_to_main_cross(slider_width, slider_height);
-
         let (main_spec, cross_spec) =
             SP::Direction::xy_to_main_cross(measure_spec.width, measure_spec.height);
 
-        let cross_size = cross_spec.apply_to_measured(cross);
+        let cross_size = cross_spec.apply_to_measured(SP::THICKNESS);
         let main_size = main_spec.largest().unwrap_or(0);
 
         let (width, height) = SP::Direction::main_cross_to_xy(main_size, cross_size);

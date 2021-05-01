@@ -20,6 +20,10 @@ use crate::{
                 binary_color::RadioButtonStyle, rgb::RadioButtonStyle as RgbRadioButtonStyle,
                 styled_radio_button, RadioButtonVisualStyle, StyledRadioButton,
             },
+            scrollbar::{
+                binary_color::VerticalScrollbar, rgb::VerticalScrollbar as RgbVerticalScrollbar,
+                vertical_scrollbar, ScrollbarVisualStyle, StyledVerticalScrollbar,
+            },
         },
         Theme,
     },
@@ -30,11 +34,12 @@ use embedded_graphics::{
     mono_font::MonoTextStyle,
     pixelcolor::{BinaryColor, Rgb555, Rgb565, Rgb888, RgbColor},
 };
-use embedded_gui::widgets::label::Label;
+use embedded_gui::widgets::{label::Label, slider::Slider};
 
 pub mod button;
 pub mod check_box;
 pub mod radio_button;
+pub mod scrollbar;
 
 pub trait DefaultTheme: Theme {
     type PrimaryButton: ButtonStyle<Self>;
@@ -42,6 +47,8 @@ pub trait DefaultTheme: Theme {
 
     type CheckBox: CheckBoxVisualStyle<Self>;
     type RadioButton: RadioButtonVisualStyle<Self>;
+
+    type VerticalScrollbar: ScrollbarVisualStyle<Self>;
 
     fn primary_button(label: &'static str) -> StyledButton<Self> {
         styled_button::<Self, Self::PrimaryButton>(label)
@@ -59,9 +66,8 @@ pub trait DefaultTheme: Theme {
         styled_radio_button::<Self, Self::RadioButton>(label)
     }
 
-    fn vertical_scrollbar(
-    ) -> Label<&'static str, LabelStyle<MonoTextStyle<'static, 'static, 'static, Self>>> {
-        Label::new("todo")
+    fn vertical_scrollbar() -> StyledVerticalScrollbar<Self> {
+        vertical_scrollbar::<Self>()
     }
 }
 
@@ -76,6 +82,8 @@ impl DefaultTheme for BinaryColor {
 
     type CheckBox = CheckBoxStyle;
     type RadioButton = RadioButtonStyle;
+
+    type VerticalScrollbar = VerticalScrollbar;
 }
 
 macro_rules! impl_rgb_default_theme {
@@ -91,6 +99,8 @@ macro_rules! impl_rgb_default_theme {
 
             type CheckBox = RgbCheckBoxStyle<Self>;
             type RadioButton = RgbRadioButtonStyle<Self>;
+
+            type VerticalScrollbar = RgbVerticalScrollbar<Self>;
         }
     };
 }
