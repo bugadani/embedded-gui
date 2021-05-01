@@ -103,79 +103,85 @@ fn main() {
     // TODO: this example should also demonstrate a scrollbar and horizontal scroll widget
     let mut gui = Window::new(
         EgCanvas::new(display),
-        Column::new(
+        Row::new(
             Cell::new(
-                Row::new(Cell::new(
-                    Label::new("Scroll down")
-                        .bind(&scroll_data)
-                        .on_data_changed(|label, data| {
-                            label.text = if data.current == data.max {
-                                "Scroll back"
-                            } else if data.current == 0 {
-                                "Scroll down"
-                            } else {
-                                "Scroll more"
-                            };
-                        }),
-                ))
-                .add(Cell::new(
-                    DefaultTheme::primary_button("Reset")
-                        .bind(&scroll_data)
-                        .on_clicked(|data| data.reset = true),
-                )),
-            )
-            .weight(1),
-        )
-        .add(
-            Cell::new(Border::new(
-                Scroll::vertical(
-                    Column::new(Cell::new(Label::new("S")))
-                        .add(Cell::new(Label::new("c")))
-                        .add(Cell::new(Label::new("r")))
-                        .add(Cell::new(Label::new("o")))
-                        .add(Cell::new(
-                            DefaultTheme::primary_button("l")
+                Column::new(
+                    Cell::new(
+                        Row::new(Cell::new(
+                            Label::new("Scroll down")
                                 .bind(&scroll_data)
-                                .on_clicked(|data| {
-                                    println!("Clicked at scroll offset: {}", data.current)
+                                .on_data_changed(|label, data| {
+                                    label.text = if data.current == data.max {
+                                        "Scroll back"
+                                    } else if data.current == 0 {
+                                        "Scroll down"
+                                    } else {
+                                        "Scroll more"
+                                    };
                                 }),
                         ))
-                        .add(Cell::new(Label::new("l")))
-                        .add(Cell::new(Label::new("o")))
-                        .add(Cell::new(Label::new("l")))
-                        .add(Cell::new(Label::new("o")))
-                        .add(Cell::new(Label::new("l")))
-                        .add(Cell::new(Label::new("o")))
-                        .add(Cell::new(Label::new("l")))
-                        .add(Cell::new(Label::new("o")))
-                        .add(Cell::new(Label::new("l")))
-                        .add(Cell::new(Label::new("o")))
-                        .add(Cell::new(Label::new("l")))
-                        .add(Cell::new(Label::new("o")))
-                        .add(Cell::new(Label::new("l")))
-                        .add(Cell::new(Label::new("o")))
-                        .add(Cell::new(Label::new("l")))
-                        .add(Cell::new(Label::new("o")))
-                        .add(Cell::new(Label::new("l")))
-                        .add(Cell::new(Label::new("o")))
-                        .add(Cell::new(Label::new("Scrollolo :)"))),
+                        .add(Cell::new(
+                            DefaultTheme::primary_button("Reset")
+                                .bind(&scroll_data)
+                                .on_clicked(|data| data.reset = true),
+                        )),
+                    )
+                    .weight(1),
                 )
-                .friction(1)
-                .friction_divisor(2)
-                .bind(&scroll_data) // FIXME (maybe) - needs to be bound otherwise callback doesn't fire
-                .on_scroll_changed(|data, pos| {
-                    data.current = pos.offset;
-                    data.max = pos.maximum_offset;
-                    data.reset = false;
-                })
-                .on_data_changed(|scroll, data| {
-                    if data.reset {
-                        scroll.scroll_to(0);
-                    }
-                }),
-            ))
-            .weight(5),
-        ),
+                .add(
+                    Cell::new(Border::new(
+                        Scroll::vertical(
+                            Column::new(Cell::new(Label::new("S")))
+                                .add(Cell::new(Label::new("c")))
+                                .add(Cell::new(Label::new("r")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(
+                                    DefaultTheme::primary_button("l")
+                                        .bind(&scroll_data)
+                                        .on_clicked(|data| {
+                                            println!("Clicked at scroll offset: {}", data.current)
+                                        }),
+                                ))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("Scrollolo :)"))),
+                        )
+                        .friction(1)
+                        .friction_divisor(2)
+                        .bind(&scroll_data) // FIXME (maybe) - needs to be bound otherwise callback doesn't fire
+                        .on_scroll_changed(|data, pos| {
+                            data.current = pos.offset;
+                            data.max = pos.maximum_offset;
+                            data.reset = false;
+                        })
+                        .on_data_changed(|scroll, data| {
+                            if data.reset {
+                                scroll.scroll_to(0);
+                            }
+                        }),
+                    ))
+                    .weight(5),
+                ),
+            )
+            .weight(3),
+        )
+        .add(Cell::new(DefaultTheme::vertical_scrollbar()).weight(1)),
     );
 
     let output_settings = OutputSettingsBuilder::new()

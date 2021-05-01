@@ -140,7 +140,11 @@ where
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
         // Measure depends on platform specifics
-        let cross = SP::Direction::cross_axis_size(self.fields.properties.slider_bounds());
+        let MeasuredSize {
+            width: slider_width,
+            height: slider_height,
+        } = self.fields.properties.slider_size();
+        let (_, cross) = SP::Direction::xy_to_main_cross(slider_width, slider_height);
 
         let (main_spec, cross_spec) =
             SP::Direction::xy_to_main_cross(measure_spec.width, measure_spec.height);

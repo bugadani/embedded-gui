@@ -1,28 +1,36 @@
-use crate::themes::{
-    default::{
-        button::{
-            primary::{
-                binary_color::PrimaryButtonStyle, rgb::PrimaryButtonStyle as RgbPrimaryButtonStyle,
+use crate::{
+    themes::{
+        default::{
+            button::{
+                primary::{
+                    binary_color::PrimaryButtonStyle,
+                    rgb::PrimaryButtonStyle as RgbPrimaryButtonStyle,
+                },
+                secondary::{
+                    binary_color::SecondaryButtonStyle,
+                    rgb::SecondaryButtonStyle as RgbSecondaryButtonStyle,
+                },
+                styled_button, ButtonStyle, StyledButton,
             },
-            secondary::{
-                binary_color::SecondaryButtonStyle,
-                rgb::SecondaryButtonStyle as RgbSecondaryButtonStyle,
+            check_box::{
+                binary_color::CheckBoxStyle, rgb::CheckBoxStyle as RgbCheckBoxStyle,
+                styled_check_box, CheckBoxVisualStyle, StyledCheckBox,
             },
-            styled_button, ButtonStyle, StyledButton,
+            radio_button::{
+                binary_color::RadioButtonStyle, rgb::RadioButtonStyle as RgbRadioButtonStyle,
+                styled_radio_button, RadioButtonVisualStyle, StyledRadioButton,
+            },
         },
-        check_box::{
-            binary_color::CheckBoxStyle, rgb::CheckBoxStyle as RgbCheckBoxStyle, styled_check_box,
-            CheckBoxVisualStyle, StyledCheckBox,
-        },
-        radio_button::{
-            binary_color::RadioButtonStyle, rgb::RadioButtonStyle as RgbRadioButtonStyle,
-            styled_radio_button, RadioButtonVisualStyle, StyledRadioButton,
-        },
+        Theme,
     },
-    Theme,
+    widgets::label::{ascii::LabelConstructor, LabelStyle},
 };
 
-use embedded_graphics::pixelcolor::{BinaryColor, Rgb555, Rgb565, Rgb888, RgbColor};
+use embedded_graphics::{
+    mono_font::MonoTextStyle,
+    pixelcolor::{BinaryColor, Rgb555, Rgb565, Rgb888, RgbColor},
+};
+use embedded_gui::widgets::label::Label;
 
 pub mod button;
 pub mod check_box;
@@ -49,6 +57,11 @@ pub trait DefaultTheme: Theme {
 
     fn radio_button(label: &'static str) -> StyledRadioButton<Self> {
         styled_radio_button::<Self, Self::RadioButton>(label)
+    }
+
+    fn vertical_scrollbar(
+    ) -> Label<&'static str, LabelStyle<MonoTextStyle<'static, 'static, 'static, Self>>> {
+        Label::new("todo")
     }
 }
 
