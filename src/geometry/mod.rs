@@ -9,6 +9,17 @@ pub struct Position {
     pub y: i32,
 }
 
+impl Add<Position> for Position {
+    type Output = Position;
+
+    fn add(self, rhs: Position) -> Self::Output {
+        Position {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
 impl Sub<Position> for Position {
     type Output = PositionDelta;
 

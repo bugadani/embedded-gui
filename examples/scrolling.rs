@@ -179,9 +179,9 @@ fn main() {
                     .weight(5),
                 ),
             )
-            .weight(3),
+            .weight(1),
         )
-        .add(Cell::new(DefaultTheme::vertical_scrollbar()).weight(1)),
+        .add(Cell::new(DefaultTheme::vertical_scrollbar())),
     );
 
     let output_settings = OutputSettingsBuilder::new()

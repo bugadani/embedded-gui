@@ -2,10 +2,10 @@ use core::ops::RangeInclusive;
 
 use crate::{
     data::WidgetData,
-    geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
+    geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
     input::{controller::InputContext, event::InputEvent},
     state::WidgetState,
-    widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
+    widgets::{slider, ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
 };
 
 pub trait SliderDirection {
@@ -64,6 +64,35 @@ pub struct SliderFields<SP> {
     pub limits: RangeInclusive<i32>,
     pub bounds: BoundingBox,
     pub properties: SP,
+}
+
+impl<SP> SliderFields<SP>
+where
+    SP: SliderProperties,
+{
+    fn value_to_pos(x: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> i32 {
+        ((y1 - y0) * (x - x0)) / (x1 - x0) + y0
+    }
+
+    pub fn slider_bounds(&self) -> BoundingBox {
+        let total_size = SP::Direction::main_axis_size(self.bounds);
+        let slider_length = self.properties.length();
+        let space = total_size - slider_length;
+
+        let pos = Self::value_to_pos(
+            self.value,
+            *self.limits.start(),
+            *self.limits.end(),
+            0,
+            space as i32,
+        );
+        let (x, y) = SP::Direction::main_cross_to_xy(pos, 0);
+        let (width, height) = SP::Direction::main_cross_to_xy(slider_length, SP::THICKNESS);
+        BoundingBox {
+            position: self.bounds.position + Position { x, y },
+            size: MeasuredSize { width, height },
+        }
+    }
 }
 
 pub struct Slider<SP, D = ()>
