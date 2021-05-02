@@ -5,7 +5,8 @@ use crate::{
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
     input::{controller::InputContext, event::InputEvent},
     state::WidgetState,
-    widgets::{slider, ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
+    state_group,
+    widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
 };
 
 pub trait SliderDirection {
@@ -64,6 +65,7 @@ pub struct SliderFields<SP> {
     pub limits: RangeInclusive<i32>,
     pub bounds: BoundingBox,
     pub properties: SP,
+    pub state: WidgetState,
 }
 
 impl<SP> SliderFields<SP>
@@ -99,6 +101,27 @@ where
     }
 }
 
+state_group! {
+    [SliderStateGroup: 0x0000_0003] = {
+        Idle = 0,
+        Hovered = 0x0000_0001,
+        Dragged = 0x0000_0002,
+    }
+
+    [SliderInactiveStateGroup: 0x0000_0004] = {
+        Active = 0,
+        Inactive = 0x0000_0004,
+    }
+}
+
+impl Slider<(), ()> {
+    pub const STATE_IDLE: Idle = Idle;
+    pub const STATE_HOVERED: Hovered = Hovered;
+    pub const STATE_DRAGGED: Dragged = Dragged;
+    pub const STATE_INACTIVE: Inactive = Inactive;
+    pub const STATE_ACTIVE: Active = Active;
+}
+
 pub struct Slider<SP, D = ()>
 where
     D: WidgetData,
@@ -120,6 +143,7 @@ where
                 bounds: BoundingBox::default(),
                 limits,
                 properties,
+                state: WidgetState::default(),
             },
             data_holder: WidgetDataHolder::default(),
         }
@@ -192,6 +216,7 @@ where
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
         // We want to handle drags, scrolls with wheel, maybe even arrow key presses.
         // Scroll and arrow handling should depend on direction.
+        // Scrollwheel/arrows should change the value, dragging should change position directly.
         None
     }
 
