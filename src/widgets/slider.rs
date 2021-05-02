@@ -214,6 +214,10 @@ where
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
+        if self.fields.state.has_state(Slider::STATE_INACTIVE) {
+            return None;
+        }
+
         // We want to handle drags, scrolls with wheel, maybe even arrow key presses.
         // Scroll and arrow handling should depend on direction.
         // Scrollwheel/arrows should change the value, dragging should change position directly.
@@ -221,6 +225,10 @@ where
     }
 
     fn handle_input(&mut self, _ctxt: InputContext, event: InputEvent) -> bool {
+        if self.fields.state.has_state(Slider::STATE_INACTIVE) {
+            return false;
+        }
+
         false
     }
 }
