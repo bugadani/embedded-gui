@@ -2,14 +2,14 @@ use core::ops::RangeInclusive;
 
 use crate::{
     data::WidgetData,
-    geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
+    geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position, PositionDelta},
     input::{
         controller::InputContext,
         event::{InputEvent, PointerEvent, ScrollEvent},
     },
     state::{State, StateGroup, WidgetState},
     state_group,
-    widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
+    widgets::{slider, ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
 };
 
 pub trait SliderDirection {
@@ -84,8 +84,18 @@ impl<SP> SliderFields<SP>
 where
     SP: SliderProperties,
 {
-    fn value_to_pos(x: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> i32 {
+    fn lerp(x: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> i32 {
         ((y1 - y0) * (x - x0)) / (x1 - x0) + y0
+    }
+
+    fn lerp_clipped(x: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> (i32, i32) {
+        if x < x0 {
+            (x0, y0)
+        } else if x > x1 {
+            (x1, y1)
+        } else {
+            (x, Self::lerp(x, x0, x1, y0, y1))
+        }
     }
 
     pub fn set_value(&mut self, value: i32) {
@@ -95,12 +105,32 @@ where
         }
     }
 
+    pub fn set_slider_position(&mut self, pos: i32) -> i32 {
+        let total_size = SP::Direction::main_axis_size(self.bounds);
+        let slider_length = self.properties.length();
+
+        let x0 = slider_length / 2;
+        let x1 = x0 + total_size - slider_length;
+
+        let (pos, value) = Self::lerp_clipped(
+            pos,
+            x0 as i32,
+            x1 as i32,
+            *self.limits.start(),
+            *self.limits.end(),
+        );
+
+        self.set_value(value);
+
+        pos
+    }
+
     pub fn slider_bounds(&self) -> BoundingBox {
         let total_size = SP::Direction::main_axis_size(self.bounds);
         let slider_length = self.properties.length();
         let space = total_size - slider_length;
 
-        let pos = Self::value_to_pos(
+        let pos = Self::lerp(
             self.value,
             *self.limits.start(),
             *self.limits.end(),
@@ -143,6 +173,7 @@ where
 {
     pub fields: SliderFields<SP>,
     data_holder: WidgetDataHolder<SliderFields<SP>, D>,
+    drag_offset: Option<i32>,
 }
 
 impl<SP> Slider<SP, ()>
@@ -161,6 +192,7 @@ where
                 state: WidgetState::default(),
             },
             data_holder: WidgetDataHolder::default(),
+            drag_offset: None,
         }
     }
 
@@ -171,6 +203,7 @@ where
         Slider {
             fields: self.fields,
             data_holder: WidgetDataHolder::new(data),
+            drag_offset: None,
         }
     }
 }
@@ -247,6 +280,14 @@ where
                 None
             }
 
+            InputEvent::PointerEvent(_, _) => {
+                if self.fields.state.has_state(Slider::STATE_HOVERED) {
+                    Some(0)
+                } else {
+                    None
+                }
+            }
+
             InputEvent::ScrollEvent(scroll) => {
                 if self.fields.state.has_state(Slider::STATE_HOVERED)
                     && SP::Direction::handles_scroll(scroll)
@@ -271,8 +312,24 @@ where
         }
 
         match event {
-            InputEvent::Cancel => {}
+            InputEvent::Cancel => {
+                self.drag_offset = None;
+            }
             InputEvent::KeyEvent(_) => {}
+            InputEvent::PointerEvent(position, PointerEvent::Down) => {
+                let (value_pos, _) = SP::Direction::xy_to_main_cross(position.x, position.y);
+                let new_pos = self.fields.set_slider_position(value_pos);
+                self.drag_offset = Some(new_pos - value_pos);
+            }
+            InputEvent::PointerEvent(position, PointerEvent::Drag) => {
+                if let Some(offset) = self.drag_offset {
+                    let (value_pos, _) = SP::Direction::xy_to_main_cross(position.x, position.y);
+                    self.fields.set_slider_position(value_pos + offset);
+                }
+            }
+            InputEvent::PointerEvent(_, PointerEvent::Up) => {
+                self.drag_offset = None;
+            }
             InputEvent::PointerEvent(_, _) => {}
             InputEvent::ScrollEvent(scroll) => {
                 let delta = match scroll {

@@ -1,4 +1,4 @@
-use core::ops::{Add, Neg, Sub};
+use core::ops::{Add, AddAssign, Neg, Sub};
 
 pub mod axis_order;
 pub mod measurement;
@@ -17,6 +17,12 @@ impl Add<Position> for Position {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
         }
+    }
+}
+
+impl AddAssign<Position> for Position {
+    fn add_assign(&mut self, rhs: Position) {
+        *self = *self + rhs;
     }
 }
 
@@ -56,6 +62,12 @@ impl Add<PositionDelta> for Position {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
         }
+    }
+}
+
+impl AddAssign<PositionDelta> for Position {
+    fn add_assign(&mut self, rhs: PositionDelta) {
+        *self = *self + rhs;
     }
 }
 
