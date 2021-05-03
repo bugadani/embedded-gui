@@ -3,8 +3,11 @@ use core::ops::RangeInclusive;
 use crate::{
     data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
-    input::{controller::InputContext, event::InputEvent},
-    state::WidgetState,
+    input::{
+        controller::InputContext,
+        event::{InputEvent, PointerEvent, ScrollEvent},
+    },
+    state::{State, StateGroup, WidgetState},
     state_group,
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
 };
@@ -24,6 +27,8 @@ pub trait SliderDirection {
 
         cross
     }
+
+    fn handles_scroll(event: ScrollEvent) -> bool;
 }
 
 pub struct Horizontal;
@@ -37,6 +42,10 @@ impl SliderDirection for Horizontal {
     fn main_cross_to_xy<V>(main: V, cross: V) -> (V, V) {
         (main, cross)
     }
+
+    fn handles_scroll(_event: ScrollEvent) -> bool {
+        true
+    }
 }
 
 impl SliderDirection for Vertical {
@@ -45,6 +54,9 @@ impl SliderDirection for Vertical {
     }
     fn main_cross_to_xy<V>(main: V, cross: V) -> (V, V) {
         (cross, main)
+    }
+    fn handles_scroll(event: ScrollEvent) -> bool {
+        matches!(event, ScrollEvent::VerticalScroll(_))
     }
 }
 
@@ -77,7 +89,10 @@ where
     }
 
     pub fn set_value(&mut self, value: i32) {
-        self.value = value;
+        // TODO: clip instead?
+        if self.limits.contains(&value) {
+            self.value = value;
+        }
     }
 
     pub fn slider_bounds(&self) -> BoundingBox {
@@ -218,15 +233,63 @@ where
             return None;
         }
 
+        match event {
+            InputEvent::PointerEvent(position, PointerEvent::Hover) => {
+                if self.bounding_box().contains(position) {
+                    self.fields.state.set_state(Slider::STATE_HOVERED);
+                    // We deliberately don't handle hover events. In case the slider is partially
+                    // displayed, handling hover would route clicks that fall on the hidden parts.
+                } else {
+                    // Make sure we reset our state if we don't handle the pointer event.
+                    // It's possible we were the target for the last one.
+                    self.fields.state.set_state(Slider::STATE_IDLE);
+                }
+                None
+            }
+
+            InputEvent::ScrollEvent(scroll) => {
+                if self.fields.state.has_state(Slider::STATE_HOVERED)
+                    && SP::Direction::handles_scroll(scroll)
+                {
+                    Some(0)
+                } else {
+                    None
+                }
+            }
+
+            _ => None,
+        }
+
         // We want to handle drags, scrolls with wheel, maybe even arrow key presses.
         // Scroll and arrow handling should depend on direction.
         // Scrollwheel/arrows should change the value, dragging should change position directly.
-        None
     }
 
     fn handle_input(&mut self, _ctxt: InputContext, event: InputEvent) -> bool {
         if self.fields.state.has_state(Slider::STATE_INACTIVE) {
             return false;
+        }
+
+        match event {
+            InputEvent::Cancel => {}
+            InputEvent::KeyEvent(_) => {}
+            InputEvent::PointerEvent(_, _) => {}
+            InputEvent::ScrollEvent(scroll) => {
+                let delta = match scroll {
+                    ScrollEvent::HorizontalScroll(delta) => delta,
+                    ScrollEvent::VerticalScroll(delta) => -delta,
+                };
+
+                // TODO: make this configurable
+                const INCREMENT: i32 = 1;
+                self.fields.set_value(if delta < 0 {
+                    self.fields.value - INCREMENT
+                } else {
+                    self.fields.value + INCREMENT
+                });
+
+                return true;
+            }
         }
 
         false
