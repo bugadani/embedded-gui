@@ -84,11 +84,19 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
     }
 }
 
+#[derive(Debug)]
+enum ScrollOp {
+    None,
+    Reset,
+    Scrollbar,
+}
+
+#[derive(Debug)]
 struct ScrollData {
     current: i32,
     max: i32,
     viewport_size: i32,
-    reset: bool,
+    op: ScrollOp,
 }
 
 fn main() {
@@ -99,7 +107,7 @@ fn main() {
             current: 0,
             max: 0,
             viewport_size: 0,
-            reset: false,
+            op: ScrollOp::None,
         },
         |_| (),
     );
@@ -126,7 +134,7 @@ fn main() {
                         .add(Cell::new(
                             DefaultTheme::primary_button("Reset")
                                 .bind(&scroll_data)
-                                .on_clicked(|data| data.reset = true),
+                                .on_clicked(|data| data.op = ScrollOp::Reset),
                         )),
                     )
                     .weight(1),
@@ -172,12 +180,12 @@ fn main() {
                             data.current = pos.offset;
                             data.max = pos.maximum_offset;
                             data.viewport_size = pos.viewport_size;
-                            data.reset = false;
+                            data.op = ScrollOp::None;
                         })
-                        .on_data_changed(|scroll, data| {
-                            if data.reset {
-                                scroll.scroll_to(0);
-                            }
+                        .on_data_changed(|scroll, data| match data.op {
+                            ScrollOp::None => {}
+                            ScrollOp::Reset => scroll.scroll_to(0),
+                            ScrollOp::Scrollbar => scroll.set_position(data.current),
                         }),
                     ))
                     .weight(5),
@@ -201,6 +209,7 @@ fn main() {
                         fn map(x: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> i32 {
                             ((y1 - y0) * (x - x0)) / (x1 - x0) + y0
                         }
+                        scrollbar.set_range(0..=data.max);
                         scrollbar.set_value(map(
                             data.current,
                             0,
@@ -209,6 +218,10 @@ fn main() {
                             *scrollbar.limits.end(),
                         ));
                     }
+                })
+                .on_value_changed(|data, value| {
+                    data.current = value;
+                    data.op = ScrollOp::Scrollbar;
                 }),
         )),
     );

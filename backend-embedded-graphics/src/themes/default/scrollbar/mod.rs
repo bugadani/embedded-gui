@@ -23,10 +23,10 @@ where
 
     const THICKNESS: u32;
 
-    fn draw<DT: DrawTarget<Color = C>>(
+    fn draw<DT: DrawTarget<Color = C>, D>(
         &self,
         canvas: &mut EgCanvas<DT>,
-        slider: &SliderFields<ScrollbarProperties<C, Self>>,
+        slider: &SliderFields<ScrollbarProperties<C, Self>, D>,
     ) -> Result<(), DT::Error>;
 }
 
@@ -84,7 +84,7 @@ where
 }
 
 pub type StyledVerticalScrollbar<C> =
-    Slider<ScrollbarProperties<C, <C as DefaultTheme>::VerticalScrollbar>>;
+    Slider<ScrollbarProperties<C, <C as DefaultTheme>::VerticalScrollbar>, ()>;
 
 pub fn vertical_scrollbar<C: DefaultTheme>() -> StyledVerticalScrollbar<C> {
     Slider::new(0..=30, ScrollbarProperties::new())

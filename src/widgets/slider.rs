@@ -70,9 +70,9 @@ pub trait SliderProperties {
     fn length(&self) -> u32;
 }
 
-pub struct SliderFields<SP> {
+pub struct SliderFields<SP, D> {
     pub parent_index: usize,
-    pub on_value_changed: fn(&mut i32),
+    pub on_value_changed: fn(&mut D, i32),
     pub value: i32,
     pub limits: RangeInclusive<i32>,
     pub bounds: BoundingBox,
@@ -80,49 +80,36 @@ pub struct SliderFields<SP> {
     pub state: WidgetState,
 }
 
-impl<SP> SliderFields<SP>
+fn lerp(x: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> i32 {
+    ((y1 - y0) * (x - x0)) / (x1 - x0) + y0
+}
+
+fn lerp_clipped(x: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> (i32, i32) {
+    if x < x0 {
+        (x0, y0)
+    } else if x > x1 {
+        (x1, y1)
+    } else {
+        (x, lerp(x, x0, x1, y0, y1))
+    }
+}
+
+impl<SP, D> SliderFields<SP, D>
 where
     SP: SliderProperties,
 {
-    fn lerp(x: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> i32 {
-        ((y1 - y0) * (x - x0)) / (x1 - x0) + y0
-    }
-
-    fn lerp_clipped(x: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> (i32, i32) {
-        if x < x0 {
-            (x0, y0)
-        } else if x > x1 {
-            (x1, y1)
-        } else {
-            (x, Self::lerp(x, x0, x1, y0, y1))
-        }
-    }
-
-    pub fn set_value(&mut self, value: i32) {
+    pub fn set_value(&mut self, value: i32) -> bool {
         // TODO: clip instead?
         if self.limits.contains(&value) {
             self.value = value;
+            true
+        } else {
+            false
         }
     }
 
-    pub fn set_slider_position(&mut self, pos: i32) -> i32 {
-        let total_size = SP::Direction::main_axis_size(self.bounds);
-        let slider_length = self.properties.length();
-
-        let x0 = slider_length / 2;
-        let x1 = x0 + total_size - slider_length;
-
-        let (pos, value) = Self::lerp_clipped(
-            pos,
-            x0 as i32,
-            x1 as i32,
-            *self.limits.start(),
-            *self.limits.end(),
-        );
-
-        self.set_value(value);
-
-        pos
+    pub fn set_range(&mut self, limits: RangeInclusive<i32>) {
+        self.limits = limits;
     }
 
     pub fn slider_bounds(&self) -> BoundingBox {
@@ -130,7 +117,7 @@ where
         let slider_length = self.properties.length();
         let space = total_size - slider_length;
 
-        let pos = Self::lerp(
+        let pos = lerp(
             self.value,
             *self.limits.start(),
             *self.limits.end(),
@@ -171,8 +158,8 @@ pub struct Slider<SP, D = ()>
 where
     D: WidgetData,
 {
-    pub fields: SliderFields<SP>,
-    data_holder: WidgetDataHolder<SliderFields<SP>, D>,
+    pub fields: SliderFields<SP, D::Data>,
+    data_holder: WidgetDataHolder<SliderFields<SP, D::Data>, D>,
     drag_offset: Option<i32>,
 }
 
@@ -184,7 +171,7 @@ where
         Slider {
             fields: SliderFields {
                 parent_index: 0,
-                on_value_changed: |_| (),
+                on_value_changed: |_, _| (),
                 value: *limits.start(),
                 bounds: BoundingBox::default(),
                 limits,
@@ -201,7 +188,15 @@ where
         D: WidgetData,
     {
         Slider {
-            fields: self.fields,
+            fields: SliderFields {
+                parent_index: self.fields.parent_index,
+                on_value_changed: |_, _| (),
+                value: self.fields.value,
+                bounds: self.fields.bounds,
+                limits: self.fields.limits,
+                properties: self.fields.properties,
+                state: self.fields.state,
+            },
             data_holder: WidgetDataHolder::new(data),
             drag_offset: None,
         }
@@ -213,12 +208,48 @@ where
     SP: SliderProperties,
     D: WidgetData,
 {
-    pub fn on_data_changed(mut self, callback: fn(&mut SliderFields<SP>, &D::Data)) -> Self
+    pub fn on_data_changed(mut self, callback: fn(&mut SliderFields<SP, D::Data>, &D::Data)) -> Self
     where
         D: WidgetData,
     {
         self.data_holder.on_data_changed = callback;
         self
+    }
+
+    pub fn on_value_changed(mut self, callback: fn(&mut D::Data, i32)) -> Self
+    where
+        D: WidgetData,
+    {
+        self.fields.on_value_changed = callback;
+        self
+    }
+
+    pub fn set_value(&mut self, value: i32) {
+        // TODO: clip instead?
+        if self.fields.set_value(value) {
+            let callback = self.fields.on_value_changed;
+            self.data_holder.data.update(|data| callback(data, value));
+        }
+    }
+
+    fn set_slider_position(&mut self, pos: i32) -> i32 {
+        let total_size = SP::Direction::main_axis_size(self.fields.bounds);
+        let slider_length = self.fields.properties.length();
+
+        let x0 = slider_length / 2;
+        let x1 = x0 + total_size - slider_length;
+
+        let (pos, value) = lerp_clipped(
+            pos,
+            x0 as i32,
+            x1 as i32,
+            *self.fields.limits.start(),
+            *self.fields.limits.end(),
+        );
+
+        self.set_value(value);
+
+        pos
     }
 }
 
@@ -318,13 +349,13 @@ where
             InputEvent::KeyEvent(_) => {}
             InputEvent::PointerEvent(position, PointerEvent::Down) => {
                 let (value_pos, _) = SP::Direction::xy_to_main_cross(position.x, position.y);
-                let new_pos = self.fields.set_slider_position(value_pos);
+                let new_pos = self.set_slider_position(value_pos);
                 self.drag_offset = Some(new_pos - value_pos);
             }
             InputEvent::PointerEvent(position, PointerEvent::Drag) => {
                 if let Some(offset) = self.drag_offset {
                     let (value_pos, _) = SP::Direction::xy_to_main_cross(position.x, position.y);
-                    self.fields.set_slider_position(value_pos + offset);
+                    self.set_slider_position(value_pos + offset);
                 }
             }
             InputEvent::PointerEvent(_, PointerEvent::Up) => {
@@ -339,7 +370,7 @@ where
 
                 // TODO: make this configurable
                 const INCREMENT: i32 = 1;
-                self.fields.set_value(if delta < 0 {
+                self.set_value(if delta < 0 {
                     self.fields.value - INCREMENT
                 } else {
                     self.fields.value + INCREMENT

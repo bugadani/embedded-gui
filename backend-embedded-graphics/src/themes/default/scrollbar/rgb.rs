@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use embedded_graphics::prelude::WebColors;
+use embedded_graphics::{draw_target::DrawTarget, prelude::WebColors};
 use embedded_gui::widgets::slider::{SliderFields, Vertical};
 
 use crate::themes::default::scrollbar::{ScrollbarProperties, ScrollbarVisualStyle};
@@ -24,10 +24,10 @@ where
 
     const THICKNESS: u32 = 6;
 
-    fn draw<DT: embedded_graphics::draw_target::DrawTarget<Color = C>>(
+    fn draw<DT: DrawTarget<Color = C>, D>(
         &self,
         canvas: &mut crate::EgCanvas<DT>,
-        slider: &SliderFields<ScrollbarProperties<C, Self>>,
+        slider: &SliderFields<ScrollbarProperties<C, Self>, D>,
     ) -> Result<(), DT::Error> {
         todo!()
     }

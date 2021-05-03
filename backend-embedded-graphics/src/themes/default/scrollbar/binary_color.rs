@@ -17,10 +17,10 @@ impl ScrollbarVisualStyle<BinaryColor> for VerticalScrollbar {
 
     const THICKNESS: u32 = 6;
 
-    fn draw<DT: DrawTarget<Color = BinaryColor>>(
+    fn draw<DT: DrawTarget<Color = BinaryColor>, D>(
         &self,
         canvas: &mut crate::EgCanvas<DT>,
-        slider: &SliderFields<ScrollbarProperties<BinaryColor, Self>>,
+        slider: &SliderFields<ScrollbarProperties<BinaryColor, Self>, D>,
     ) -> Result<(), DT::Error> {
         // TODO: for the default theme, this may be extracted as the default implementation
 
@@ -67,10 +67,10 @@ impl ScrollbarVisualStyle<BinaryColor> for HorizontalScrollbar {
 
     const THICKNESS: u32 = 6;
 
-    fn draw<DT: DrawTarget<Color = BinaryColor>>(
+    fn draw<DT: DrawTarget<Color = BinaryColor>, D>(
         &self,
         canvas: &mut crate::EgCanvas<DT>,
-        slider: &SliderFields<ScrollbarProperties<BinaryColor, Self>>,
+        slider: &SliderFields<ScrollbarProperties<BinaryColor, Self>, D>,
     ) -> Result<(), DT::Error> {
         todo!()
     }

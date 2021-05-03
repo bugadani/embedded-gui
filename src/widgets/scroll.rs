@@ -173,9 +173,17 @@ pub struct ScrollFields<W, SD, D> {
     pub scroll_time: u32,
 }
 
-impl<W, SD, D> ScrollFields<W, SD, D> {
+impl<W, SD, D> ScrollFields<W, SD, D>
+where
+    SD: ScrollDirection,
+{
     pub fn scroll_to(&mut self, offset: i32) {
         self.offset_target = Some(offset);
+    }
+
+    pub fn set_position(&mut self, offset: i32) {
+        let (x, y) = SD::merge_directions(offset, 0);
+        self.direction.override_offset(PositionDelta { x, y });
     }
 
     pub fn scroll_time(&mut self, time: u32) -> &mut Self {
@@ -265,6 +273,7 @@ where
 impl<W, SD, D> Scroll<W, SD, D, PointerFling>
 where
     W: Widget,
+    SD: ScrollDirection,
     D: WidgetData,
 {
     /// Sets the friction value.
