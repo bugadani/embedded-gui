@@ -30,6 +30,21 @@ where
     const BORDER_COLOR: Option<C>;
     const FILL_COLOR: Option<C>;
     const BORDER_THICKNESS: u32 = 0;
+
+    fn styles() -> (PrimitiveStyle<C>, PrimitiveStyle<C>) {
+        let mut style = PrimitiveStyle::default();
+        let mut bg_style = PrimitiveStyle::default();
+
+        style.fill_color = Self::FILL_COLOR;
+        style.stroke_width = Self::BORDER_THICKNESS;
+        style.stroke_color = Self::BORDER_COLOR;
+
+        bg_style.fill_color = Self::BACKGROUND_FILL_COLOR;
+        bg_style.stroke_width = Self::BACKGROUND_BORDER_THICKNESS;
+        bg_style.stroke_color = Self::BACKGROUND_BORDER_COLOR;
+
+        (style, bg_style)
+    }
 }
 
 pub trait ScrollbarVisualStyle<C>: Default
@@ -42,6 +57,8 @@ where
 
     type Idle: ScrollbarVisualState<C>;
     type Hovered: ScrollbarVisualState<C>;
+    type Dragged: ScrollbarVisualState<C>;
+    type Inactive: ScrollbarVisualState<C>;
 
     fn draw<DT: DrawTarget<Color = C>, D>(
         &self,
@@ -62,25 +79,14 @@ where
         canvas: &mut crate::EgCanvas<DT>,
         slider: &SliderFields<ScrollbarProperties<C, Self>, D>,
     ) -> Result<(), DT::Error> {
-        // TODO: for the default theme, this may be extracted as the default implementation
-
-        let mut bg_style = PrimitiveStyle::default();
-        let mut fg_style = PrimitiveStyle::default();
-
-        if slider.state.has_state(Slider::STATE_HOVERED) {
-            bg_style.fill_color = Self::Hovered::BACKGROUND_FILL_COLOR;
-            bg_style.stroke_width = Self::Hovered::BACKGROUND_BORDER_THICKNESS;
-            bg_style.stroke_color = Self::Hovered::BACKGROUND_BORDER_COLOR;
-            fg_style.fill_color = Self::Hovered::FILL_COLOR;
-            fg_style.stroke_width = Self::Hovered::BORDER_THICKNESS;
-            fg_style.stroke_color = Self::Hovered::BORDER_COLOR;
+        let (slider_style, bg_style) = if slider.state.has_state(Slider::STATE_INACTIVE) {
+            Self::Inactive::styles()
+        } else if slider.state.has_state(Slider::STATE_DRAGGED) {
+            Self::Dragged::styles()
+        } else if slider.state.has_state(Slider::STATE_HOVERED) {
+            Self::Hovered::styles()
         } else {
-            bg_style.fill_color = Self::Idle::BACKGROUND_FILL_COLOR;
-            bg_style.stroke_width = Self::Idle::BACKGROUND_BORDER_THICKNESS;
-            bg_style.stroke_color = Self::Idle::BACKGROUND_BORDER_COLOR;
-            fg_style.fill_color = Self::Idle::FILL_COLOR;
-            fg_style.stroke_width = Self::Idle::BORDER_THICKNESS;
-            fg_style.stroke_color = Self::Idle::BORDER_COLOR;
+            Self::Idle::styles()
         };
 
         // Background
@@ -94,7 +100,7 @@ where
         slider
             .slider_bounds()
             .to_rectangle()
-            .into_styled(fg_style)
+            .into_styled(slider_style)
             .draw(&mut canvas.target)
     }
 }

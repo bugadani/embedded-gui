@@ -35,8 +35,10 @@ impl ScrollbarVisualStyle<BinaryColor> for VerticalScrollbar {
 
     const THICKNESS: u32 = 6;
 
+    type Inactive = ScrollbarIdle;
     type Idle = ScrollbarIdle;
     type Hovered = ScrollbarHovered;
+    type Dragged = ScrollbarHovered;
 
     fn draw<DT: DrawTarget<Color = BinaryColor>, D>(
         &self,
@@ -55,8 +57,10 @@ impl ScrollbarVisualStyle<BinaryColor> for HorizontalScrollbar {
 
     const THICKNESS: u32 = 6;
 
+    type Inactive = ScrollbarIdle;
     type Idle = ScrollbarIdle;
     type Hovered = ScrollbarHovered;
+    type Dragged = ScrollbarHovered;
 
     fn draw<DT: DrawTarget<Color = BinaryColor>, D>(
         &self,

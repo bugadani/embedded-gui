@@ -315,8 +315,17 @@ where
                 None
             }
 
-            InputEvent::PointerEvent(_, _) => {
+            InputEvent::PointerEvent(_, PointerEvent::Down) => {
                 if self.fields.state.has_state(Slider::STATE_HOVERED) {
+                    Some(0)
+                } else {
+                    None
+                }
+            }
+
+            InputEvent::PointerEvent(_, PointerEvent::Drag)
+            | InputEvent::PointerEvent(_, PointerEvent::Up) => {
+                if self.fields.state.has_state(Slider::STATE_DRAGGED) {
                     Some(0)
                 } else {
                     None
@@ -349,12 +358,16 @@ where
         match event {
             InputEvent::Cancel => {
                 self.drag_offset = None;
+                if self.fields.state.has_state(Slider::STATE_DRAGGED) {
+                    self.fields.state.set_state(Slider::STATE_HOVERED);
+                }
             }
             InputEvent::KeyEvent(_) => {}
             InputEvent::PointerEvent(position, PointerEvent::Down) => {
                 let (value_pos, _) = SP::Direction::xy_to_main_cross(position.x, position.y);
                 let new_pos = self.set_slider_position(value_pos);
                 self.drag_offset = Some(new_pos - value_pos);
+                self.fields.state.set_state(Slider::STATE_DRAGGED);
             }
             InputEvent::PointerEvent(position, PointerEvent::Drag) => {
                 if let Some(offset) = self.drag_offset {
@@ -364,6 +377,7 @@ where
             }
             InputEvent::PointerEvent(_, PointerEvent::Up) => {
                 self.drag_offset = None;
+                self.fields.state.set_state(Slider::STATE_HOVERED);
             }
             InputEvent::PointerEvent(_, _) => {}
             InputEvent::ScrollEvent(scroll) => {

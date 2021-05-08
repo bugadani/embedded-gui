@@ -1,7 +1,9 @@
 use std::{thread, time::Duration};
 
 use backend_embedded_graphics::{
-    themes::default::DefaultTheme, widgets::label::ascii::LabelConstructor, EgCanvas,
+    themes::{default::DefaultTheme, Theme},
+    widgets::label::ascii::LabelConstructor,
+    EgCanvas,
 };
 use embedded_graphics::{
     draw_target::DrawTarget,
@@ -235,7 +237,7 @@ fn main() {
     gui.measure();
 
     loop {
-        gui.canvas.target.clear(Rgb888::BLACK).unwrap();
+        gui.canvas.target.clear(Rgb888::BACKGROUND_COLOR).unwrap();
 
         gui.update();
         gui.arrange();
