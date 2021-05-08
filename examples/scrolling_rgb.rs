@@ -5,11 +5,7 @@ use backend_embedded_graphics::{
     widgets::label::ascii::LabelConstructor,
     EgCanvas,
 };
-use embedded_graphics::{
-    draw_target::DrawTarget,
-    pixelcolor::Rgb888,
-    prelude::{RgbColor, Size as EgSize},
-};
+use embedded_graphics::{draw_target::DrawTarget, pixelcolor::Rgb888, prelude::Size as EgSize};
 use embedded_graphics_simulator::{
     sdl2::MouseButton, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window as SimWindow,
 };
@@ -20,7 +16,7 @@ use embedded_gui::{
     widgets::{
         label::Label,
         layouts::linear::{column::Column, row::Row, Cell},
-        primitives::border::Border,
+        primitives::{border::Border, fill::FillParent, spacing::Spacing},
         scroll::Scroll,
     },
     Window,
@@ -114,121 +110,117 @@ fn main() {
     // TODO: this example should also demonstrate a scrollbar and horizontal scroll widget
     let mut gui = Window::new(
         EgCanvas::new(display),
-        Row::new(
-            Cell::new(
-                Column::new(
-                    Cell::new(
-                        Row::new(Cell::new(
-                            Label::new("Scroll down")
-                                .bind(&scroll_data)
-                                .on_data_changed(|label, data| {
-                                    label.text = if data.current == data.max {
-                                        "Scroll back"
-                                    } else if data.current == 0 {
-                                        "Scroll down"
-                                    } else {
-                                        "Scroll more"
-                                    };
-                                }),
-                        ))
-                        .add(Cell::new(
-                            DefaultTheme::primary_button("Reset")
-                                .bind(&scroll_data)
-                                .on_clicked(|data| data.op = ScrollOp::Reset),
-                        )),
-                    )
-                    .weight(1),
-                )
-                .add(
-                    Cell::new(Border::new(
-                        Scroll::vertical(
+        Column::new(Cell::new(FillParent::horizontal(
+            Label::new("Scroll down")
+                .bind(&scroll_data)
+                .on_data_changed(|label, data| {
+                    label.text = if data.current == data.max {
+                        "Scroll back"
+                    } else if data.current == 0 {
+                        "Scroll down"
+                    } else {
+                        "Scroll more"
+                    };
+                }),
+        )))
+        .add(Cell::new(
+            Row::new(
+                Cell::new(Border::new(
+                    Scroll::vertical(
+                        Spacing::new(
                             Column::new(Cell::new(Label::new("S")))
                                 .add(Cell::new(Label::new("c")))
                                 .add(Cell::new(Label::new("r")))
                                 .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("Scrollolo :)")))
                                 .add(Cell::new(
-                                    DefaultTheme::primary_button("l")
+                                    DefaultTheme::primary_button("Back to top")
                                         .bind(&scroll_data)
-                                        .on_clicked(|data| {
-                                            println!("Clicked at scroll offset: {}", data.current)
-                                        }),
-                                ))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("Scrollolo :)"))),
+                                        .on_clicked(|data| data.op = ScrollOp::Reset),
+                                )),
                         )
-                        .friction(1)
-                        .friction_divisor(2)
-                        .bind(&scroll_data) // FIXME (maybe) - needs to be bound otherwise callback doesn't fire
-                        .on_scroll_changed(|data, pos| {
-                            data.current = pos.offset;
-                            data.max = pos.maximum_offset;
-                            data.viewport_size = pos.viewport_size;
-                            data.op = ScrollOp::None;
-                        })
-                        .on_data_changed(|scroll, data| match data.op {
-                            ScrollOp::None => {}
-                            ScrollOp::Reset => scroll.scroll_to(0),
-                            ScrollOp::Scrollbar => scroll.set_position(data.current),
-                        }),
-                    ))
-                    .weight(5),
-                ),
+                        .all(2),
+                    )
+                    .friction(1)
+                    .friction_divisor(2)
+                    .bind(&scroll_data) // FIXME (maybe) - needs to be bound otherwise callback doesn't fire
+                    .on_scroll_changed(|data, pos| {
+                        data.current = pos.offset;
+                        data.max = pos.maximum_offset;
+                        data.viewport_size = pos.viewport_size;
+                        data.op = ScrollOp::None;
+                    })
+                    .on_data_changed(|scroll, data| match data.op {
+                        ScrollOp::None => {}
+                        ScrollOp::Reset => scroll.scroll_to(0),
+                        ScrollOp::Scrollbar => scroll.set_position(data.current),
+                    }),
+                ))
+                .weight(8),
             )
-            .weight(1),
-        )
-        .add(Cell::new(
-            DefaultTheme::vertical_scrollbar()
-                .bind(&scroll_data)
-                .on_data_changed(|scrollbar, data| {
-                    // TODO: this might be a common use case to create a connector type
-                    let scrollbar_height = scrollbar.bounds.size.height;
-                    let scrollview_height = data.viewport_size as u32;
-                    let scrollview_data_height = (data.max + data.viewport_size) as u32;
+            .add(Cell::new(
+                DefaultTheme::vertical_scrollbar()
+                    .bind(&scroll_data)
+                    .on_data_changed(|scrollbar, data| {
+                        // TODO: this might be a common use case to create a connector type
+                        let scrollbar_height = scrollbar.bounds.size.height;
+                        let scrollview_height = data.viewport_size as u32;
+                        let scrollview_data_height = (data.max + data.viewport_size) as u32;
 
-                    if scrollview_data_height > 0 {
-                        scrollbar.properties.set_length(
-                            (scrollbar_height * scrollview_height) / scrollview_data_height,
-                        );
-                        fn map(x: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> i32 {
-                            if x1 == x0 {
-                                y0
-                            } else {
-                                ((y1 - y0) * (x - x0)) / (x1 - x0) + y0
+                        if scrollview_data_height > 0 {
+                            scrollbar.properties.set_length(
+                                (scrollbar_height * scrollview_height) / scrollview_data_height,
+                            );
+                            fn map(x: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> i32 {
+                                if x1 == x0 {
+                                    y0
+                                } else {
+                                    ((y1 - y0) * (x - x0)) / (x1 - x0) + y0
+                                }
                             }
+                            scrollbar.set_range(0..=data.max);
+                            scrollbar.set_value(map(
+                                data.current,
+                                0,
+                                data.max,
+                                0,
+                                *scrollbar.limits.end(),
+                            ));
                         }
-                        scrollbar.set_range(0..=data.max);
-                        scrollbar.set_value(map(
-                            data.current,
-                            0,
-                            data.max,
-                            0,
-                            *scrollbar.limits.end(),
-                        ));
-                    }
-                })
-                .on_value_changed(|data, value| {
-                    data.current = value;
-                    data.op = ScrollOp::Scrollbar;
-                }),
+                    })
+                    .on_value_changed(|data, value| {
+                        data.current = value;
+                        data.op = ScrollOp::Scrollbar;
+                    }),
+            )),
         )),
     );
+
+    println!("Size of struct: {}", std::mem::size_of_val(&gui.root));
+    fn print_type_of<T>(_: &T) {
+        println!("type of tree: {}", std::any::type_name::<T>());
+        println!("length of type: {}", std::any::type_name::<T>().len());
+    }
+
+    print_type_of(&gui.root);
 
     let output_settings = OutputSettingsBuilder::new().scale(2).build();
     let mut window = SimWindow::new("ScrollWidget & scrollbar", &output_settings);
