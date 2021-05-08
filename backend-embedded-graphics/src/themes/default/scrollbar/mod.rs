@@ -1,6 +1,11 @@
 use core::{marker::PhantomData, ops::RangeInclusive};
 
-use embedded_graphics::{draw_target::DrawTarget, prelude::PixelColor};
+use embedded_graphics::{
+    draw_target::DrawTarget,
+    prelude::{PixelColor, Primitive},
+    primitives::PrimitiveStyle,
+    Drawable,
+};
 use embedded_gui::{
     data::WidgetData,
     geometry::{BoundingBox, MeasuredSize},
@@ -10,10 +15,22 @@ use embedded_gui::{
     WidgetRenderer,
 };
 
-use crate::{themes::default::DefaultTheme, EgCanvas};
+use crate::{themes::default::DefaultTheme, EgCanvas, ToRectangle};
 
 pub mod binary_color;
 pub mod rgb;
+
+pub trait ScrollbarVisualState<C>
+where
+    C: PixelColor,
+{
+    const BACKGROUND_FILL_COLOR: Option<C>;
+    const BACKGROUND_BORDER_COLOR: Option<C>;
+    const BACKGROUND_BORDER_THICKNESS: u32 = 0;
+    const BORDER_COLOR: Option<C>;
+    const FILL_COLOR: Option<C>;
+    const BORDER_THICKNESS: u32 = 0;
+}
 
 pub trait ScrollbarVisualStyle<C>: Default
 where
@@ -23,11 +40,63 @@ where
 
     const THICKNESS: u32;
 
+    type Idle: ScrollbarVisualState<C>;
+    type Hovered: ScrollbarVisualState<C>;
+
     fn draw<DT: DrawTarget<Color = C>, D>(
         &self,
-        canvas: &mut EgCanvas<DT>,
+        canvas: &mut crate::EgCanvas<DT>,
         slider: &SliderFields<ScrollbarProperties<C, Self>, D>,
     ) -> Result<(), DT::Error>;
+
+    fn draw_horizontal<DT: DrawTarget<Color = C>, D>(
+        &self,
+        canvas: &mut crate::EgCanvas<DT>,
+        slider: &SliderFields<ScrollbarProperties<C, Self>, D>,
+    ) -> Result<(), DT::Error> {
+        todo!()
+    }
+
+    fn draw_vertical<DT: DrawTarget<Color = C>, D>(
+        &self,
+        canvas: &mut crate::EgCanvas<DT>,
+        slider: &SliderFields<ScrollbarProperties<C, Self>, D>,
+    ) -> Result<(), DT::Error> {
+        // TODO: for the default theme, this may be extracted as the default implementation
+
+        let mut bg_style = PrimitiveStyle::default();
+        let mut fg_style = PrimitiveStyle::default();
+
+        if slider.state.has_state(Slider::STATE_HOVERED) {
+            bg_style.fill_color = Self::Hovered::BACKGROUND_FILL_COLOR;
+            bg_style.stroke_width = Self::Hovered::BACKGROUND_BORDER_THICKNESS;
+            bg_style.stroke_color = Self::Hovered::BACKGROUND_BORDER_COLOR;
+            fg_style.fill_color = Self::Hovered::FILL_COLOR;
+            fg_style.stroke_width = Self::Hovered::BORDER_THICKNESS;
+            fg_style.stroke_color = Self::Hovered::BORDER_COLOR;
+        } else {
+            bg_style.fill_color = Self::Idle::BACKGROUND_FILL_COLOR;
+            bg_style.stroke_width = Self::Idle::BACKGROUND_BORDER_THICKNESS;
+            bg_style.stroke_color = Self::Idle::BACKGROUND_BORDER_COLOR;
+            fg_style.fill_color = Self::Idle::FILL_COLOR;
+            fg_style.stroke_width = Self::Idle::BORDER_THICKNESS;
+            fg_style.stroke_color = Self::Idle::BORDER_COLOR;
+        };
+
+        // Background
+        slider
+            .bounds
+            .to_rectangle()
+            .into_styled(bg_style)
+            .draw(&mut canvas.target)?;
+
+        // Foreground
+        slider
+            .slider_bounds()
+            .to_rectangle()
+            .into_styled(fg_style)
+            .draw(&mut canvas.target)
+    }
 }
 
 pub struct ScrollbarProperties<C, VS>

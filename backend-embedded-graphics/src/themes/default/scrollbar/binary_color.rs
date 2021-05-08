@@ -1,61 +1,49 @@
 use embedded_graphics::{
     draw_target::DrawTarget, pixelcolor::BinaryColor, prelude::Primitive,
-    primitives::PrimitiveStyleBuilder, Drawable,
+    primitives::PrimitiveStyle, Drawable,
 };
 use embedded_gui::widgets::slider::{Horizontal, Slider, SliderFields, Vertical};
 
 use crate::{
-    themes::default::scrollbar::{ScrollbarProperties, ScrollbarVisualStyle},
+    themes::default::scrollbar::{ScrollbarProperties, ScrollbarVisualState, ScrollbarVisualStyle},
     ToRectangle,
 };
 
 #[derive(Default)]
 pub struct VerticalScrollbar;
 
+pub struct ScrollbarIdle;
+impl ScrollbarVisualState<BinaryColor> for ScrollbarIdle {
+    const BACKGROUND_FILL_COLOR: Option<BinaryColor> = None;
+    const BACKGROUND_BORDER_COLOR: Option<BinaryColor> = None;
+    const BORDER_COLOR: Option<BinaryColor> = Some(BinaryColor::On);
+    const BORDER_THICKNESS: u32 = 1;
+    const FILL_COLOR: Option<BinaryColor> = Some(BinaryColor::Off);
+}
+
+pub struct ScrollbarHovered;
+impl ScrollbarVisualState<BinaryColor> for ScrollbarHovered {
+    const BACKGROUND_FILL_COLOR: Option<BinaryColor> = None;
+    const BACKGROUND_BORDER_COLOR: Option<BinaryColor> = None;
+    const BORDER_COLOR: Option<BinaryColor> = Some(BinaryColor::Off);
+    const BORDER_THICKNESS: u32 = 1;
+    const FILL_COLOR: Option<BinaryColor> = Some(BinaryColor::On);
+}
+
 impl ScrollbarVisualStyle<BinaryColor> for VerticalScrollbar {
     type Direction = Vertical;
 
     const THICKNESS: u32 = 6;
+
+    type Idle = ScrollbarIdle;
+    type Hovered = ScrollbarHovered;
 
     fn draw<DT: DrawTarget<Color = BinaryColor>, D>(
         &self,
         canvas: &mut crate::EgCanvas<DT>,
         slider: &SliderFields<ScrollbarProperties<BinaryColor, Self>, D>,
     ) -> Result<(), DT::Error> {
-        // TODO: for the default theme, this may be extracted as the default implementation
-
-        // TODO: add visual states and color constants
-        let bg_style = PrimitiveStyleBuilder::new()
-            .fill_color(BinaryColor::Off)
-            .build();
-
-        let fg_style = if slider.state.has_state(Slider::STATE_HOVERED) {
-            PrimitiveStyleBuilder::new()
-                .stroke_color(BinaryColor::Off)
-                .fill_color(BinaryColor::On)
-                .stroke_width(1)
-                .build()
-        } else {
-            PrimitiveStyleBuilder::new()
-                .stroke_color(BinaryColor::On)
-                .fill_color(BinaryColor::Off)
-                .stroke_width(1)
-                .build()
-        };
-
-        // Background
-        slider
-            .bounds
-            .to_rectangle()
-            .into_styled(bg_style)
-            .draw(&mut canvas.target)?;
-
-        // Foreground
-        slider
-            .slider_bounds()
-            .to_rectangle()
-            .into_styled(fg_style)
-            .draw(&mut canvas.target)
+        self.draw_vertical(canvas, slider)
     }
 }
 
@@ -67,11 +55,14 @@ impl ScrollbarVisualStyle<BinaryColor> for HorizontalScrollbar {
 
     const THICKNESS: u32 = 6;
 
+    type Idle = ScrollbarIdle;
+    type Hovered = ScrollbarHovered;
+
     fn draw<DT: DrawTarget<Color = BinaryColor>, D>(
         &self,
         canvas: &mut crate::EgCanvas<DT>,
         slider: &SliderFields<ScrollbarProperties<BinaryColor, Self>, D>,
     ) -> Result<(), DT::Error> {
-        todo!()
+        self.draw_horizontal(canvas, slider)
     }
 }
