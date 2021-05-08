@@ -68,9 +68,9 @@ impl DefaultTheme for BinaryColor {
 macro_rules! impl_rgb_default_theme {
     ($type:ty) => {
         impl Theme for $type {
-            const TEXT_COLOR: Self = Self::WHITE;
-            const BORDER_COLOR: Self = Self::WHITE;
-            const BACKGROUND_COLOR: Self = Self::BLACK;
+            const TEXT_COLOR: Self = Self::BLACK;
+            const BORDER_COLOR: Self = Self::BLACK;
+            const BACKGROUND_COLOR: Self = Self::WHITE;
         }
         impl DefaultTheme for $type {
             type PrimaryButton = RgbPrimaryButtonStyle<Self>;
