@@ -1,15 +1,21 @@
-use core::ops::RangeInclusive;
+use core::{
+    marker::PhantomData,
+    ops::{Deref, RangeInclusive},
+};
 
 use crate::{
     data::WidgetData,
-    geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position, PositionDelta},
+    geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
     input::{
         controller::InputContext,
         event::{InputEvent, PointerEvent, ScrollEvent},
     },
     state::{State, StateGroup, WidgetState},
     state_group,
-    widgets::{slider, ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
+    widgets::{
+        scroll::{ScrollData, ScrollDirection, ScrollFields},
+        ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder,
+    },
 };
 
 pub trait SliderDirection {
@@ -60,6 +66,94 @@ impl SliderDirection for Vertical {
     }
 }
 
+#[derive(Debug)]
+enum OffsetSource {
+    ScrollWidget,
+    Scrollbar,
+    External,
+}
+
+#[derive(Debug)]
+pub struct ScrollbarConnector<SD, SP> {
+    offset_source: OffsetSource,
+    data: ScrollData,
+    _marker: PhantomData<(SD, SP)>,
+}
+
+impl<SD, SP> Deref for ScrollbarConnector<SD, SP> {
+    type Target = ScrollData;
+
+    fn deref(&self) -> &Self::Target {
+        &self.data
+    }
+}
+
+impl<SD, SP> ScrollbarConnector<SD, SP>
+where
+    SD: ScrollDirection,
+    SP: SliderProperties,
+{
+    pub fn new() -> Self {
+        Self {
+            offset_source: OffsetSource::ScrollWidget,
+            data: ScrollData {
+                offset: 0,
+                maximum_offset: 0,
+                viewport_size: 0,
+            },
+            _marker: PhantomData,
+        }
+    }
+
+    pub fn data(&self) -> &ScrollData {
+        &self.data
+    }
+
+    pub fn scroll_to(&mut self, pos: i32) {
+        self.data.offset = pos;
+        self.offset_source = OffsetSource::External;
+    }
+
+    pub fn on_scroll_widget_scroll_changed(data: &mut Self, pos: ScrollData) {
+        data.data = pos;
+        data.offset_source = OffsetSource::ScrollWidget;
+    }
+
+    pub fn on_scroll_widget_data_changed<W>(scroll: &mut ScrollFields<W, SD, Self>, data: &Self) {
+        match data.offset_source {
+            OffsetSource::ScrollWidget => {}
+            OffsetSource::External => scroll.scroll_to(data.data.offset),
+            OffsetSource::Scrollbar => scroll.set_position(data.data.offset),
+        }
+    }
+
+    pub fn on_scrollbar_data_changed(scrollbar: &mut SliderFields<SP, Self>, data: &Self) {
+        let scrollbar_height = scrollbar.bounds.size.height;
+        let scrollview_height = data.data.viewport_size as u32;
+        let scrollview_data_height = (data.data.maximum_offset + data.data.viewport_size) as u32;
+
+        if scrollview_data_height > 0 {
+            scrollbar
+                .properties
+                .set_length((scrollbar_height * scrollview_height) / scrollview_data_height);
+
+            scrollbar.set_range(0..=data.data.maximum_offset);
+            scrollbar.set_value(lerp(
+                data.data.offset,
+                0,
+                data.data.maximum_offset,
+                0,
+                *scrollbar.limits.end(),
+            ));
+        }
+    }
+
+    pub fn on_scrollbar_value_changed(data: &mut Self, value: i32) {
+        data.data.offset = value;
+        data.offset_source = OffsetSource::Scrollbar;
+    }
+}
+
 pub trait SliderProperties {
     type Direction: SliderDirection;
 
@@ -68,6 +162,9 @@ pub trait SliderProperties {
 
     /// Size of the range of values represented by the draggable slider.
     fn length(&self) -> u32;
+
+    /// Set the size of the range of values represented by the draggable slider.
+    fn set_length(&mut self, length: u32);
 }
 
 pub struct SliderFields<SP, D> {

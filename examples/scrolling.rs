@@ -21,7 +21,7 @@ use embedded_gui::{
         layouts::linear::{column::Column, row::Row, Cell},
         primitives::{border::Border, fill::FillParent},
         scroll::Scroll,
-        WidgetStateHolder,
+        slider::ScrollbarConnector,
     },
     Window,
 };
@@ -84,43 +84,20 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
     }
 }
 
-#[derive(Debug)]
-enum ScrollOp {
-    None,
-    Reset,
-    Scrollbar,
-}
-
-#[derive(Debug)]
-struct ScrollData {
-    current: i32,
-    max: i32,
-    viewport_size: i32,
-    op: ScrollOp,
-}
-
 fn main() {
     let display = SimulatorDisplay::new(EgSize::new(128, 64));
 
-    let scroll_data = BoundData::new(
-        ScrollData {
-            current: 0,
-            max: 0,
-            viewport_size: 0,
-            op: ScrollOp::None,
-        },
-        |_| (),
-    );
-    // TODO: this example should also demonstrate a scrollbar and horizontal scroll widget
+    let scroll_data = BoundData::new(ScrollbarConnector::new(), |_| ());
+    // TODO: this example should also demonstrate a horizontal scroll widget
     let mut gui = Window::new(
         EgCanvas::new(display),
         Column::new(Cell::new(FillParent::horizontal(
             Label::new("Scroll down")
                 .bind(&scroll_data)
                 .on_data_changed(|label, data| {
-                    label.text = if data.current == data.max {
+                    label.text = if data.offset == data.maximum_offset {
                         "Scroll back"
-                    } else if data.current == 0 {
+                    } else if data.offset == 0 {
                         "Scroll down"
                     } else {
                         "Scroll more"
@@ -157,60 +134,22 @@ fn main() {
                             .add(Cell::new(
                                 DefaultTheme::primary_button("Reset")
                                     .bind(&scroll_data)
-                                    .on_clicked(|data| data.op = ScrollOp::Reset),
+                                    .on_clicked(|data| data.scroll_to(0)),
                             )),
                     )
                     .friction(1)
                     .friction_divisor(2)
-                    .bind(&scroll_data) // FIXME (maybe) - needs to be bound otherwise callback doesn't fire
-                    .on_scroll_changed(|data, pos| {
-                        data.current = pos.offset;
-                        data.max = pos.maximum_offset;
-                        data.viewport_size = pos.viewport_size;
-                        data.op = ScrollOp::None;
-                    })
-                    .on_data_changed(|scroll, data| match data.op {
-                        ScrollOp::None => {}
-                        ScrollOp::Reset => scroll.scroll_to(0),
-                        ScrollOp::Scrollbar => scroll.set_position(data.current),
-                    }),
+                    .bind(&scroll_data)
+                    .on_scroll_changed(ScrollbarConnector::on_scroll_widget_scroll_changed)
+                    .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),
                 ))
                 .weight(5),
             )
             .add(Cell::new(
                 DefaultTheme::vertical_scrollbar()
                     .bind(&scroll_data)
-                    .on_data_changed(|scrollbar, data| {
-                        // TODO: this might be a common use case to create a connector type
-                        let scrollbar_height = scrollbar.bounds.size.height;
-                        let scrollview_height = data.viewport_size as u32;
-                        let scrollview_data_height = (data.max + data.viewport_size) as u32;
-
-                        if scrollview_data_height > 0 {
-                            scrollbar.properties.set_length(
-                                (scrollbar_height * scrollview_height) / scrollview_data_height,
-                            );
-                            fn map(x: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> i32 {
-                                if x1 == x0 {
-                                    y0
-                                } else {
-                                    ((y1 - y0) * (x - x0)) / (x1 - x0) + y0
-                                }
-                            }
-                            scrollbar.set_range(0..=data.max);
-                            scrollbar.set_value(map(
-                                data.current,
-                                0,
-                                data.max,
-                                0,
-                                *scrollbar.limits.end(),
-                            ));
-                        }
-                    })
-                    .on_value_changed(|data, value| {
-                        data.current = value;
-                        data.op = ScrollOp::Scrollbar;
-                    }),
+                    .on_data_changed(ScrollbarConnector::on_scrollbar_data_changed)
+                    .on_value_changed(ScrollbarConnector::on_scrollbar_value_changed),
             )),
         )),
     );

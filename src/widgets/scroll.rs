@@ -14,6 +14,7 @@ use crate::{
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
 };
 
+#[derive(Debug)]
 pub struct ScrollData {
     /// The current scroll position.
     pub offset: i32,

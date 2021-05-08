@@ -127,10 +127,6 @@ where
             _marker: PhantomData,
         }
     }
-
-    pub fn set_length(&mut self, length: u32) {
-        self.window_length = length;
-    }
 }
 
 impl<C, VS> SliderProperties for ScrollbarProperties<C, VS>
@@ -143,6 +139,10 @@ where
 
     fn length(&self) -> u32 {
         self.window_length
+    }
+
+    fn set_length(&mut self, length: u32) {
+        self.window_length = length;
     }
 }
 
