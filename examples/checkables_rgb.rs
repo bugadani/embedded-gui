@@ -1,7 +1,7 @@
 use std::{thread, time::Duration};
 
 use backend_embedded_graphics::{
-    themes::default::DefaultTheme,
+    themes::{default::DefaultTheme, Theme},
     widgets::label::{ascii::LabelConstructor, LabelStyling},
     EgCanvas,
 };
@@ -133,7 +133,7 @@ fn main() {
     let mut window = SimWindow::new("Checkboxes and radio buttons", &output_settings);
 
     loop {
-        gui.canvas.target.clear(Rgb888::WHITE).unwrap();
+        gui.canvas.target.clear(Rgb888::BACKGROUND_COLOR).unwrap();
 
         gui.update();
         gui.measure();

@@ -1,6 +1,7 @@
 use std::{thread, time::Duration};
 
 use backend_embedded_graphics::{
+    themes::Theme,
     widgets::{
         label::ascii::LabelConstructor,
         primitives::{background::BackgroundStyle, border::BorderStyle},
@@ -175,7 +176,10 @@ fn main() {
     let mut window = SimWindow::new("GUI demonstration", &output_settings);
 
     loop {
-        gui.canvas.target.clear(BinaryColor::Off).unwrap();
+        gui.canvas
+            .target
+            .clear(BinaryColor::BACKGROUND_COLOR)
+            .unwrap();
 
         gui.update();
         gui.measure();
