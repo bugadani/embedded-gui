@@ -3,7 +3,7 @@ use core::ops::{Add, AddAssign, Neg, Sub};
 pub mod axis_order;
 pub mod measurement;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
@@ -82,13 +82,13 @@ impl Neg for PositionDelta {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct MeasuredSize {
     pub width: u32,
     pub height: u32,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BoundingBox {
     pub position: Position,
     pub size: MeasuredSize,

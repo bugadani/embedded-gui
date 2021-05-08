@@ -182,7 +182,7 @@ where
     }
 
     pub fn set_position(&mut self, offset: i32) {
-        let (x, y) = SD::merge_directions(offset, 0);
+        let (x, y) = SD::AxisOrder::merge(offset, 0);
         self.direction.override_offset(PositionDelta { x, y });
     }
 
@@ -365,6 +365,10 @@ where
     fn change_offset(&mut self, offset: PositionDelta) {
         self.fields.direction.change_offset(offset);
 
+        self.update_scroll_data();
+    }
+
+    fn update_scroll_data(&mut self) {
         // Clamp the offset.
         let child_size = self.fields.inner.bounding_box().size;
         let own_size = self.bounding_box().size;
@@ -437,6 +441,9 @@ where
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
+        let inner_bb_old = self.fields.inner.bounding_box();
+        let bb_old = self.bounding_box();
+
         let (width_spec, height_spec) = SD::AxisOrder::merge(
             MeasureConstraint::Unspecified,
             SD::AxisOrder::cross_axis(measure_spec.width, measure_spec.height),
@@ -463,6 +470,10 @@ where
         let (width, height) = SD::AxisOrder::merge(main_size, cross_size);
 
         self.set_measured_size(MeasuredSize { width, height });
+
+        if inner_bb_old != self.fields.inner.bounding_box() || bb_old != self.bounding_box() {
+            self.update_scroll_data();
+        }
     }
 
     fn children(&self) -> usize {
