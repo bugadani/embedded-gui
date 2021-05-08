@@ -207,7 +207,11 @@ fn main() {
                             (scrollbar_height * scrollview_height) / scrollview_data_height,
                         );
                         fn map(x: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> i32 {
-                            ((y1 - y0) * (x - x0)) / (x1 - x0) + y0
+                            if x1 == x0 {
+                                y0
+                            } else {
+                                ((y1 - y0) * (x - x0)) / (x1 - x0) + y0
+                            }
                         }
                         scrollbar.set_range(0..=data.max);
                         scrollbar.set_value(map(
