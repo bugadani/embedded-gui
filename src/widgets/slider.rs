@@ -5,7 +5,11 @@ use core::{
 
 use crate::{
     data::WidgetData,
-    geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
+    geometry::{
+        axis_order::{AxisOrder, Horizontal as HorizontalOrder, Vertical as VerticalOrder},
+        measurement::MeasureSpec,
+        BoundingBox, MeasuredSize, Position,
+    },
     input::{
         controller::InputContext,
         event::{InputEvent, PointerEvent, ScrollEvent},
@@ -19,20 +23,7 @@ use crate::{
 };
 
 pub trait SliderDirection {
-    fn main_cross_to_xy<V>(main: V, cross: V) -> (V, V);
-    fn xy_to_main_cross<V>(x: V, y: V) -> (V, V);
-
-    fn main_axis_size(bounds: BoundingBox) -> u32 {
-        let (main, _) = Self::xy_to_main_cross(bounds.size.width, bounds.size.height);
-
-        main
-    }
-
-    fn cross_axis_size(bounds: BoundingBox) -> u32 {
-        let (_, cross) = Self::xy_to_main_cross(bounds.size.width, bounds.size.height);
-
-        cross
-    }
+    type AxisOrder: AxisOrder;
 
     fn handles_scroll(event: ScrollEvent) -> bool;
 }
@@ -42,12 +33,7 @@ pub struct Horizontal;
 pub struct Vertical;
 
 impl SliderDirection for Horizontal {
-    fn xy_to_main_cross<V>(x: V, y: V) -> (V, V) {
-        (x, y)
-    }
-    fn main_cross_to_xy<V>(main: V, cross: V) -> (V, V) {
-        (main, cross)
-    }
+    type AxisOrder = HorizontalOrder;
 
     fn handles_scroll(_event: ScrollEvent) -> bool {
         true
@@ -55,12 +41,8 @@ impl SliderDirection for Horizontal {
 }
 
 impl SliderDirection for Vertical {
-    fn xy_to_main_cross<V>(x: V, y: V) -> (V, V) {
-        (y, x)
-    }
-    fn main_cross_to_xy<V>(main: V, cross: V) -> (V, V) {
-        (cross, main)
-    }
+    type AxisOrder = VerticalOrder;
+
     fn handles_scroll(event: ScrollEvent) -> bool {
         matches!(event, ScrollEvent::VerticalScroll(_))
     }
@@ -165,6 +147,18 @@ pub trait SliderProperties {
 
     /// Set the size of the range of values represented by the draggable slider.
     fn set_length(&mut self, length: u32);
+
+    fn main_axis<V>(x: V, y: V) -> V {
+        <Self::Direction as SliderDirection>::AxisOrder::main_axis(x, y)
+    }
+
+    fn cross_axis<V>(x: V, y: V) -> V {
+        <Self::Direction as SliderDirection>::AxisOrder::cross_axis(x, y)
+    }
+
+    fn merge<V>(x: V, y: V) -> (V, V) {
+        <Self::Direction as SliderDirection>::AxisOrder::merge(x, y)
+    }
 }
 
 pub struct SliderFields<SP, D> {
@@ -214,7 +208,7 @@ where
     }
 
     pub fn slider_bounds(&self) -> BoundingBox {
-        let total_size = SP::Direction::main_axis_size(self.bounds);
+        let total_size = SP::main_axis(self.bounds.size.width, self.bounds.size.height);
         let slider_length = self.properties.length();
         let space = total_size - slider_length;
 
@@ -225,8 +219,8 @@ where
             0,
             space as i32,
         );
-        let (x, y) = SP::Direction::main_cross_to_xy(pos, 0);
-        let (width, height) = SP::Direction::main_cross_to_xy(slider_length, SP::THICKNESS);
+        let (x, y) = SP::merge(pos, 0);
+        let (width, height) = SP::merge(slider_length, SP::THICKNESS);
         BoundingBox {
             position: self.bounds.position + Position { x, y },
             size: MeasuredSize { width, height },
@@ -334,7 +328,10 @@ where
     }
 
     fn set_slider_position(&mut self, pos: i32) -> i32 {
-        let total_size = SP::Direction::main_axis_size(self.fields.bounds);
+        let total_size = SP::main_axis(
+            self.fields.bounds.size.width,
+            self.fields.bounds.size.height,
+        );
         let slider_length = self.fields.properties.length();
 
         let x0 = slider_length / 2;
@@ -382,13 +379,13 @@ where
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
         // Measure depends on platform specifics
-        let (main_spec, cross_spec) =
-            SP::Direction::xy_to_main_cross(measure_spec.width, measure_spec.height);
+        let main_spec = SP::main_axis(measure_spec.width, measure_spec.height);
+        let cross_spec = SP::cross_axis(measure_spec.width, measure_spec.height);
 
         let cross_size = cross_spec.apply_to_measured(SP::THICKNESS);
         let main_size = main_spec.largest().unwrap_or(0);
 
-        let (width, height) = SP::Direction::main_cross_to_xy(main_size, cross_size);
+        let (width, height) = SP::merge(main_size, cross_size);
 
         self.set_measured_size(MeasuredSize { width, height });
     }
@@ -461,14 +458,14 @@ where
             }
             InputEvent::KeyEvent(_) => {}
             InputEvent::PointerEvent(position, PointerEvent::Down) => {
-                let (value_pos, _) = SP::Direction::xy_to_main_cross(position.x, position.y);
+                let value_pos = SP::main_axis(position.x, position.y);
                 let new_pos = self.set_slider_position(value_pos);
                 self.drag_offset = Some(new_pos - value_pos);
                 self.fields.state.set_state(Slider::STATE_DRAGGED);
             }
             InputEvent::PointerEvent(position, PointerEvent::Drag) => {
                 if let Some(offset) = self.drag_offset {
-                    let (value_pos, _) = SP::Direction::xy_to_main_cross(position.x, position.y);
+                    let value_pos = SP::main_axis(position.x, position.y);
                     self.set_slider_position(value_pos + offset);
                 }
             }
