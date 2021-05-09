@@ -1,6 +1,7 @@
 use crate::{
     data::WidgetData,
     geometry::{
+        axis_order::{AxisOrder, Horizontal as HorizontalOrder, Vertical as VerticalOrder},
         measurement::{MeasureConstraint, MeasureSpec},
         BoundingBox, MeasuredSize, Position, PositionDelta,
     },
@@ -25,12 +26,11 @@ pub struct ScrollData {
 }
 
 pub trait ScrollDirection {
+    type AxisOrder: AxisOrder;
+
     fn offset(&self) -> PositionDelta;
     fn change_offset(&mut self, delta: PositionDelta);
     fn override_offset(&mut self, offset: PositionDelta);
-    fn scroll_direction<T>(x: T, y: T) -> T;
-    fn cross_direction<T>(x: T, y: T) -> T;
-    fn merge_directions<T>(main: T, cross: T) -> (T, T);
 }
 
 pub struct Horizontal {
@@ -38,6 +38,8 @@ pub struct Horizontal {
 }
 
 impl ScrollDirection for Horizontal {
+    type AxisOrder = HorizontalOrder;
+
     fn offset(&self) -> PositionDelta {
         PositionDelta {
             x: self.offset as i32,
@@ -50,19 +52,7 @@ impl ScrollDirection for Horizontal {
     }
 
     fn override_offset(&mut self, offset: PositionDelta) {
-        self.offset = Self::scroll_direction(offset.x, offset.y) as u32;
-    }
-
-    fn scroll_direction<T>(x: T, _y: T) -> T {
-        x
-    }
-
-    fn cross_direction<T>(_x: T, y: T) -> T {
-        y
-    }
-
-    fn merge_directions<T>(main: T, cross: T) -> (T, T) {
-        (main, cross)
+        self.offset = HorizontalOrder::main_axis(offset.x, offset.y) as u32;
     }
 }
 
@@ -71,6 +61,8 @@ pub struct Vertical {
 }
 
 impl ScrollDirection for Vertical {
+    type AxisOrder = VerticalOrder;
+
     fn offset(&self) -> PositionDelta {
         PositionDelta {
             x: 0,
@@ -83,19 +75,7 @@ impl ScrollDirection for Vertical {
     }
 
     fn override_offset(&mut self, offset: PositionDelta) {
-        self.offset = Self::scroll_direction(offset.x, offset.y) as u32;
-    }
-
-    fn scroll_direction<T>(_x: T, y: T) -> T {
-        y
-    }
-
-    fn cross_direction<T>(x: T, _y: T) -> T {
-        x
-    }
-
-    fn merge_directions<T>(main: T, cross: T) -> (T, T) {
-        (cross, main)
+        self.offset = VerticalOrder::main_axis(offset.x, offset.y) as u32;
     }
 }
 
@@ -395,9 +375,9 @@ where
 
         // Fire callback
         let scroll_data = ScrollData {
-            maximum_offset: SD::scroll_direction(max_offset_x, max_offset_y),
-            offset: SD::scroll_direction(offset.x, offset.y),
-            viewport_size: SD::scroll_direction(own_size.width as i32, own_size.height as i32),
+            maximum_offset: SD::AxisOrder::main_axis(max_offset_x, max_offset_y),
+            offset: SD::AxisOrder::main_axis(offset.x, offset.y),
+            viewport_size: SD::AxisOrder::main_axis(own_size.width as i32, own_size.height as i32),
         };
 
         let callback = self.fields.on_scroll_changed;
@@ -448,9 +428,9 @@ where
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
-        let (width_spec, height_spec) = SD::merge_directions(
+        let (width_spec, height_spec) = SD::AxisOrder::merge(
             MeasureConstraint::Unspecified,
-            SD::cross_direction(measure_spec.width, measure_spec.height),
+            SD::AxisOrder::cross_axis(measure_spec.width, measure_spec.height),
         );
         self.fields.inner.measure(MeasureSpec {
             width: width_spec,
@@ -463,12 +443,15 @@ where
 
         let child_size = self.fields.inner.bounding_box().size;
 
-        let main_size = SD::scroll_direction(measure_spec.width, measure_spec.height)
+        let main_size = SD::AxisOrder::main_axis(measure_spec.width, measure_spec.height)
             .largest()
-            .unwrap_or(SD::scroll_direction(child_size.width, child_size.height));
-        let cross_size = SD::cross_direction(child_size.width, child_size.height);
+            .unwrap_or(SD::AxisOrder::main_axis(
+                child_size.width,
+                child_size.height,
+            ));
+        let cross_size = SD::AxisOrder::cross_axis(child_size.width, child_size.height);
 
-        let (width, height) = SD::merge_directions(main_size, cross_size);
+        let (width, height) = SD::AxisOrder::merge(main_size, cross_size);
 
         self.set_measured_size(MeasuredSize { width, height });
     }
@@ -593,7 +576,7 @@ where
                         let delta = if let Some(last) = self.fields.last_pointer_pos {
                             let delta = last - position;
                             self.change_offset(last - position);
-                            SD::scroll_direction(delta.x, delta.y)
+                            SD::AxisOrder::main_axis(delta.x, delta.y)
                         } else {
                             0
                         };
@@ -629,7 +612,7 @@ where
         self.data_holder.update(&mut self.fields);
 
         if let Some(target) = self.fields.offset_target {
-            let current_offset = SD::scroll_direction(
+            let current_offset = SD::AxisOrder::main_axis(
                 self.fields.direction.offset().x,
                 self.fields.direction.offset().y,
             );
@@ -652,7 +635,7 @@ where
                 delta / frames
             };
 
-            let (x, y) = SD::merge_directions(delta, 0);
+            let (x, y) = SD::AxisOrder::merge(delta, 0);
             self.change_offset(PositionDelta { x, y });
 
             self.fling_controller.stop_fling();
@@ -660,7 +643,7 @@ where
             self.fling_controller.update();
             let delta = self.fling_controller.fling_delta();
             if delta != 0 {
-                let (x, y) = SD::merge_directions(delta, 0);
+                let (x, y) = SD::AxisOrder::merge(delta, 0);
                 self.change_offset(PositionDelta { x, y });
             }
         }

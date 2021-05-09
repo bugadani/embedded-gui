@@ -1,10 +1,7 @@
 use object_chain::Chain;
 
 use crate::{
-    geometry::{
-        measurement::{MeasureConstraint, MeasureSpec},
-        BoundingBox, MeasuredSize, Position,
-    },
+    geometry::{axis_order::Horizontal, BoundingBox},
     widgets::{
         layouts::linear::{
             layout::{LayoutDirection, LinearLayout},
@@ -18,42 +15,7 @@ use crate::{
 pub struct Row;
 
 impl LayoutDirection for Row {
-    fn main_axis_size(bounds: BoundingBox) -> u32 {
-        bounds.size.width
-    }
-
-    fn cross_axis_size(bounds: BoundingBox) -> u32 {
-        bounds.size.height
-    }
-
-    fn create_measured_size(main: u32, cross: u32) -> MeasuredSize {
-        MeasuredSize {
-            width: main,
-            height: cross,
-        }
-    }
-
-    fn main_axis_measure_spec(spec: MeasureSpec) -> MeasureConstraint {
-        spec.width
-    }
-
-    fn cross_axis_measure_spec(spec: MeasureSpec) -> MeasureConstraint {
-        spec.height
-    }
-
-    fn create_measure_spec(main: MeasureConstraint, cross: MeasureConstraint) -> MeasureSpec {
-        MeasureSpec {
-            width: main,
-            height: cross,
-        }
-    }
-
-    fn arrange(pos: Position, bb: BoundingBox, spacing: u32) -> Position {
-        Position {
-            x: pos.x + bb.size.width as i32 + spacing as i32,
-            y: pos.y,
-        }
-    }
+    type AxisOrder = Horizontal;
 }
 
 impl Row {
