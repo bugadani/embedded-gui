@@ -39,14 +39,6 @@ impl ScrollbarVisualStyle<BinaryColor> for VerticalScrollbar {
     type Idle = ScrollbarIdle;
     type Hovered = ScrollbarHovered;
     type Dragged = ScrollbarHovered;
-
-    fn draw<DT: DrawTarget<Color = BinaryColor>, D>(
-        &self,
-        canvas: &mut crate::EgCanvas<DT>,
-        slider: &SliderFields<ScrollbarProperties<BinaryColor, Self>, D>,
-    ) -> Result<(), DT::Error> {
-        self.draw_vertical(canvas, slider)
-    }
 }
 
 #[derive(Default)]
@@ -61,12 +53,4 @@ impl ScrollbarVisualStyle<BinaryColor> for HorizontalScrollbar {
     type Idle = ScrollbarIdle;
     type Hovered = ScrollbarHovered;
     type Dragged = ScrollbarHovered;
-
-    fn draw<DT: DrawTarget<Color = BinaryColor>, D>(
-        &self,
-        canvas: &mut crate::EgCanvas<DT>,
-        slider: &SliderFields<ScrollbarProperties<BinaryColor, Self>, D>,
-    ) -> Result<(), DT::Error> {
-        self.draw_horizontal(canvas, slider)
-    }
 }

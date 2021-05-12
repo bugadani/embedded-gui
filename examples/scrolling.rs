@@ -88,7 +88,8 @@ fn main() {
     let display = SimulatorDisplay::new(EgSize::new(128, 64));
 
     let scroll_data = BoundData::new(ScrollbarConnector::new(), |_| ());
-    // TODO: this example should also demonstrate a horizontal scroll widget
+    let horizontal_scroll_data = BoundData::new(ScrollbarConnector::new(), |_| ());
+
     let mut gui = Window::new(
         EgCanvas::new(display),
         Column::new(Cell::new(FillParent::horizontal(
@@ -104,6 +105,22 @@ fn main() {
                     };
                 }),
         )))
+        .add(Cell::new(
+            Column::new(Cell::new(
+                Scroll::horizontal(Label::new(
+                    "Some very long text that can be used to demonstrate horizontal scrollbars",
+                ))
+                .bind(&horizontal_scroll_data)
+                .on_scroll_changed(ScrollbarConnector::on_scroll_widget_scroll_changed)
+                .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),
+            ))
+            .add(Cell::new(
+                DefaultTheme::horizontal_scrollbar()
+                    .bind(&horizontal_scroll_data)
+                    .on_data_changed(ScrollbarConnector::on_scrollbar_data_changed)
+                    .on_value_changed(ScrollbarConnector::on_scrollbar_value_changed),
+            )),
+        ))
         .add(Cell::new(
             Row::new(
                 Cell::new(Border::new(

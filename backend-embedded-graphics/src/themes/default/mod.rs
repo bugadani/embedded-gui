@@ -21,8 +21,14 @@ use crate::{
                 styled_radio_button, RadioButtonVisualStyle, StyledRadioButton,
             },
             scrollbar::{
-                binary_color::VerticalScrollbar, rgb::VerticalScrollbar as RgbVerticalScrollbar,
-                vertical_scrollbar, ScrollbarVisualStyle, StyledVerticalScrollbar,
+                binary_color::{HorizontalScrollbar, VerticalScrollbar},
+                horizontal_scrollbar,
+                rgb::{
+                    HorizontalScrollbar as RgbHorizontalScrollbar,
+                    VerticalScrollbar as RgbVerticalScrollbar,
+                },
+                vertical_scrollbar, ScrollbarVisualStyle, StyledHorizontalScrollbar,
+                StyledVerticalScrollbar,
             },
         },
         Theme,
@@ -49,6 +55,7 @@ pub trait DefaultTheme: Theme {
     type RadioButton: RadioButtonVisualStyle<Self>;
 
     type VerticalScrollbar: ScrollbarVisualStyle<Self>;
+    type HorizontalScrollbar: ScrollbarVisualStyle<Self>;
 
     fn primary_button(label: &'static str) -> StyledButton<Self> {
         styled_button::<Self, Self::PrimaryButton>(label)
@@ -69,6 +76,10 @@ pub trait DefaultTheme: Theme {
     fn vertical_scrollbar() -> StyledVerticalScrollbar<Self> {
         vertical_scrollbar::<Self>()
     }
+
+    fn horizontal_scrollbar() -> StyledHorizontalScrollbar<Self> {
+        horizontal_scrollbar::<Self>()
+    }
 }
 
 impl Theme for BinaryColor {
@@ -76,6 +87,7 @@ impl Theme for BinaryColor {
     const BORDER_COLOR: BinaryColor = BinaryColor::On;
     const BACKGROUND_COLOR: BinaryColor = BinaryColor::Off;
 }
+
 impl DefaultTheme for BinaryColor {
     type PrimaryButton = PrimaryButtonStyle;
     type SecondaryButton = SecondaryButtonStyle;
@@ -84,6 +96,7 @@ impl DefaultTheme for BinaryColor {
     type RadioButton = RadioButtonStyle;
 
     type VerticalScrollbar = VerticalScrollbar;
+    type HorizontalScrollbar = HorizontalScrollbar;
 }
 
 macro_rules! impl_rgb_default_theme {
@@ -101,6 +114,7 @@ macro_rules! impl_rgb_default_theme {
             type RadioButton = RgbRadioButtonStyle<Self>;
 
             type VerticalScrollbar = RgbVerticalScrollbar<Self>;
+            type HorizontalScrollbar = RgbHorizontalScrollbar<Self>;
         }
     };
 }

@@ -1,4 +1,4 @@
-use core::{marker::PhantomData, ops::RangeInclusive};
+use core::marker::PhantomData;
 
 use embedded_graphics::{
     draw_target::DrawTarget,
@@ -8,10 +8,7 @@ use embedded_graphics::{
 };
 use embedded_gui::{
     data::WidgetData,
-    geometry::{BoundingBox, MeasuredSize},
-    widgets::slider::{
-        Horizontal, Slider, SliderDirection, SliderFields, SliderProperties, Vertical,
-    },
+    widgets::slider::{Slider, SliderDirection, SliderFields, SliderProperties},
     WidgetRenderer,
 };
 
@@ -61,20 +58,6 @@ where
     type Inactive: ScrollbarVisualState<C>;
 
     fn draw<DT: DrawTarget<Color = C>, D>(
-        &self,
-        canvas: &mut crate::EgCanvas<DT>,
-        slider: &SliderFields<ScrollbarProperties<C, Self>, D>,
-    ) -> Result<(), DT::Error>;
-
-    fn draw_horizontal<DT: DrawTarget<Color = C>, D>(
-        &self,
-        canvas: &mut crate::EgCanvas<DT>,
-        slider: &SliderFields<ScrollbarProperties<C, Self>, D>,
-    ) -> Result<(), DT::Error> {
-        todo!()
-    }
-
-    fn draw_vertical<DT: DrawTarget<Color = C>, D>(
         &self,
         canvas: &mut crate::EgCanvas<DT>,
         slider: &SliderFields<ScrollbarProperties<C, Self>, D>,
@@ -142,7 +125,7 @@ where
     }
 
     fn set_length(&mut self, length: u32) {
-        self.window_length = length;
+        self.window_length = length.max(3);
     }
 }
 
@@ -161,6 +144,13 @@ where
 pub type StyledVerticalScrollbar<C> =
     Slider<ScrollbarProperties<C, <C as DefaultTheme>::VerticalScrollbar>, ()>;
 
+pub type StyledHorizontalScrollbar<C> =
+    Slider<ScrollbarProperties<C, <C as DefaultTheme>::HorizontalScrollbar>, ()>;
+
 pub fn vertical_scrollbar<C: DefaultTheme>() -> StyledVerticalScrollbar<C> {
-    Slider::new(0..=30, ScrollbarProperties::new())
+    Slider::new(0..=0, ScrollbarProperties::new())
+}
+
+pub fn horizontal_scrollbar<C: DefaultTheme>() -> StyledHorizontalScrollbar<C> {
+    Slider::new(0..=0, ScrollbarProperties::new())
 }

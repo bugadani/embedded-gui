@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use embedded_graphics::{draw_target::DrawTarget, prelude::WebColors};
-use embedded_gui::widgets::slider::{SliderFields, Vertical};
+use embedded_gui::widgets::slider::{Horizontal, SliderFields, Vertical};
 
 use crate::themes::default::scrollbar::{
     ScrollbarProperties, ScrollbarVisualState, ScrollbarVisualStyle,
@@ -78,12 +78,29 @@ where
     type Idle = ScrollbarIdle<C>;
     type Hovered = ScrollbarHovered<C>;
     type Dragged = ScrollbarDragged<C>;
+}
 
-    fn draw<DT: DrawTarget<Color = C>, D>(
-        &self,
-        canvas: &mut crate::EgCanvas<DT>,
-        slider: &SliderFields<ScrollbarProperties<C, Self>, D>,
-    ) -> Result<(), DT::Error> {
-        self.draw_vertical(canvas, slider)
+pub struct HorizontalScrollbar<C>(pub PhantomData<C>);
+
+impl<C> Default for HorizontalScrollbar<C>
+where
+    C: WebColors,
+{
+    fn default() -> Self {
+        Self(PhantomData)
     }
+}
+
+impl<C> ScrollbarVisualStyle<C> for HorizontalScrollbar<C>
+where
+    C: WebColors,
+{
+    type Direction = Horizontal;
+
+    const THICKNESS: u32 = 6;
+
+    type Inactive = ScrollbarInactive<C>;
+    type Idle = ScrollbarIdle<C>;
+    type Hovered = ScrollbarHovered<C>;
+    type Dragged = ScrollbarDragged<C>;
 }

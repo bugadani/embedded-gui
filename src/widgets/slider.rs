@@ -110,7 +110,10 @@ where
     }
 
     pub fn on_scrollbar_data_changed(scrollbar: &mut SliderFields<SP, Self>, data: &Self) {
-        let scrollbar_height = scrollbar.bounds.size.height;
+        let scrollbar_height = <SP::Direction as SliderDirection>::AxisOrder::main_axis(
+            scrollbar.bounds.size.width,
+            scrollbar.bounds.size.height,
+        );
         let scrollview_height = data.data.viewport_size as u32;
         let scrollview_data_height = (data.data.maximum_offset + data.data.viewport_size) as u32;
 
@@ -458,13 +461,28 @@ where
             }
             InputEvent::KeyEvent(_) => {}
             InputEvent::PointerEvent(position, PointerEvent::Down) => {
-                let value_pos = SP::main_axis(position.x, position.y);
-                let new_pos = self.set_slider_position(value_pos);
-                self.drag_offset = Some(new_pos - value_pos);
+                if self.fields.slider_bounds().contains(position) {
+                    let position = position - self.fields.slider_bounds().position;
+                    let value_pos = SP::main_axis(position.x, position.y);
+                    let slider_size = SP::main_axis(
+                        self.fields.slider_bounds().size.width,
+                        self.fields.slider_bounds().size.height,
+                    );
+
+                    let half = slider_size as i32 / 2;
+
+                    self.drag_offset = Some(half - value_pos);
+                } else {
+                    let position = position - self.bounding_box().position;
+                    let value_pos = SP::main_axis(position.x, position.y);
+                    let new_pos = self.set_slider_position(value_pos);
+                    self.drag_offset = Some(new_pos - value_pos);
+                }
                 self.fields.state.set_state(Slider::STATE_DRAGGED);
             }
             InputEvent::PointerEvent(position, PointerEvent::Drag) => {
                 if let Some(offset) = self.drag_offset {
+                    let position = position - self.bounding_box().position;
                     let value_pos = SP::main_axis(position.x, position.y);
                     self.set_slider_position(value_pos + offset);
                 }
