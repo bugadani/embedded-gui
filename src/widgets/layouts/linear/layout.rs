@@ -1,4 +1,4 @@
-use object_chain::{ChainElement, Link};
+use object_chain::{Chain, ChainElement, Link};
 
 use crate::{
     geometry::{
@@ -10,7 +10,8 @@ use crate::{
     state::WidgetState,
     widgets::{
         layouts::linear::{
-            Cell, CellWeight, ElementSpacing, LinearLayoutChainElement, NoSpacing, WithSpacing,
+            Cell, CellWeight, ElementSpacing, LinearLayoutChainElement, NoSpacing, NoWeight,
+            Weight, WithSpacing,
         },
         ParentHolder, UpdateHandler, Widget, WidgetStateHolder,
     },
@@ -71,6 +72,44 @@ pub struct LinearLayout<CE, L, ES = NoSpacing> {
     pub widgets: CE,
     pub spacing: ES,
     pub direction: L,
+}
+
+impl<W, CE, L, ES> LinearLayout<Link<Cell<W, NoWeight>, CE>, L, ES>
+where
+    W: Widget,
+    CE: LinearLayoutChainElement + ChainElement,
+    ES: ElementSpacing,
+{
+    pub fn weight(self, weight: u32) -> LinearLayout<Link<Cell<W, Weight>, CE>, L, ES> {
+        LinearLayout {
+            parent_index: self.parent_index,
+            bounds: self.bounds,
+            widgets: Link {
+                object: self.widgets.object.weight(weight),
+                parent: self.widgets.parent,
+            },
+            spacing: self.spacing,
+            direction: self.direction,
+        }
+    }
+}
+
+impl<W, L, ES> LinearLayout<Chain<Cell<W, NoWeight>>, L, ES>
+where
+    W: Widget,
+    ES: ElementSpacing,
+{
+    pub fn weight(self, weight: u32) -> LinearLayout<Chain<Cell<W, Weight>>, L, ES> {
+        LinearLayout {
+            parent_index: self.parent_index,
+            bounds: self.bounds,
+            widgets: Chain {
+                object: self.widgets.object.weight(weight),
+            },
+            spacing: self.spacing,
+            direction: self.direction,
+        }
+    }
 }
 
 impl<CE, L, ES> LinearLayout<CE, L, ES>
