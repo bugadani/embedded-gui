@@ -178,7 +178,7 @@ fn lerp(x: i32, x0: i32, x1: i32, y0: i32, y1: i32) -> i32 {
     if x1 == x0 {
         y0
     } else {
-        ((y1 - y0) * (x - x0)) / (x1 - x0) + y0
+        ((y1 - y0) * (x - x0) + (x1 - x0) / 2) / (x1 - x0) + y0
     }
 }
 
@@ -197,7 +197,6 @@ where
     SP: SliderProperties,
 {
     pub fn set_value(&mut self, value: i32) -> bool {
-        // TODO: clip instead?
         if self.limits.contains(&value) {
             self.value = value;
             true
@@ -213,7 +212,7 @@ where
     pub fn slider_bounds(&self) -> BoundingBox {
         let total_size = SP::main_axis(self.bounds.size.width, self.bounds.size.height);
         let slider_length = self.properties.length();
-        let space = total_size - slider_length;
+        let space = total_size.saturating_sub(slider_length);
 
         let pos = lerp(
             self.value,
