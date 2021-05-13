@@ -196,6 +196,20 @@ impl<SP, D> SliderFields<SP, D>
 where
     SP: SliderProperties,
 {
+    pub fn set_active(&mut self, active: bool) -> &mut Self {
+        if active {
+            self.change_state(Slider::STATE_ACTIVE)
+        } else {
+            self.change_state(Slider::STATE_INACTIVE)
+        }
+    }
+
+    fn change_state(&mut self, state: impl State) -> &mut Self {
+        self.state.set_state(state);
+
+        self
+    }
+
     pub fn set_value(&mut self, value: i32) -> bool {
         if self.limits.contains(&value) {
             self.value = value;
@@ -305,6 +319,12 @@ where
     SP: SliderProperties,
     D: WidgetData,
 {
+    pub fn set_active(mut self, active: bool) -> Self {
+        self.fields.set_active(active);
+
+        self
+    }
+
     pub fn on_data_changed(mut self, callback: fn(&mut SliderFields<SP, D::Data>, &D::Data)) -> Self
     where
         D: WidgetData,

@@ -110,6 +110,7 @@ fn main() {
                 Scroll::horizontal(Label::new(
                     "Some very long text that can be used to demonstrate horizontal scrollbars",
                 ))
+                .set_active(false)
                 .bind(&horizontal_scroll_data)
                 .on_scroll_changed(ScrollbarConnector::on_scroll_widget_scroll_changed)
                 .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),

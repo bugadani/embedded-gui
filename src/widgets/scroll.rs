@@ -197,10 +197,19 @@ impl<W, SD, D> ScrollFields<W, SD, D>
 where
     W: WidgetStateHolder,
 {
-    fn change_state(&mut self, state: impl State) {
+    pub fn set_active(&mut self, active: bool) -> &mut Self {
+        if active {
+            self.change_state(Scroll::STATE_ACTIVE)
+        } else {
+            self.change_state(Scroll::STATE_INACTIVE)
+        }
+    }
+
+    fn change_state(&mut self, state: impl State) -> &mut Self {
         if self.state.set_state(state) {
             self.inner.on_state_changed(self.state);
         }
+        self
     }
 }
 
@@ -209,11 +218,17 @@ state_group! {
         Idle = 0,
         Hovered = 0x0000_0001,
     }
+    [ScrollActiveStateGroup: 0x0000_0002] = {
+        Active = 0,
+        Inactive = 0x0000_0002,
+    }
 }
 
 impl Scroll<(), (), ()> {
     const STATE_IDLE: Idle = Idle;
     const STATE_HOVERED: Hovered = Hovered;
+    const STATE_ACTIVE: Active = Active;
+    const STATE_INACTIVE: Inactive = Inactive;
 }
 
 pub struct Scroll<W, SD, D = (), F = PointerFling>
@@ -277,6 +292,12 @@ where
     SD: ScrollDirection,
     D: WidgetData,
 {
+    pub fn set_active(mut self, active: bool) -> Self {
+        self.fields.set_active(active);
+
+        self
+    }
+
     /// Sets the friction value.
     ///
     /// A higher value results in a shorter fling.
@@ -498,6 +519,10 @@ where
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
+        if self.fields.state.has_state(Scroll::STATE_INACTIVE) {
+            return None;
+        }
+
         match event {
             InputEvent::Cancel => {
                 self.fields.inner.test_input(InputEvent::Cancel);
@@ -563,6 +588,10 @@ where
     }
 
     fn handle_input(&mut self, _ctxt: InputContext, event: InputEvent) -> bool {
+        if self.fields.state.has_state(Scroll::STATE_INACTIVE) {
+            return false;
+        }
+
         let hovered = self.fields.state.has_state(Scroll::STATE_HOVERED);
         match event {
             InputEvent::ScrollEvent(ScrollEvent::HorizontalScroll(dx)) => {

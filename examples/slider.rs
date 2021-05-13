@@ -151,6 +151,22 @@ fn main() {
                 )
                 .weight(4),
             ),
+        ))
+        .add(Cell::new(
+            Row::new(Cell::new(Label::new("Inactive"))).add(Cell::new(
+                Spacing::new(
+                    DefaultTheme::slider(0..=5)
+                        .set_active(false)
+                        .bind(&slider2_data)
+                        .on_value_changed(|data, value| {
+                            *data = value;
+                        })
+                        .on_data_changed(|slider, data| {
+                            slider.set_value(*data);
+                        }),
+                )
+                .top(1),
+            )),
         )),
     );
 
