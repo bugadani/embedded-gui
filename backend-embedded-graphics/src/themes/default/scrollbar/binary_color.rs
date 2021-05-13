@@ -1,13 +1,7 @@
-use embedded_graphics::{
-    draw_target::DrawTarget, pixelcolor::BinaryColor, prelude::Primitive,
-    primitives::PrimitiveStyle, Drawable,
-};
-use embedded_gui::widgets::slider::{Horizontal, Slider, SliderFields, Vertical};
+use embedded_graphics::pixelcolor::BinaryColor;
+use embedded_gui::widgets::slider::{Horizontal, Vertical};
 
-use crate::{
-    themes::default::scrollbar::{ScrollbarProperties, ScrollbarVisualState, ScrollbarVisualStyle},
-    ToRectangle,
-};
+use crate::themes::default::scrollbar::{ScrollbarVisualState, ScrollbarVisualStyle};
 
 #[derive(Default)]
 pub struct VerticalScrollbar;

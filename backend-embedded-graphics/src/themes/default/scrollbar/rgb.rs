@@ -1,11 +1,9 @@
 use core::marker::PhantomData;
 
-use embedded_graphics::{draw_target::DrawTarget, prelude::WebColors};
-use embedded_gui::widgets::slider::{Horizontal, SliderFields, Vertical};
+use embedded_graphics::prelude::WebColors;
+use embedded_gui::widgets::slider::{Horizontal, Vertical};
 
-use crate::themes::default::scrollbar::{
-    ScrollbarProperties, ScrollbarVisualState, ScrollbarVisualStyle,
-};
+use crate::themes::default::scrollbar::{ScrollbarVisualState, ScrollbarVisualStyle};
 
 pub struct VerticalScrollbar<C>(pub PhantomData<C>);
 
