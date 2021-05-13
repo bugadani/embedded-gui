@@ -187,7 +187,7 @@ where
             return &self.object;
         }
 
-        return self.parent.at(index);
+        self.parent.at(index)
     }
 
     fn at_mut(&mut self, index: usize) -> &mut dyn LinearLayoutCell {
@@ -195,7 +195,7 @@ where
             return &mut self.object;
         }
 
-        return self.parent.at_mut(index);
+        self.parent.at_mut(index)
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {

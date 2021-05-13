@@ -44,7 +44,7 @@ impl WidgetData for () {
         callback(widget, &());
     }
 
-    fn version(&self) -> () {}
+    fn version(&self) {}
 }
 
 struct BoundDataInner<D, F>
