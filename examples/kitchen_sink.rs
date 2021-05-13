@@ -2,7 +2,7 @@ use std::{fmt::Write, thread, time::Duration};
 
 use backend_embedded_graphics::{
     themes::{default::DefaultTheme, Theme},
-    widgets::label::{ascii::LabelConstructor, LabelStyling},
+    widgets::label::ascii::LabelConstructor,
     EgCanvas,
 };
 use embedded_graphics::{
@@ -18,7 +18,7 @@ use embedded_gui::{
     input::event::{InputEvent, PointerEvent, ScrollEvent},
     widgets::{
         label::Label,
-        layouts::linear::{column::Column, row::Row, Cell},
+        layouts::linear::{column::Column, row::Row},
         primitives::{fill::FillParent, spacing::Spacing},
     },
     Window,
@@ -93,59 +93,54 @@ fn main() {
     let mut gui = Window::new(
         EgCanvas::new(display),
         Spacing::new(
-            Column::new(Cell::new(
-                Label::new("Checkboxes and radio buttons").text_color(BinaryColor::On),
-            ))
-            .spacing(1)
-            .add(Cell::new(
-                DefaultTheme::check_box("Check me")
-                    .bind(&checkbox)
-                    .on_selected_changed(|checked, data| {
-                        *data = checked;
-                    })
-                    .on_data_changed(|checkbox, data| {
-                        checkbox.set_checked(*data);
-                    }),
-            ))
-            .add(Cell::new(
-                DefaultTheme::check_box("Inactive")
-                    .bind(&checkbox)
-                    .active(false)
-                    .on_data_changed(|checkbox, data| {
-                        checkbox.set_checked(*data);
-                    }),
-            ))
-            .add(Cell::new(
-                DefaultTheme::radio_button("Can't select me")
-                    .bind(&radio)
-                    .on_selected_changed(|_, data| *data = 0)
-                    .on_data_changed(|radio, data| {
-                        radio.set_checked(*data == 0);
-                    })
-                    .active(false),
-            ))
-            .add(Cell::new(
-                DefaultTheme::radio_button("Select me")
-                    .bind(&radio)
-                    .on_selected_changed(|_, data| *data = 0)
-                    .on_data_changed(|radio, data| {
-                        radio.set_checked(*data == 0);
-                    }),
-            ))
-            .add(Cell::new(
-                DefaultTheme::radio_button("... or me!")
-                    .bind(&radio)
-                    .on_selected_changed(|_, data| *data = 1)
-                    .on_data_changed(|radio, data| {
-                        radio.set_checked(*data == 1);
-                    }),
-            ))
-            .add(Cell::new(
-                Spacing::new(Label::new("Numeric sliders")).top(4),
-            ))
-            .add(Cell::new(
-                Row::new(
-                    Cell::new(FillParent::horizontal(
+            Column::new(Label::new("Checkboxes and radio buttons"))
+                .spacing(1)
+                .add(
+                    DefaultTheme::check_box("Check me")
+                        .bind(&checkbox)
+                        .on_selected_changed(|checked, data| {
+                            *data = checked;
+                        }),
+                )
+                .add(
+                    DefaultTheme::check_box("Inactive")
+                        .bind(&checkbox)
+                        .active(false)
+                        .on_data_changed(|checkbox, data| {
+                            checkbox.set_checked(*data);
+                        })
+                        .on_data_changed(|checkbox, data| {
+                            checkbox.set_checked(*data);
+                        }),
+                )
+                .add(
+                    DefaultTheme::radio_button("Can't select me")
+                        .bind(&radio)
+                        .on_selected_changed(|_, data| *data = 0)
+                        .on_data_changed(|radio, data| {
+                            radio.set_checked(*data == 0);
+                        })
+                        .active(false),
+                )
+                .add(
+                    DefaultTheme::radio_button("Select me")
+                        .bind(&radio)
+                        .on_selected_changed(|_, data| *data = 0)
+                        .on_data_changed(|radio, data| {
+                            radio.set_checked(*data == 0);
+                        }),
+                )
+                .add(
+                    DefaultTheme::radio_button("... or me!")
+                        .bind(&radio)
+                        .on_selected_changed(|_, data| *data = 1)
+                        .on_data_changed(|radio, data| {
+                            radio.set_checked(*data == 1);
+                        }),
+                )
+                .add(Spacing::new(Label::new("Numeric sliders")).top(4))
+                .add(
+                    Row::new(FillParent::horizontal(
                         Label::new(String::<U11>::from("0"))
                             .bind(&slider1_data)
                             .on_data_changed(|label, data| {
@@ -153,10 +148,8 @@ fn main() {
                                 write!(label.text, "{}", data).unwrap();
                             }),
                     ))
-                    .weight(1),
-                )
-                .add(
-                    Cell::new(
+                    .weight(1)
+                    .add(
                         Spacing::new(
                             DefaultTheme::slider(-100..=100)
                                 .bind(&slider1_data)
@@ -170,11 +163,9 @@ fn main() {
                         .top(1),
                     )
                     .weight(4),
-                ),
-            ))
-            .add(Cell::new(
-                Row::new(
-                    Cell::new(FillParent::horizontal(
+                )
+                .add(
+                    Row::new(FillParent::horizontal(
                         Label::new(String::<U11>::from("0"))
                             .bind(&slider2_data)
                             .on_data_changed(|label, data| {
@@ -182,10 +173,8 @@ fn main() {
                                 write!(label.text, "{}", data).unwrap();
                             }),
                     ))
-                    .weight(1),
-                )
-                .add(
-                    Cell::new(
+                    .weight(1)
+                    .add(
                         Spacing::new(
                             DefaultTheme::slider(0..=5)
                                 .bind(&slider2_data)
@@ -199,26 +188,24 @@ fn main() {
                         .top(1),
                     )
                     .weight(4),
-                ),
-            ))
-            .add(Cell::new(
-                Row::new(Cell::new(Label::new("Inactive"))).add(Cell::new(
-                    Spacing::new(
-                        DefaultTheme::slider(0..=5)
-                            .set_active(false)
-                            .bind(&slider2_data)
-                            .on_value_changed(|data, value| {
-                                *data = value;
-                            })
-                            .on_data_changed(|slider, data| {
-                                slider.set_value(*data);
-                            }),
-                    )
-                    .top(1),
-                )),
-            ))
-            .add(
-                Cell::new(
+                )
+                .add(
+                    Row::new(Label::new("Inactive")).add(
+                        Spacing::new(
+                            DefaultTheme::slider(0..=5)
+                                .set_active(false)
+                                .bind(&slider2_data)
+                                .on_value_changed(|data, value| {
+                                    *data = value;
+                                })
+                                .on_data_changed(|slider, data| {
+                                    slider.set_value(*data);
+                                }),
+                        )
+                        .top(1),
+                    ),
+                )
+                .add(
                     DefaultTheme::primary_button("Reset")
                         .bind(&everything)
                         .on_clicked(|data| {
@@ -229,7 +216,6 @@ fn main() {
                         }),
                 )
                 .weight(1),
-            ),
         )
         .all(2),
     );

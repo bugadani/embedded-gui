@@ -5,7 +5,7 @@ use crate::{
     widgets::{
         layouts::linear::{
             layout::{LayoutDirection, LinearLayout},
-            Cell, CellWeight, NoSpacing,
+            Cell, CellWeight, NoSpacing, NoWeight,
         },
         Widget,
     },
@@ -19,7 +19,16 @@ impl LayoutDirection for Column {
 }
 
 impl Column {
-    pub fn new<W, CW>(widget: Cell<W, CW>) -> LinearLayout<Chain<Cell<W, CW>>, Column, NoSpacing>
+    pub fn new<W>(widget: W) -> LinearLayout<Chain<Cell<W, NoWeight>>, Column, NoSpacing>
+    where
+        W: Widget,
+    {
+        Self::new_cell(Cell::new(widget))
+    }
+
+    pub fn new_cell<W, CW>(
+        widget: Cell<W, CW>,
+    ) -> LinearLayout<Chain<Cell<W, CW>>, Column, NoSpacing>
     where
         W: Widget,
         CW: CellWeight,

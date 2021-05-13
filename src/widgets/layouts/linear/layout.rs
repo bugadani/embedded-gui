@@ -117,7 +117,7 @@ where
     CE: LinearLayoutChainElement + ChainElement,
     ES: ElementSpacing,
 {
-    pub fn add<W, CW>(self, widget: Cell<W, CW>) -> LinearLayout<Link<Cell<W, CW>, CE>, L, ES>
+    pub fn add_cell<W, CW>(self, widget: Cell<W, CW>) -> LinearLayout<Link<Cell<W, CW>, CE>, L, ES>
     where
         W: Widget,
         CW: CellWeight,
@@ -129,6 +129,13 @@ where
             spacing: self.spacing,
             direction: self.direction,
         }
+    }
+
+    pub fn add<W>(self, widget: W) -> LinearLayout<Link<Cell<W, NoWeight>, CE>, L, ES>
+    where
+        W: Widget,
+    {
+        self.add_cell(Cell::new(widget))
     }
 
     fn locate(&self, mut idx: usize) -> Option<(usize, usize)> {

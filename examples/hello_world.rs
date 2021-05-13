@@ -23,7 +23,7 @@ use embedded_gui::{
     widgets::{
         button::Button,
         label::Label,
-        layouts::linear::{column::Column, row::Row, Cell},
+        layouts::linear::{column::Column, row::Row},
         primitives::{
             background::Background,
             border::Border,
@@ -143,17 +143,13 @@ fn main() {
 
     let mut gui = Window::new(
         EgCanvas::new(display),
-        Column::new(Cell::new(
-            Row::new(
-                Cell::new(FillParent::horizontal(Label::new("Hello,")).align_horizontal(Center))
-                    .weight(1),
-            )
-            .add(
-                Cell::new(FillParent::horizontal(Label::new("World!")).align_horizontal(Center))
-                    .weight(1),
-            ),
-        ))
-        .add(Cell::new(
+        Column::new(
+            Row::new(FillParent::horizontal(Label::new("Hello,")).align_horizontal(Center))
+                .weight(1)
+                .add(FillParent::horizontal(Label::new("World!")).align_horizontal(Center))
+                .weight(1),
+        )
+        .add(
             Spacing::new(
                 button_with_style(Label::new("Click me").bind(&flag).on_data_changed(
                     |widget, data| {
@@ -167,7 +163,7 @@ fn main() {
                 }),
             )
             .all(4),
-        )),
+        ),
     );
 
     let output_settings = OutputSettingsBuilder::new()

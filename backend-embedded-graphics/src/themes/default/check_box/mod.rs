@@ -103,12 +103,8 @@ where
     CheckBoxStyle<C>: Default,
 {
     Toggle::new(
-        Row::new(Cell::new(
-            CheckBox::<CheckBoxStyle<C>>::new().on_state_changed(S::apply_check_box),
-        ))
-        .spacing(1)
-        .add(Cell::new(
-            Label::new(label).on_state_changed(S::apply_label),
-        )),
+        Row::new(CheckBox::<CheckBoxStyle<C>>::new().on_state_changed(S::apply_check_box))
+            .spacing(1)
+            .add(Label::new(label).on_state_changed(S::apply_label)),
     )
 }
