@@ -16,7 +16,7 @@ use embedded_graphics_simulator::{
 use embedded_gui::{
     data::{BoundData, WidgetData},
     geometry::Position,
-    input::event::{InputEvent, PointerEvent},
+    input::event::{InputEvent, PointerEvent, ScrollEvent},
     widgets::{
         label::Label,
         layouts::linear::{column::Column, row::Row, Cell},
@@ -68,6 +68,14 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
                     PointerEvent::Hover
                 },
             )),
+            SimulatorEvent::MouseWheel { scroll_delta, .. } => {
+                // TODO: We could break this down into multiple scroll events
+                Ok(InputEvent::ScrollEvent(if scroll_delta.y != 0 {
+                    ScrollEvent::VerticalScroll(scroll_delta.y * 4)
+                } else {
+                    ScrollEvent::HorizontalScroll(scroll_delta.x * 4)
+                }))
+            }
             SimulatorEvent::Quit => Err(true),
             _ => Err(false),
         }

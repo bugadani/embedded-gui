@@ -487,6 +487,8 @@ where
                 if self.fields.state.has_state(Slider::STATE_DRAGGED) {
                     self.fields.state.set_state(Slider::STATE_HOVERED);
                 }
+
+                return true;
             }
             InputEvent::KeyEvent(_) => {}
             InputEvent::PointerEvent(position, PointerEvent::Down) => {
@@ -508,17 +510,23 @@ where
                     self.drag_offset = Some(new_pos - value_pos);
                 }
                 self.fields.state.set_state(Slider::STATE_DRAGGED);
+
+                return true;
             }
             InputEvent::PointerEvent(position, PointerEvent::Drag) => {
                 if let Some(offset) = self.drag_offset {
                     let position = position - self.bounding_box().position;
                     let value_pos = SP::main_axis(position.x, position.y);
                     self.set_slider_position(value_pos + offset);
+
+                    return true;
                 }
             }
             InputEvent::PointerEvent(_, PointerEvent::Up) => {
                 self.drag_offset = None;
                 self.fields.state.set_state(Slider::STATE_HOVERED);
+
+                return true;
             }
             InputEvent::PointerEvent(_, _) => {}
             InputEvent::ScrollEvent(scroll) => {
