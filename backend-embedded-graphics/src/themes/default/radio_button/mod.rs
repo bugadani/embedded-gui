@@ -92,8 +92,7 @@ pub type StyledRadioButton<'a, 'b, 'c, C> = Toggle<
             Cell<Label<&'static str, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>>,
             Chain<Cell<RadioButton<RadioButtonStyle<C>>>>,
         >,
-        Row,
-        WithSpacing,
+        Row<WithSpacing>,
     >,
     (),
     false,
@@ -106,8 +105,9 @@ where
     RadioButtonStyle<C>: Default,
 {
     Toggle::new(
-        Row::new(RadioButton::<RadioButtonStyle<C>>::new().on_state_changed(S::apply_radio_button))
+        Row::new()
             .spacing(1)
+            .add(RadioButton::<RadioButtonStyle<C>>::new().on_state_changed(S::apply_radio_button))
             .add(Label::new(label).on_state_changed(S::apply_label)),
     )
     .disallow_manual_uncheck()

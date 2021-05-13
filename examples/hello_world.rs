@@ -143,27 +143,29 @@ fn main() {
 
     let mut gui = Window::new(
         EgCanvas::new(display),
-        Column::new(
-            Row::new(FillParent::horizontal(Label::new("Hello,")).align_horizontal(Center))
-                .weight(1)
-                .add(FillParent::horizontal(Label::new("World!")).align_horizontal(Center))
-                .weight(1),
-        )
-        .add(
-            Spacing::new(
-                button_with_style(Label::new("Click me").bind(&flag).on_data_changed(
-                    |widget, data| {
-                        widget.text = if *data { "on" } else { "off" };
-                    },
-                ))
-                .bind(&flag)
-                .on_clicked(|data| {
-                    *data = !*data;
-                    println!("Clicked!");
-                }),
+        Column::new()
+            .add(
+                Row::new()
+                    .add(FillParent::horizontal(Label::new("Hello,")).align_horizontal(Center))
+                    .weight(1)
+                    .add(FillParent::horizontal(Label::new("World!")).align_horizontal(Center))
+                    .weight(1),
             )
-            .all(4),
-        ),
+            .add(
+                Spacing::new(
+                    button_with_style(Label::new("Click me").bind(&flag).on_data_changed(
+                        |widget, data| {
+                            widget.text = if *data { "on" } else { "off" };
+                        },
+                    ))
+                    .bind(&flag)
+                    .on_clicked(|data| {
+                        *data = !*data;
+                        println!("Clicked!");
+                    }),
+                )
+                .all(4),
+            ),
     );
 
     let output_settings = OutputSettingsBuilder::new()

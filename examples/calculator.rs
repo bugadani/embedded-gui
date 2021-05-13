@@ -207,144 +207,150 @@ fn main() {
 
     let mut gui = Window::new(
         EgCanvas::new(display),
-        Column::new(
-            Spacing::new(
-                FillParent::horizontal(
-                    Label::new(String::<U11>::from("0"))
-                        .font(&FONT_10X20)
-                        .bind(&calculator)
-                        .on_data_changed(|label, calc| {
-                            label.text.clear();
-                            write!(label.text, "{}", calc.current).unwrap();
-                        }),
+        Column::new()
+            .spacing(1)
+            .add(
+                Spacing::new(
+                    FillParent::horizontal(
+                        Label::new(String::<U11>::from("0"))
+                            .font(&FONT_10X20)
+                            .bind(&calculator)
+                            .on_data_changed(|label, calc| {
+                                label.text.clear();
+                                write!(label.text, "{}", calc.current).unwrap();
+                            }),
+                    )
+                    .align_horizontal(Right),
                 )
-                .align_horizontal(Right),
+                .all(4),
             )
-            .all(4),
-        )
-        .spacing(1)
-        .add(
-            Row::new(
-                DefaultTheme::primary_button("CE")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.clear()),
-            )
-            .weight(2)
-            .spacing(1)
             .add(
-                DefaultTheme::secondary_button("<")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.delete_digit()),
+                Row::new()
+                    .spacing(1)
+                    .add(
+                        DefaultTheme::primary_button("CE")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.clear()),
+                    )
+                    .weight(2)
+                    .add(
+                        DefaultTheme::secondary_button("<")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.delete_digit()),
+                    )
+                    .weight(1)
+                    .add(
+                        DefaultTheme::primary_button("/")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.set_op(Op::Divide)),
+                    )
+                    .weight(1),
             )
             .weight(1)
             .add(
-                DefaultTheme::primary_button("/")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.set_op(Op::Divide)),
+                Row::new()
+                    .spacing(1)
+                    .add(
+                        DefaultTheme::secondary_button("7")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(7)),
+                    )
+                    .weight(1)
+                    .add(
+                        DefaultTheme::secondary_button("8")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(8)),
+                    )
+                    .weight(1)
+                    .add(
+                        DefaultTheme::secondary_button("9")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(9)),
+                    )
+                    .weight(1)
+                    .add(
+                        DefaultTheme::primary_button("x")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.set_op(Op::Multiply)),
+                    )
+                    .weight(1),
+            )
+            .weight(1)
+            .add(
+                Row::new()
+                    .spacing(1)
+                    .add(
+                        DefaultTheme::secondary_button("4")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(4)),
+                    )
+                    .weight(1)
+                    .add(
+                        DefaultTheme::secondary_button("5")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(5)),
+                    )
+                    .weight(1)
+                    .add(
+                        DefaultTheme::secondary_button("6")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(6)),
+                    )
+                    .weight(1)
+                    .add(
+                        DefaultTheme::primary_button("-")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.set_op(Op::Subtract)),
+                    )
+                    .weight(1),
+            )
+            .weight(1)
+            .add(
+                Row::new()
+                    .spacing(1)
+                    .add(
+                        DefaultTheme::secondary_button("1")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(1)),
+                    )
+                    .weight(1)
+                    .add(
+                        DefaultTheme::secondary_button("2")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(2)),
+                    )
+                    .weight(1)
+                    .add(
+                        DefaultTheme::secondary_button("3")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(3)),
+                    )
+                    .weight(1)
+                    .add(
+                        DefaultTheme::primary_button("+")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.set_op(Op::Add)),
+                    )
+                    .weight(1),
+            )
+            .weight(1)
+            .add(
+                Row::new()
+                    .spacing(1)
+                    .add(
+                        DefaultTheme::secondary_button("0")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.add_digit(0)),
+                    )
+                    .weight(3)
+                    .add(
+                        DefaultTheme::primary_button("=")
+                            .bind(&calculator)
+                            .on_clicked(|calculator| calculator.update()),
+                    )
+                    .weight(1),
             )
             .weight(1),
-        )
-        .weight(1)
-        .add(
-            Row::new(
-                DefaultTheme::secondary_button("7")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.add_digit(7)),
-            )
-            .weight(1)
-            .spacing(1)
-            .add(
-                DefaultTheme::secondary_button("8")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.add_digit(8)),
-            )
-            .weight(1)
-            .add(
-                DefaultTheme::secondary_button("9")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.add_digit(9)),
-            )
-            .weight(1)
-            .add(
-                DefaultTheme::primary_button("x")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.set_op(Op::Multiply)),
-            )
-            .weight(1),
-        )
-        .weight(1)
-        .add(
-            Row::new(
-                DefaultTheme::secondary_button("4")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.add_digit(4)),
-            )
-            .weight(1)
-            .spacing(1)
-            .add(
-                DefaultTheme::secondary_button("5")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.add_digit(5)),
-            )
-            .weight(1)
-            .add(
-                DefaultTheme::secondary_button("6")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.add_digit(6)),
-            )
-            .weight(1)
-            .add(
-                DefaultTheme::primary_button("-")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.set_op(Op::Subtract)),
-            )
-            .weight(1),
-        )
-        .weight(1)
-        .add(
-            Row::new(
-                DefaultTheme::secondary_button("1")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.add_digit(1)),
-            )
-            .weight(1)
-            .spacing(1)
-            .add(
-                DefaultTheme::secondary_button("2")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.add_digit(2)),
-            )
-            .weight(1)
-            .add(
-                DefaultTheme::secondary_button("3")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.add_digit(3)),
-            )
-            .weight(1)
-            .add(
-                DefaultTheme::primary_button("+")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.set_op(Op::Add)),
-            )
-            .weight(1),
-        )
-        .weight(1)
-        .add(
-            Row::new(
-                DefaultTheme::secondary_button("0")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.add_digit(0)),
-            )
-            .weight(3)
-            .spacing(1)
-            .add(
-                DefaultTheme::primary_button("=")
-                    .bind(&calculator)
-                    .on_clicked(|calculator| calculator.update()),
-            )
-            .weight(1),
-        )
-        .weight(1),
     );
 
     println!("Size of struct: {}", std::mem::size_of_val(&gui.root));

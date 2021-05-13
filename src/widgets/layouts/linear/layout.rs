@@ -9,10 +9,7 @@ use crate::{
     input::event::InputEvent,
     state::WidgetState,
     widgets::{
-        layouts::linear::{
-            Cell, CellWeight, ElementSpacing, LinearLayoutChainElement, NoSpacing, NoWeight,
-            Weight, WithSpacing,
-        },
+        layouts::linear::{Cell, CellWeight, LinearLayoutChainElement, NoWeight, Weight},
         ParentHolder, UpdateHandler, Widget, WidgetStateHolder,
     },
     Canvas, WidgetRenderer,
@@ -64,23 +61,23 @@ pub trait LayoutDirection: Copy {
             y: pos.y + y,
         }
     }
+
+    fn element_spacing(&self) -> u32;
 }
 
-pub struct LinearLayout<CE, L, ES = NoSpacing> {
+pub struct LinearLayout<CE, L> {
     pub parent_index: usize,
     pub bounds: BoundingBox,
     pub widgets: CE,
-    pub spacing: ES,
     pub direction: L,
 }
 
-impl<W, CE, L, ES> LinearLayout<Link<Cell<W, NoWeight>, CE>, L, ES>
+impl<W, CE, L> LinearLayout<Link<Cell<W, NoWeight>, CE>, L>
 where
     W: Widget,
     CE: LinearLayoutChainElement + ChainElement,
-    ES: ElementSpacing,
 {
-    pub fn weight(self, weight: u32) -> LinearLayout<Link<Cell<W, Weight>, CE>, L, ES> {
+    pub fn weight(self, weight: u32) -> LinearLayout<Link<Cell<W, Weight>, CE>, L> {
         LinearLayout {
             parent_index: self.parent_index,
             bounds: self.bounds,
@@ -88,36 +85,32 @@ where
                 object: self.widgets.object.weight(weight),
                 parent: self.widgets.parent,
             },
-            spacing: self.spacing,
             direction: self.direction,
         }
     }
 }
 
-impl<W, L, ES> LinearLayout<Chain<Cell<W, NoWeight>>, L, ES>
+impl<W, L> LinearLayout<Chain<Cell<W, NoWeight>>, L>
 where
     W: Widget,
-    ES: ElementSpacing,
 {
-    pub fn weight(self, weight: u32) -> LinearLayout<Chain<Cell<W, Weight>>, L, ES> {
+    pub fn weight(self, weight: u32) -> LinearLayout<Chain<Cell<W, Weight>>, L> {
         LinearLayout {
             parent_index: self.parent_index,
             bounds: self.bounds,
             widgets: Chain {
                 object: self.widgets.object.weight(weight),
             },
-            spacing: self.spacing,
             direction: self.direction,
         }
     }
 }
 
-impl<CE, L, ES> LinearLayout<CE, L, ES>
+impl<CE, L> LinearLayout<CE, L>
 where
     CE: LinearLayoutChainElement + ChainElement,
-    ES: ElementSpacing,
 {
-    pub fn add_cell<W, CW>(self, widget: Cell<W, CW>) -> LinearLayout<Link<Cell<W, CW>, CE>, L, ES>
+    pub fn add_cell<W, CW>(self, widget: Cell<W, CW>) -> LinearLayout<Link<Cell<W, CW>, CE>, L>
     where
         W: Widget,
         CW: CellWeight,
@@ -126,12 +119,11 @@ where
             parent_index: self.parent_index,
             bounds: self.bounds,
             widgets: self.widgets.append(widget),
-            spacing: self.spacing,
             direction: self.direction,
         }
     }
 
-    pub fn add<W>(self, widget: W) -> LinearLayout<Link<Cell<W, NoWeight>, CE>, L, ES>
+    pub fn add<W>(self, widget: W) -> LinearLayout<Link<Cell<W, NoWeight>, CE>, L>
     where
         W: Widget,
     {
@@ -155,22 +147,9 @@ where
     }
 }
 
-impl<CE, L> LinearLayout<CE, L, NoSpacing> {
-    pub fn spacing(self, spacing: u32) -> LinearLayout<CE, L, WithSpacing> {
-        LinearLayout {
-            parent_index: self.parent_index,
-            bounds: self.bounds,
-            widgets: self.widgets,
-            spacing: WithSpacing(spacing),
-            direction: self.direction,
-        }
-    }
-}
-
-impl<CE, L, ES> Widget for LinearLayout<CE, L, ES>
+impl<CE, L> Widget for LinearLayout<CE, L>
 where
     CE: LinearLayoutChainElement + ChainElement,
-    ES: ElementSpacing,
     L: LayoutDirection,
 {
     fn attach(&mut self, parent: usize, index: usize) {
@@ -211,7 +190,7 @@ where
                     max_cross = max_cross.max(L::cross_axis_size(widget.bounding_box()));
                 }
 
-                total_fixed_main_axis_size += (count as u32 - 1) * self.spacing.spacing();
+                total_fixed_main_axis_size += (count as u32 - 1) * self.direction.element_spacing();
 
                 // TODO this is almost the same as the bottom of the function. Should deduplicate.
                 self.set_measured_size(L::create_measured_size(
@@ -246,7 +225,7 @@ where
 
         // We don't want to take space away from non-weighted widgets,
         // so add spacing after first pass.
-        total_fixed_main_axis_size += (count as u32 - 1) * self.spacing.spacing();
+        total_fixed_main_axis_size += (count as u32 - 1) * self.direction.element_spacing();
 
         // Divide the rest of the space among the weighted widgets
         if total_weight != 0 {
@@ -294,7 +273,7 @@ where
         self.bounding_box_mut().position = position;
 
         self.widgets
-            .arrange(position, self.direction, self.spacing.spacing());
+            .arrange(position, self.direction, self.direction.element_spacing());
     }
 
     fn children(&self) -> usize {
@@ -328,7 +307,7 @@ where
     }
 }
 
-impl<CE, L, ES> ParentHolder for LinearLayout<CE, L, ES> {
+impl<CE, L> ParentHolder for LinearLayout<CE, L> {
     fn parent_index(&self) -> usize {
         self.parent_index
     }
@@ -338,7 +317,7 @@ impl<CE, L, ES> ParentHolder for LinearLayout<CE, L, ES> {
     }
 }
 
-impl<CE, L, ES> WidgetStateHolder for LinearLayout<CE, L, ES>
+impl<CE, L> WidgetStateHolder for LinearLayout<CE, L>
 where
     CE: LinearLayoutChainElement + ChainElement,
 {
@@ -347,9 +326,9 @@ where
     }
 }
 
-impl<CE, L, ES> UpdateHandler for LinearLayout<CE, L, ES> {}
+impl<CE, L> UpdateHandler for LinearLayout<CE, L> {}
 
-impl<C, CE, L, ES> WidgetRenderer<C> for LinearLayout<CE, L, ES>
+impl<C, CE, L> WidgetRenderer<C> for LinearLayout<CE, L>
 where
     CE: LinearLayoutChainElement + ChainElement + WidgetRenderer<C>,
     C: Canvas,

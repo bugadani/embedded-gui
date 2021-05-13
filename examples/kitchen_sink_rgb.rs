@@ -94,8 +94,9 @@ fn main() {
     let mut gui = Window::new(
         EgCanvas::new(display),
         Spacing::new(
-            Column::new(Label::new("Checkboxes and radio buttons").text_color(Rgb888::BLACK))
+            Column::new()
                 .spacing(1)
+                .add(Label::new("Checkboxes and radio buttons").text_color(Rgb888::BLACK))
                 .add(
                     DefaultTheme::check_box("Check me")
                         .bind(&checkbox)
@@ -141,57 +142,59 @@ fn main() {
                 )
                 .add(Spacing::new(Label::new("Numeric sliders")).top(4))
                 .add(
-                    Row::new(FillParent::horizontal(
-                        Label::new(String::<U11>::from("0"))
-                            .bind(&slider1_data)
-                            .on_data_changed(|label, data| {
-                                label.text.clear();
-                                write!(label.text, "{}", data).unwrap();
-                            }),
-                    ))
-                    .weight(1)
-                    .add(
-                        Spacing::new(
-                            DefaultTheme::slider(-100..=100)
+                    Row::new()
+                        .add(FillParent::horizontal(
+                            Label::new(String::<U11>::from("0"))
                                 .bind(&slider1_data)
-                                .on_value_changed(|data, value| {
-                                    *data = value;
-                                })
-                                .on_data_changed(|slider, data| {
-                                    slider.set_value(*data);
+                                .on_data_changed(|label, data| {
+                                    label.text.clear();
+                                    write!(label.text, "{}", data).unwrap();
                                 }),
+                        ))
+                        .weight(1)
+                        .add(
+                            Spacing::new(
+                                DefaultTheme::slider(-100..=100)
+                                    .bind(&slider1_data)
+                                    .on_value_changed(|data, value| {
+                                        *data = value;
+                                    })
+                                    .on_data_changed(|slider, data| {
+                                        slider.set_value(*data);
+                                    }),
+                            )
+                            .top(1),
                         )
-                        .top(1),
-                    )
-                    .weight(4),
+                        .weight(4),
                 )
                 .add(
-                    Row::new(FillParent::horizontal(
-                        Label::new(String::<U11>::from("0"))
-                            .bind(&slider2_data)
-                            .on_data_changed(|label, data| {
-                                label.text.clear();
-                                write!(label.text, "{}", data).unwrap();
-                            }),
-                    ))
-                    .weight(1)
-                    .add(
-                        Spacing::new(
-                            DefaultTheme::slider(0..=5)
+                    Row::new()
+                        .add(FillParent::horizontal(
+                            Label::new(String::<U11>::from("0"))
                                 .bind(&slider2_data)
-                                .on_value_changed(|data, value| {
-                                    *data = value;
-                                })
-                                .on_data_changed(|slider, data| {
-                                    slider.set_value(*data);
+                                .on_data_changed(|label, data| {
+                                    label.text.clear();
+                                    write!(label.text, "{}", data).unwrap();
                                 }),
+                        ))
+                        .weight(1)
+                        .add(
+                            Spacing::new(
+                                DefaultTheme::slider(0..=5)
+                                    .bind(&slider2_data)
+                                    .on_value_changed(|data, value| {
+                                        *data = value;
+                                    })
+                                    .on_data_changed(|slider, data| {
+                                        slider.set_value(*data);
+                                    }),
+                            )
+                            .top(1),
                         )
-                        .top(1),
-                    )
-                    .weight(4),
+                        .weight(4),
                 )
                 .add(
-                    Row::new(Label::new("Inactive")).add(
+                    Row::new().add(Label::new("Inactive")).add(
                         Spacing::new(
                             DefaultTheme::slider(0..=5)
                                 .set_active(false)

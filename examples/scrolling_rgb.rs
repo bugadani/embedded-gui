@@ -89,85 +89,89 @@ fn main() {
 
     let mut gui = Window::new(
         EgCanvas::new(display),
-        Column::new(FillParent::horizontal(
-            Label::new("Scroll down")
-                .bind(&scroll_data)
-                .on_data_changed(|label, data| {
-                    label.text = if data.offset == data.maximum_offset {
-                        "Scroll back"
-                    } else if data.offset == 0 {
-                        "Scroll down"
-                    } else {
-                        "Scroll more"
-                    };
-                }),
-        ))
-        .add(
-            Column::new(
-                Scroll::horizontal(Label::new(
-                    "Some very long text that can be used to demonstrate horizontal scrollbars",
-                ))
-                .set_active(false)
-                .bind(&horizontal_scroll_data)
-                .on_scroll_changed(ScrollbarConnector::on_scroll_widget_scroll_changed)
-                .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),
+        Column::new()
+            .add(FillParent::horizontal(
+                Label::new("Scroll down")
+                    .bind(&scroll_data)
+                    .on_data_changed(|label, data| {
+                        label.text = if data.offset == data.maximum_offset {
+                            "Scroll back"
+                        } else if data.offset == 0 {
+                            "Scroll down"
+                        } else {
+                            "Scroll more"
+                        };
+                    }),
+            ))
+            .add(
+                Column::new()
+                .add(
+                    Scroll::horizontal(Label::new(
+                        "Some very long text that can be used to demonstrate horizontal scrollbars",
+                    ))
+                    .set_active(false)
+                    .bind(&horizontal_scroll_data)
+                    .on_scroll_changed(ScrollbarConnector::on_scroll_widget_scroll_changed)
+                    .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),
+                )
+                .add(
+                    DefaultTheme::horizontal_scrollbar()
+                        .bind(&horizontal_scroll_data)
+                        .on_data_changed(ScrollbarConnector::on_scrollbar_data_changed)
+                        .on_value_changed(ScrollbarConnector::on_scrollbar_value_changed),
+                ),
             )
             .add(
-                DefaultTheme::horizontal_scrollbar()
-                    .bind(&horizontal_scroll_data)
-                    .on_data_changed(ScrollbarConnector::on_scrollbar_data_changed)
-                    .on_value_changed(ScrollbarConnector::on_scrollbar_value_changed),
-            ),
-        )
-        .add(
-            Row::new(Border::new(
-                Scroll::vertical(
-                    Spacing::new(
-                        Column::new(Label::new("S"))
-                            .add(Label::new("c"))
-                            .add(Label::new("r"))
-                            .add(Label::new("o"))
-                            .add(Label::new("l"))
-                            .add(Label::new("o"))
-                            .add(Label::new("l"))
-                            .add(Label::new("o"))
-                            .add(Label::new("l"))
-                            .add(Label::new("o"))
-                            .add(Label::new("l"))
-                            .add(Label::new("o"))
-                            .add(Label::new("l"))
-                            .add(Label::new("o"))
-                            .add(Label::new("l"))
-                            .add(Label::new("o"))
-                            .add(Label::new("l"))
-                            .add(Label::new("o"))
-                            .add(Label::new("l"))
-                            .add(Label::new("o"))
-                            .add(Label::new("l"))
-                            .add(Label::new("o"))
-                            .add(Label::new("Scrollolo :)"))
-                            .add(
-                                DefaultTheme::primary_button("Back to top")
-                                    .bind(&scroll_data)
-                                    .on_clicked(|data| data.scroll_to(0)),
-                            ),
+                Row::new()
+                .add(Border::new(
+                    Scroll::vertical(
+                        Spacing::new(
+                            Column::new()
+                            .add(Label::new("S"))
+                                .add(Label::new("c"))
+                                .add(Label::new("r"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("Scrollolo :)"))
+                                .add(
+                                    DefaultTheme::primary_button("Back to top")
+                                        .bind(&scroll_data)
+                                        .on_clicked(|data| data.scroll_to(0)),
+                                ),
+                        )
+                        .all(2),
                     )
-                    .all(2),
-                )
-                .friction(1)
-                .friction_divisor(2)
-                .bind(&scroll_data)
-                .on_scroll_changed(ScrollbarConnector::on_scroll_widget_scroll_changed)
-                .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),
-            ))
-            .weight(8)
-            .add(
-                DefaultTheme::vertical_scrollbar()
+                    .friction(1)
+                    .friction_divisor(2)
                     .bind(&scroll_data)
-                    .on_data_changed(ScrollbarConnector::on_scrollbar_data_changed)
-                    .on_value_changed(ScrollbarConnector::on_scrollbar_value_changed),
+                    .on_scroll_changed(ScrollbarConnector::on_scroll_widget_scroll_changed)
+                    .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),
+                ))
+                .weight(8)
+                .add(
+                    DefaultTheme::vertical_scrollbar()
+                        .bind(&scroll_data)
+                        .on_data_changed(ScrollbarConnector::on_scrollbar_data_changed)
+                        .on_value_changed(ScrollbarConnector::on_scrollbar_value_changed),
+                ),
             ),
-        ),
     );
 
     println!("Size of struct: {}", std::mem::size_of_val(&gui.root));

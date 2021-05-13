@@ -92,7 +92,8 @@ fn main() {
 
     let mut gui = Window::new(
         EgCanvas::new(display),
-        Column::new(FillParent::horizontal(
+        Column::new()
+        .add(FillParent::horizontal(
             Label::new("Scroll down")
                 .bind(&scroll_data)
                 .on_data_changed(|label, data| {
@@ -106,7 +107,8 @@ fn main() {
                 }),
         ))
         .add(
-            Column::new(
+            Column::new()
+            .add(
                 Scroll::horizontal(Label::new(
                     "Some very long text that can be used to demonstrate horizontal scrollbars",
                 ))
@@ -123,50 +125,52 @@ fn main() {
             ),
         )
         .add(
-            Row::new(Border::new(
-                Scroll::vertical(
-                    Column::new(Label::new("S"))
-                        .add(Label::new("c"))
-                        .add(Label::new("r"))
-                        .add(Label::new("o"))
-                        .add(Label::new("l"))
-                        .add(Label::new("o"))
-                        .add(Label::new("l"))
-                        .add(Label::new("o"))
-                        .add(Label::new("l"))
-                        .add(Label::new("o"))
-                        .add(Label::new("l"))
-                        .add(Label::new("o"))
-                        .add(Label::new("l"))
-                        .add(Label::new("o"))
-                        .add(Label::new("l"))
-                        .add(Label::new("o"))
-                        .add(Label::new("l"))
-                        .add(Label::new("o"))
-                        .add(Label::new("l"))
-                        .add(Label::new("o"))
-                        .add(Label::new("l"))
-                        .add(Label::new("o"))
-                        .add(Label::new("Scrollolo :)"))
-                        .add(
-                            DefaultTheme::primary_button("Back to top")
-                                .bind(&scroll_data)
-                                .on_clicked(|data| data.scroll_to(0)),
-                        ),
-                )
-                .friction(1)
-                .friction_divisor(2)
-                .bind(&scroll_data)
-                .on_scroll_changed(ScrollbarConnector::on_scroll_widget_scroll_changed)
-                .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),
-            ))
-            .weight(8)
-            .add(
-                DefaultTheme::vertical_scrollbar()
+            Row::new()
+                .add(Border::new(
+                    Scroll::vertical(
+                        Column::new()
+                            .add(Label::new("S"))
+                            .add(Label::new("c"))
+                            .add(Label::new("r"))
+                            .add(Label::new("o"))
+                            .add(Label::new("l"))
+                            .add(Label::new("o"))
+                            .add(Label::new("l"))
+                            .add(Label::new("o"))
+                            .add(Label::new("l"))
+                            .add(Label::new("o"))
+                            .add(Label::new("l"))
+                            .add(Label::new("o"))
+                            .add(Label::new("l"))
+                            .add(Label::new("o"))
+                            .add(Label::new("l"))
+                            .add(Label::new("o"))
+                            .add(Label::new("l"))
+                            .add(Label::new("o"))
+                            .add(Label::new("l"))
+                            .add(Label::new("o"))
+                            .add(Label::new("l"))
+                            .add(Label::new("o"))
+                            .add(Label::new("Scrollolo :)"))
+                            .add(
+                                DefaultTheme::primary_button("Back to top")
+                                    .bind(&scroll_data)
+                                    .on_clicked(|data| data.scroll_to(0)),
+                            ),
+                    )
+                    .friction(1)
+                    .friction_divisor(2)
                     .bind(&scroll_data)
-                    .on_data_changed(ScrollbarConnector::on_scrollbar_data_changed)
-                    .on_value_changed(ScrollbarConnector::on_scrollbar_value_changed),
-            ),
+                    .on_scroll_changed(ScrollbarConnector::on_scroll_widget_scroll_changed)
+                    .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),
+                ))
+                .weight(8)
+                .add(
+                    DefaultTheme::vertical_scrollbar()
+                        .bind(&scroll_data)
+                        .on_data_changed(ScrollbarConnector::on_scrollbar_data_changed)
+                        .on_value_changed(ScrollbarConnector::on_scrollbar_value_changed),
+                ),
         ),
     );
 
