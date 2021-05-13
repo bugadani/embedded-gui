@@ -11,6 +11,7 @@ pub mod label;
 pub mod layouts;
 pub mod primitives;
 pub mod scroll;
+pub mod slider;
 pub mod toggle;
 pub mod wrapper;
 

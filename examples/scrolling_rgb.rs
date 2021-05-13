@@ -5,12 +5,9 @@ use backend_embedded_graphics::{
     widgets::label::ascii::LabelConstructor,
     EgCanvas,
 };
-use embedded_graphics::{
-    draw_target::DrawTarget, pixelcolor::BinaryColor, prelude::Size as EgSize,
-};
+use embedded_graphics::{draw_target::DrawTarget, pixelcolor::Rgb888, prelude::Size as EgSize};
 use embedded_graphics_simulator::{
-    sdl2::MouseButton, BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent,
-    Window as SimWindow,
+    sdl2::MouseButton, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window as SimWindow,
 };
 use embedded_gui::{
     data::BoundData,
@@ -19,7 +16,7 @@ use embedded_gui::{
     widgets::{
         label::Label,
         layouts::linear::{column::Column, row::Row, Cell},
-        primitives::{border::Border, fill::FillParent},
+        primitives::{border::Border, fill::FillParent, spacing::Spacing},
         scroll::Scroll,
         slider::ScrollbarConnector,
     },
@@ -85,7 +82,7 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
 }
 
 fn main() {
-    let display = SimulatorDisplay::new(EgSize::new(128, 64));
+    let display = SimulatorDisplay::new(EgSize::new(192, 160));
 
     let scroll_data = BoundData::new(ScrollbarConnector::new(), |_| ());
     let horizontal_scroll_data = BoundData::new(ScrollbarConnector::new(), |_| ());
@@ -126,34 +123,37 @@ fn main() {
             Row::new(
                 Cell::new(Border::new(
                     Scroll::vertical(
-                        Column::new(Cell::new(Label::new("S")))
-                            .add(Cell::new(Label::new("c")))
-                            .add(Cell::new(Label::new("r")))
-                            .add(Cell::new(Label::new("o")))
-                            .add(Cell::new(Label::new("l")))
-                            .add(Cell::new(Label::new("o")))
-                            .add(Cell::new(Label::new("l")))
-                            .add(Cell::new(Label::new("o")))
-                            .add(Cell::new(Label::new("l")))
-                            .add(Cell::new(Label::new("o")))
-                            .add(Cell::new(Label::new("l")))
-                            .add(Cell::new(Label::new("o")))
-                            .add(Cell::new(Label::new("l")))
-                            .add(Cell::new(Label::new("o")))
-                            .add(Cell::new(Label::new("l")))
-                            .add(Cell::new(Label::new("o")))
-                            .add(Cell::new(Label::new("l")))
-                            .add(Cell::new(Label::new("o")))
-                            .add(Cell::new(Label::new("l")))
-                            .add(Cell::new(Label::new("o")))
-                            .add(Cell::new(Label::new("l")))
-                            .add(Cell::new(Label::new("o")))
-                            .add(Cell::new(Label::new("Scrollolo :)")))
-                            .add(Cell::new(
-                                DefaultTheme::primary_button("Reset")
-                                    .bind(&scroll_data)
-                                    .on_clicked(|data| data.scroll_to(0)),
-                            )),
+                        Spacing::new(
+                            Column::new(Cell::new(Label::new("S")))
+                                .add(Cell::new(Label::new("c")))
+                                .add(Cell::new(Label::new("r")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("l")))
+                                .add(Cell::new(Label::new("o")))
+                                .add(Cell::new(Label::new("Scrollolo :)")))
+                                .add(Cell::new(
+                                    DefaultTheme::primary_button("Back to top")
+                                        .bind(&scroll_data)
+                                        .on_clicked(|data| data.scroll_to(0)),
+                                )),
+                        )
+                        .all(2),
                     )
                     .friction(1)
                     .friction_divisor(2)
@@ -161,7 +161,7 @@ fn main() {
                     .on_scroll_changed(ScrollbarConnector::on_scroll_widget_scroll_changed)
                     .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),
                 ))
-                .weight(5),
+                .weight(8),
             )
             .add(Cell::new(
                 DefaultTheme::vertical_scrollbar()
@@ -180,19 +180,14 @@ fn main() {
 
     print_type_of(&gui.root);
 
-    let output_settings = OutputSettingsBuilder::new()
-        .theme(BinaryColorTheme::OledBlue)
-        .build();
-    let mut window = SimWindow::new("GUI demonstration", &output_settings);
+    let output_settings = OutputSettingsBuilder::new().scale(2).build();
+    let mut window = SimWindow::new("ScrollWidget & scrollbar", &output_settings);
 
     // In this example, the size of the widgets can't change so it's enough to measure once.
     gui.measure();
 
     loop {
-        gui.canvas
-            .target
-            .clear(BinaryColor::BACKGROUND_COLOR)
-            .unwrap();
+        gui.canvas.target.clear(Rgb888::BACKGROUND_COLOR).unwrap();
 
         gui.update();
         gui.arrange();

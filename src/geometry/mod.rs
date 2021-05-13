@@ -1,12 +1,29 @@
-use core::ops::{Add, Neg, Sub};
+use core::ops::{Add, AddAssign, Neg, Sub};
 
 pub mod axis_order;
 pub mod measurement;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
+}
+
+impl Add<Position> for Position {
+    type Output = Position;
+
+    fn add(self, rhs: Position) -> Self::Output {
+        Position {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl AddAssign<Position> for Position {
+    fn add_assign(&mut self, rhs: Position) {
+        *self = *self + rhs;
+    }
 }
 
 impl Sub<Position> for Position {
@@ -48,6 +65,12 @@ impl Add<PositionDelta> for Position {
     }
 }
 
+impl AddAssign<PositionDelta> for Position {
+    fn add_assign(&mut self, rhs: PositionDelta) {
+        *self = *self + rhs;
+    }
+}
+
 impl Neg for PositionDelta {
     type Output = PositionDelta;
 
@@ -59,13 +82,13 @@ impl Neg for PositionDelta {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct MeasuredSize {
     pub width: u32,
     pub height: u32,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct BoundingBox {
     pub position: Position,
     pub size: MeasuredSize,

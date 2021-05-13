@@ -14,6 +14,7 @@ use crate::{
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
 };
 
+#[derive(Debug)]
 pub struct ScrollData {
     /// The current scroll position.
     pub offset: i32,
@@ -173,9 +174,17 @@ pub struct ScrollFields<W, SD, D> {
     pub scroll_time: u32,
 }
 
-impl<W, SD, D> ScrollFields<W, SD, D> {
+impl<W, SD, D> ScrollFields<W, SD, D>
+where
+    SD: ScrollDirection,
+{
     pub fn scroll_to(&mut self, offset: i32) {
         self.offset_target = Some(offset);
+    }
+
+    pub fn set_position(&mut self, offset: i32) {
+        let (x, y) = SD::AxisOrder::merge(offset, 0);
+        self.direction.override_offset(PositionDelta { x, y });
     }
 
     pub fn scroll_time(&mut self, time: u32) -> &mut Self {
@@ -188,10 +197,19 @@ impl<W, SD, D> ScrollFields<W, SD, D>
 where
     W: WidgetStateHolder,
 {
-    fn change_state(&mut self, state: impl State) {
+    pub fn set_active(&mut self, active: bool) -> &mut Self {
+        if active {
+            self.change_state(Scroll::STATE_ACTIVE)
+        } else {
+            self.change_state(Scroll::STATE_INACTIVE)
+        }
+    }
+
+    fn change_state(&mut self, state: impl State) -> &mut Self {
         if self.state.set_state(state) {
             self.inner.on_state_changed(self.state);
         }
+        self
     }
 }
 
@@ -200,11 +218,17 @@ state_group! {
         Idle = 0,
         Hovered = 0x0000_0001,
     }
+    [ScrollActiveStateGroup: 0x0000_0002] = {
+        Active = 0,
+        Inactive = 0x0000_0002,
+    }
 }
 
 impl Scroll<(), (), ()> {
     const STATE_IDLE: Idle = Idle;
     const STATE_HOVERED: Hovered = Hovered;
+    const STATE_ACTIVE: Active = Active;
+    const STATE_INACTIVE: Inactive = Inactive;
 }
 
 pub struct Scroll<W, SD, D = (), F = PointerFling>
@@ -265,8 +289,15 @@ where
 impl<W, SD, D> Scroll<W, SD, D, PointerFling>
 where
     W: Widget,
+    SD: ScrollDirection,
     D: WidgetData,
 {
+    pub fn set_active(mut self, active: bool) -> Self {
+        self.fields.set_active(active);
+
+        self
+    }
+
     /// Sets the friction value.
     ///
     /// A higher value results in a shorter fling.
@@ -356,6 +387,10 @@ where
     fn change_offset(&mut self, offset: PositionDelta) {
         self.fields.direction.change_offset(offset);
 
+        self.update_scroll_data();
+    }
+
+    fn update_scroll_data(&mut self) {
         // Clamp the offset.
         let child_size = self.fields.inner.bounding_box().size;
         let own_size = self.bounding_box().size;
@@ -428,6 +463,9 @@ where
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
+        let inner_bb_old = self.fields.inner.bounding_box();
+        let bb_old = self.bounding_box();
+
         let (width_spec, height_spec) = SD::AxisOrder::merge(
             MeasureConstraint::Unspecified,
             SD::AxisOrder::cross_axis(measure_spec.width, measure_spec.height),
@@ -445,15 +483,16 @@ where
 
         let main_size = SD::AxisOrder::main_axis(measure_spec.width, measure_spec.height)
             .largest()
-            .unwrap_or(SD::AxisOrder::main_axis(
-                child_size.width,
-                child_size.height,
-            ));
+            .unwrap_or_else(|| SD::AxisOrder::main_axis(child_size.width, child_size.height));
         let cross_size = SD::AxisOrder::cross_axis(child_size.width, child_size.height);
 
         let (width, height) = SD::AxisOrder::merge(main_size, cross_size);
 
         self.set_measured_size(MeasuredSize { width, height });
+
+        if inner_bb_old != self.fields.inner.bounding_box() || bb_old != self.bounding_box() {
+            self.update_scroll_data();
+        }
     }
 
     fn children(&self) -> usize {
@@ -477,6 +516,10 @@ where
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
+        if self.fields.state.has_state(Scroll::STATE_INACTIVE) {
+            return None;
+        }
+
         match event {
             InputEvent::Cancel => {
                 self.fields.inner.test_input(InputEvent::Cancel);
@@ -542,6 +585,10 @@ where
     }
 
     fn handle_input(&mut self, _ctxt: InputContext, event: InputEvent) -> bool {
+        if self.fields.state.has_state(Scroll::STATE_INACTIVE) {
+            return false;
+        }
+
         let hovered = self.fields.state.has_state(Scroll::STATE_HOVERED);
         match event {
             InputEvent::ScrollEvent(ScrollEvent::HorizontalScroll(dx)) => {

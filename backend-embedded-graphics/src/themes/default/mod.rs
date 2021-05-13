@@ -1,3 +1,5 @@
+use core::ops::RangeInclusive;
+
 use crate::themes::{
     default::{
         button::{
@@ -18,6 +20,20 @@ use crate::themes::{
             binary_color::RadioButtonStyle, rgb::RadioButtonStyle as RgbRadioButtonStyle,
             styled_radio_button, RadioButtonVisualStyle, StyledRadioButton,
         },
+        scrollbar::{
+            binary_color::{HorizontalScrollbar, VerticalScrollbar},
+            horizontal_scrollbar,
+            rgb::{
+                HorizontalScrollbar as RgbHorizontalScrollbar,
+                VerticalScrollbar as RgbVerticalScrollbar,
+            },
+            vertical_scrollbar, ScrollbarVisualStyle, StyledHorizontalScrollbar,
+            StyledVerticalScrollbar,
+        },
+        slider::{
+            binary_color::SliderStyle, rgb::SliderStyle as RgbSliderStyle, slider,
+            SliderVisualStyle, StyledSlider,
+        },
     },
     Theme,
 };
@@ -27,6 +43,8 @@ use embedded_graphics::pixelcolor::{BinaryColor, Rgb555, Rgb565, Rgb888, RgbColo
 pub mod button;
 pub mod check_box;
 pub mod radio_button;
+pub mod scrollbar;
+pub mod slider;
 
 pub trait DefaultTheme: Theme {
     type PrimaryButton: ButtonStyle<Self>;
@@ -34,6 +52,10 @@ pub trait DefaultTheme: Theme {
 
     type CheckBox: CheckBoxVisualStyle<Self>;
     type RadioButton: RadioButtonVisualStyle<Self>;
+
+    type Slider: SliderVisualStyle<Self>;
+    type VerticalScrollbar: ScrollbarVisualStyle<Self>;
+    type HorizontalScrollbar: ScrollbarVisualStyle<Self>;
 
     fn primary_button(label: &'static str) -> StyledButton<Self> {
         styled_button::<Self, Self::PrimaryButton>(label)
@@ -50,6 +72,18 @@ pub trait DefaultTheme: Theme {
     fn radio_button(label: &'static str) -> StyledRadioButton<Self> {
         styled_radio_button::<Self, Self::RadioButton>(label)
     }
+
+    fn slider(range: RangeInclusive<i32>) -> StyledSlider<Self> {
+        slider::<Self>(range)
+    }
+
+    fn vertical_scrollbar() -> StyledVerticalScrollbar<Self> {
+        vertical_scrollbar::<Self>()
+    }
+
+    fn horizontal_scrollbar() -> StyledHorizontalScrollbar<Self> {
+        horizontal_scrollbar::<Self>()
+    }
 }
 
 impl Theme for BinaryColor {
@@ -57,12 +91,17 @@ impl Theme for BinaryColor {
     const BORDER_COLOR: BinaryColor = BinaryColor::On;
     const BACKGROUND_COLOR: BinaryColor = BinaryColor::Off;
 }
+
 impl DefaultTheme for BinaryColor {
     type PrimaryButton = PrimaryButtonStyle;
     type SecondaryButton = SecondaryButtonStyle;
 
     type CheckBox = CheckBoxStyle;
     type RadioButton = RadioButtonStyle;
+
+    type Slider = SliderStyle;
+    type VerticalScrollbar = VerticalScrollbar;
+    type HorizontalScrollbar = HorizontalScrollbar;
 }
 
 macro_rules! impl_rgb_default_theme {
@@ -78,6 +117,10 @@ macro_rules! impl_rgb_default_theme {
 
             type CheckBox = RgbCheckBoxStyle<Self>;
             type RadioButton = RgbRadioButtonStyle<Self>;
+
+            type Slider = RgbSliderStyle<Self>;
+            type VerticalScrollbar = RgbVerticalScrollbar<Self>;
+            type HorizontalScrollbar = RgbHorizontalScrollbar<Self>;
         }
     };
 }
