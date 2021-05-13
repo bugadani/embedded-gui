@@ -483,10 +483,7 @@ where
 
         let main_size = SD::AxisOrder::main_axis(measure_spec.width, measure_spec.height)
             .largest()
-            .unwrap_or(SD::AxisOrder::main_axis(
-                child_size.width,
-                child_size.height,
-            ));
+            .unwrap_or_else(|| SD::AxisOrder::main_axis(child_size.width, child_size.height));
         let cross_size = SD::AxisOrder::cross_axis(child_size.width, child_size.height);
 
         let (width, height) = SD::AxisOrder::merge(main_size, cross_size);

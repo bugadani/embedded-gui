@@ -62,6 +62,16 @@ pub struct ScrollbarConnector<SD, SP> {
     _marker: PhantomData<(SD, SP)>,
 }
 
+impl<SD, SP> Default for ScrollbarConnector<SD, SP>
+where
+    SD: ScrollDirection,
+    SP: SliderProperties,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<SD, SP> Deref for ScrollbarConnector<SD, SP> {
     type Target = ScrollData;
 
