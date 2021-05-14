@@ -110,9 +110,6 @@ fn main() {
                         .active(false)
                         .on_data_changed(|checkbox, data| {
                             checkbox.set_checked(*data);
-                        })
-                        .on_data_changed(|checkbox, data| {
-                            checkbox.set_checked(*data);
                         }),
                 )
                 .add(
@@ -218,8 +215,7 @@ fn main() {
                             data.2.update(|data| *data = 0);
                             data.3.update(|data| *data = false);
                         }),
-                )
-                .weight(1),
+                ),
         )
         .all(2),
     );

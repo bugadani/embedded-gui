@@ -10,7 +10,8 @@ use crate::themes::{
                 binary_color::SecondaryButtonStyle,
                 rgb::SecondaryButtonStyle as RgbSecondaryButtonStyle,
             },
-            styled_button, ButtonStyle, StyledButton,
+            styled_button, styled_button_stretched, ButtonStyle, StyledButton,
+            StyledButtonStretched,
         },
         check_box::{
             binary_color::CheckBoxStyle, rgb::CheckBoxStyle as RgbCheckBoxStyle, styled_check_box,
@@ -63,6 +64,14 @@ pub trait DefaultTheme: Theme {
 
     fn secondary_button(label: &'static str) -> StyledButton<Self> {
         styled_button::<Self, Self::SecondaryButton>(label)
+    }
+
+    fn primary_button_stretched(label: &'static str) -> StyledButtonStretched<Self> {
+        styled_button_stretched::<Self, Self::PrimaryButton>(label)
+    }
+
+    fn secondary_button_stretched(label: &'static str) -> StyledButtonStretched<Self> {
+        styled_button_stretched::<Self, Self::SecondaryButton>(label)
     }
 
     fn check_box(label: &'static str) -> StyledCheckBox<Self> {

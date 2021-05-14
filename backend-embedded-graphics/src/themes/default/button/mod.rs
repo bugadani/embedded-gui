@@ -11,6 +11,7 @@ use embedded_gui::{
             background::{Background, BackgroundProperties},
             border::{Border, BorderProperties},
             fill::{Center, FillParent, HorizontalAndVertical},
+            spacing::Spacing,
         },
     },
 };
@@ -110,6 +111,39 @@ pub trait ButtonStyle<C: PixelColor> {
 pub type StyledButton<'a, 'b, 'c, C> = Button<
     Background<
         Border<
+            Spacing<Label<&'static str, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>>,
+            BorderStyle<C>,
+        >,
+        BackgroundStyle<C>,
+    >,
+>;
+
+pub fn styled_button<C, S>(label: &'static str) -> StyledButton<C>
+where
+    C: DefaultTheme,
+    S: ButtonStyle<C>,
+    BorderStyle<C>: Default,
+    BackgroundStyle<C>: Default,
+{
+    Button::new(
+        Background::new(
+            Border::new(
+                Spacing::new(
+                    Label::new(label)
+                        .font(&S::FONT)
+                        .on_state_changed(S::apply_label),
+                )
+                .all(1),
+            )
+            .on_state_changed(S::apply_border),
+        )
+        .on_state_changed(S::apply_background),
+    )
+}
+
+pub type StyledButtonStretched<'a, 'b, 'c, C> = Button<
+    Background<
+        Border<
             FillParent<
                 Label<&'static str, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>,
                 HorizontalAndVertical,
@@ -122,7 +156,7 @@ pub type StyledButton<'a, 'b, 'c, C> = Button<
     >,
 >;
 
-pub fn styled_button<C, S>(label: &'static str) -> StyledButton<C>
+pub fn styled_button_stretched<C, S>(label: &'static str) -> StyledButtonStretched<C>
 where
     C: DefaultTheme,
     S: ButtonStyle<C>,
