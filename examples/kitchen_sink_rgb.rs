@@ -143,9 +143,7 @@ fn main() {
                             Spacing::new(
                                 DefaultTheme::slider(-100..=100)
                                     .bind(&slider1_data)
-                                    .on_value_changed(|data, value| {
-                                        *data = value;
-                                    })
+                                    .on_value_changed(|data, value| *data = value)
                                     .on_data_changed(|slider, data| slider.set_value(*data)),
                             )
                             .top(1),
