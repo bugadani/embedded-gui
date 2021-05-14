@@ -9,7 +9,7 @@ use crate::{
 pub trait BorderProperties {
     type Color;
 
-    fn set_border_color(&mut self, color: Self::Color) -> &mut Self;
+    fn set_border_color(&mut self, color: Self::Color);
 
     fn get_border_width(&self) -> u32;
 }
@@ -58,9 +58,8 @@ where
         self
     }
 
-    pub fn set_border_color(&mut self, color: P::Color) -> &mut Self {
+    pub fn set_border_color(&mut self, color: P::Color) {
         self.border_properties.set_border_color(color);
-        self
     }
 
     pub fn on_state_changed(mut self, callback: fn(&mut Self, WidgetState)) -> Self {

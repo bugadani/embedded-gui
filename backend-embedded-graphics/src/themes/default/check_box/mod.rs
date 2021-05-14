@@ -29,10 +29,9 @@ pub trait CheckBoxStateColors<C: PixelColor> {
     const CHECK_MARK_COLOR: C;
 
     fn apply_check_box<P: CheckBoxProperties<Color = C>>(check_box: &mut CheckBox<P>) {
-        check_box
-            .set_background_color(Self::BACKGROUND_COLOR)
-            .set_border_color(Self::BORDER_COLOR)
-            .set_check_mark_color(Self::CHECK_MARK_COLOR);
+        check_box.set_background_color(Self::BACKGROUND_COLOR);
+        check_box.set_border_color(Self::BORDER_COLOR);
+        check_box.set_check_mark_color(Self::CHECK_MARK_COLOR);
     }
 
     fn apply_label<S, T>(label: &mut Label<S, T>)

@@ -206,11 +206,11 @@ impl<SP, D> SliderFields<SP, D>
 where
     SP: SliderProperties,
 {
-    pub fn set_active(&mut self, active: bool) -> &mut Self {
+    pub fn set_active(&mut self, active: bool) {
         if active {
-            self.change_state(Slider::STATE_ACTIVE)
+            self.change_state(Slider::STATE_ACTIVE);
         } else {
-            self.change_state(Slider::STATE_INACTIVE)
+            self.change_state(Slider::STATE_INACTIVE);
         }
     }
 
@@ -220,13 +220,17 @@ where
         self
     }
 
-    pub fn set_value(&mut self, value: i32) -> bool {
+    fn change_value(&mut self, value: i32) -> bool {
         if self.limits.contains(&value) {
             self.value = value;
             true
         } else {
             false
         }
+    }
+
+    pub fn set_value(&mut self, value: i32) {
+        self.change_value(value);
     }
 
     pub fn set_range(&mut self, limits: RangeInclusive<i32>) {
@@ -352,8 +356,7 @@ where
     }
 
     pub fn set_value(&mut self, value: i32) {
-        // TODO: clip instead?
-        if self.fields.set_value(value) {
+        if self.fields.change_value(value) {
             let callback = self.fields.on_value_changed;
             self.data_holder.data.update(|data| callback(data, value));
         }

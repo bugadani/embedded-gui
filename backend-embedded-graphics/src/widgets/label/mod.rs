@@ -74,7 +74,7 @@ pub trait LabelStyling<S>: Sized {
         self
     }
 
-    fn set_text_color(&mut self, color: Self::Color) -> &mut Self;
+    fn set_text_color(&mut self, color: Self::Color);
 
     fn text_renderer<T: TextRenderer>(self, renderer: T) -> Label<S, LabelStyle<T>>;
 
@@ -90,9 +90,8 @@ where
 {
     type Color = C;
 
-    fn set_text_color(&mut self, color: Self::Color) -> &mut Self {
+    fn set_text_color(&mut self, color: Self::Color) {
         self.label_properties.text_color(color);
-        self
     }
 
     fn text_renderer<T: TextRenderer>(self, renderer: T) -> Label<S, LabelStyle<T>> {

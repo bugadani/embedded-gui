@@ -58,9 +58,8 @@ where
         self.width
     }
 
-    fn set_border_color(&mut self, color: Self::Color) -> &mut Self {
+    fn set_border_color(&mut self, color: Self::Color) {
         self.color = color;
-        self
     }
 }
 

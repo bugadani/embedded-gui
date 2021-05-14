@@ -100,42 +100,32 @@ fn main() {
                 .add(
                     DefaultTheme::check_box("Check me")
                         .bind(&checkbox)
-                        .on_selected_changed(|checked, data| {
-                            *data = checked;
-                        }),
+                        .on_selected_changed(|checked, data| *data = checked),
                 )
                 .add(
                     DefaultTheme::check_box("Inactive")
                         .bind(&checkbox)
                         .active(false)
-                        .on_data_changed(|checkbox, data| {
-                            checkbox.set_checked(*data);
-                        }),
+                        .on_data_changed(|checkbox, data| checkbox.set_checked(*data)),
                 )
                 .add(
                     DefaultTheme::radio_button("Can't select me")
                         .bind(&radio)
                         .on_selected_changed(|_, data| *data = 0)
-                        .on_data_changed(|radio, data| {
-                            radio.set_checked(*data == 0);
-                        })
+                        .on_data_changed(|radio, data| radio.set_checked(*data == 0))
                         .active(false),
                 )
                 .add(
                     DefaultTheme::radio_button("Select me")
                         .bind(&radio)
                         .on_selected_changed(|_, data| *data = 0)
-                        .on_data_changed(|radio, data| {
-                            radio.set_checked(*data == 0);
-                        }),
+                        .on_data_changed(|radio, data| radio.set_checked(*data == 0)),
                 )
                 .add(
                     DefaultTheme::radio_button("... or me!")
                         .bind(&radio)
                         .on_selected_changed(|_, data| *data = 1)
-                        .on_data_changed(|radio, data| {
-                            radio.set_checked(*data == 1);
-                        }),
+                        .on_data_changed(|radio, data| radio.set_checked(*data == 1)),
                 )
                 .add(Spacing::new(Label::new("Numeric sliders")).top(4))
                 .add(
@@ -153,12 +143,8 @@ fn main() {
                             Spacing::new(
                                 DefaultTheme::slider(-100..=100)
                                     .bind(&slider1_data)
-                                    .on_value_changed(|data, value| {
-                                        *data = value;
-                                    })
-                                    .on_data_changed(|slider, data| {
-                                        slider.set_value(*data);
-                                    }),
+                                    .on_value_changed(|data, value| *data = value)
+                                    .on_data_changed(|slider, data| slider.set_value(*data)),
                             )
                             .top(1),
                         )
@@ -179,12 +165,8 @@ fn main() {
                             Spacing::new(
                                 DefaultTheme::slider(0..=5)
                                     .bind(&slider2_data)
-                                    .on_value_changed(|data, value| {
-                                        *data = value;
-                                    })
-                                    .on_data_changed(|slider, data| {
-                                        slider.set_value(*data);
-                                    }),
+                                    .on_value_changed(|data, value| *data = value)
+                                    .on_data_changed(|slider, data| slider.set_value(*data)),
                             )
                             .top(1),
                         )
@@ -196,12 +178,8 @@ fn main() {
                             DefaultTheme::slider(0..=5)
                                 .set_active(false)
                                 .bind(&slider2_data)
-                                .on_value_changed(|data, value| {
-                                    *data = value;
-                                })
-                                .on_data_changed(|slider, data| {
-                                    slider.set_value(*data);
-                                }),
+                                .on_value_changed(|data, value| *data = value)
+                                .on_data_changed(|slider, data| slider.set_value(*data)),
                         )
                         .top(1),
                     ),

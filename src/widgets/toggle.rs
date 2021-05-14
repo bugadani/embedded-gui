@@ -33,28 +33,24 @@ where
         self
     }
 
-    pub fn set_active(&mut self, active: bool) -> &mut Self {
+    pub fn set_active(&mut self, active: bool) {
         if active {
             self.change_state(Toggle::STATE_ACTIVE);
         } else {
             self.change_state(Toggle::STATE_INACTIVE);
         }
-
-        self
     }
 
     pub fn is_checked(&self) -> bool {
         self.state.has_state(Toggle::STATE_CHECKED)
     }
 
-    pub fn set_checked(&mut self, checked: bool) -> &mut Self {
+    pub fn set_checked(&mut self, checked: bool) {
         if checked {
             self.change_state(Toggle::STATE_CHECKED);
         } else {
             self.change_state(Toggle::STATE_UNCHECKED);
         }
-
-        self
     }
 }
 
@@ -157,10 +153,8 @@ where
         self
     }
 
-    pub fn set_active(&mut self, active: bool) -> &mut Self {
+    pub fn set_active(&mut self, active: bool) {
         self.fields.set_active(active);
-
-        self
     }
 
     pub fn checked(mut self, checked: bool) -> Self {
@@ -168,10 +162,8 @@ where
         self
     }
 
-    pub fn set_checked(&mut self, checked: bool) -> &mut Self {
+    pub fn set_checked(&mut self, checked: bool) {
         self.fields.set_checked(checked);
-
-        self
     }
 
     pub fn on_data_changed(mut self, callback: fn(&mut ToggleFields<W, D::Data>, &D::Data)) -> Self

@@ -48,9 +48,8 @@ where
 {
     type Color = C;
 
-    fn set_background_color(&mut self, color: Self::Color) -> &mut Self {
+    fn set_background_color(&mut self, color: Self::Color) {
         self.color = color;
-        self
     }
 }
 
