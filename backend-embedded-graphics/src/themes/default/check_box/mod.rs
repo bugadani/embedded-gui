@@ -89,8 +89,7 @@ pub type StyledCheckBox<'a, 'b, 'c, C> = Toggle<
             Cell<Label<&'static str, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>>,
             Chain<Cell<CheckBox<CheckBoxStyle<C>>>>,
         >,
-        Row,
-        WithSpacing,
+        Row<WithSpacing>,
     >,
     (),
     true,
@@ -103,12 +102,9 @@ where
     CheckBoxStyle<C>: Default,
 {
     Toggle::new(
-        Row::new(Cell::new(
-            CheckBox::<CheckBoxStyle<C>>::new().on_state_changed(S::apply_check_box),
-        ))
-        .spacing(1)
-        .add(Cell::new(
-            Label::new(label).on_state_changed(S::apply_label),
-        )),
+        Row::new()
+            .spacing(1)
+            .add(CheckBox::<CheckBoxStyle<C>>::new().on_state_changed(S::apply_check_box))
+            .add(Label::new(label).on_state_changed(S::apply_label)),
     )
 }

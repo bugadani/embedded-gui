@@ -15,7 +15,7 @@ use embedded_gui::{
     input::event::{InputEvent, PointerEvent, ScrollEvent},
     widgets::{
         label::Label,
-        layouts::linear::{column::Column, row::Row, Cell},
+        layouts::linear::{column::Column, row::Row},
         primitives::{border::Border, fill::FillParent, spacing::Spacing},
         scroll::Scroll,
         slider::ScrollbarConnector,
@@ -89,69 +89,72 @@ fn main() {
 
     let mut gui = Window::new(
         EgCanvas::new(display),
-        Column::new(Cell::new(FillParent::horizontal(
-            Label::new("Scroll down")
-                .bind(&scroll_data)
-                .on_data_changed(|label, data| {
-                    label.text = if data.offset == data.maximum_offset {
-                        "Scroll back"
-                    } else if data.offset == 0 {
-                        "Scroll down"
-                    } else {
-                        "Scroll more"
-                    };
-                }),
-        )))
-        .add(Cell::new(
-            Column::new(Cell::new(
-                Scroll::horizontal(Label::new(
-                    "Some very long text that can be used to demonstrate horizontal scrollbars",
-                ))
-                .set_active(false)
-                .bind(&horizontal_scroll_data)
-                .on_scroll_changed(ScrollbarConnector::on_scroll_widget_scroll_changed)
-                .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),
+        Column::new()
+            .add(FillParent::horizontal(
+                Label::new("Scroll down")
+                    .bind(&scroll_data)
+                    .on_data_changed(|label, data| {
+                        label.text = if data.offset == data.maximum_offset {
+                            "Scroll back"
+                        } else if data.offset == 0 {
+                            "Scroll down"
+                        } else {
+                            "Scroll more"
+                        };
+                    }),
             ))
-            .add(Cell::new(
-                DefaultTheme::horizontal_scrollbar()
+            .add(
+                Column::new()
+                .add(
+                    Scroll::horizontal(Label::new(
+                        "Some very long text that can be used to demonstrate horizontal scrollbars",
+                    ))
+                    .set_active(false)
                     .bind(&horizontal_scroll_data)
-                    .on_data_changed(ScrollbarConnector::on_scrollbar_data_changed)
-                    .on_value_changed(ScrollbarConnector::on_scrollbar_value_changed),
-            )),
-        ))
-        .add(Cell::new(
-            Row::new(
-                Cell::new(Border::new(
+                    .on_scroll_changed(ScrollbarConnector::on_scroll_widget_scroll_changed)
+                    .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),
+                )
+                .add(
+                    DefaultTheme::horizontal_scrollbar()
+                        .bind(&horizontal_scroll_data)
+                        .on_data_changed(ScrollbarConnector::on_scrollbar_data_changed)
+                        .on_value_changed(ScrollbarConnector::on_scrollbar_value_changed),
+                ),
+            )
+            .add(
+                Row::new()
+                .add(Border::new(
                     Scroll::vertical(
                         Spacing::new(
-                            Column::new(Cell::new(Label::new("S")))
-                                .add(Cell::new(Label::new("c")))
-                                .add(Cell::new(Label::new("r")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("l")))
-                                .add(Cell::new(Label::new("o")))
-                                .add(Cell::new(Label::new("Scrollolo :)")))
-                                .add(Cell::new(
+                            Column::new()
+                            .add(Label::new("S"))
+                                .add(Label::new("c"))
+                                .add(Label::new("r"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("Scrollolo :)"))
+                                .add(
                                     DefaultTheme::primary_button("Back to top")
                                         .bind(&scroll_data)
                                         .on_clicked(|data| data.scroll_to(0)),
-                                )),
+                                ),
                         )
                         .all(2),
                     )
@@ -161,15 +164,14 @@ fn main() {
                     .on_scroll_changed(ScrollbarConnector::on_scroll_widget_scroll_changed)
                     .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),
                 ))
-                .weight(8),
-            )
-            .add(Cell::new(
-                DefaultTheme::vertical_scrollbar()
-                    .bind(&scroll_data)
-                    .on_data_changed(ScrollbarConnector::on_scrollbar_data_changed)
-                    .on_value_changed(ScrollbarConnector::on_scrollbar_value_changed),
-            )),
-        )),
+                .weight(8)
+                .add(
+                    DefaultTheme::vertical_scrollbar()
+                        .bind(&scroll_data)
+                        .on_data_changed(ScrollbarConnector::on_scrollbar_data_changed)
+                        .on_value_changed(ScrollbarConnector::on_scrollbar_value_changed),
+                ),
+            ),
     );
 
     println!("Size of struct: {}", std::mem::size_of_val(&gui.root));

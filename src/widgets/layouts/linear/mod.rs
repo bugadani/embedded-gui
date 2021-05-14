@@ -11,10 +11,12 @@ pub mod column;
 pub mod layout;
 pub mod row;
 
+#[derive(Copy, Clone)]
 pub struct NoSpacing;
+#[derive(Copy, Clone)]
 pub struct WithSpacing(u32);
 
-pub trait ElementSpacing {
+pub trait ElementSpacing: Copy {
     fn spacing(&self) -> u32;
 }
 
