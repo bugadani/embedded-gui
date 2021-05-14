@@ -6,4 +6,5 @@ edition = "2018"
 
 [dependencies]
 embedded-graphics = "0.7.0-beta.1"
+embedded-text = { git = "https://github.com/embedded-graphics/embedded-text" }
 embedded-gui = { path = ".." }
