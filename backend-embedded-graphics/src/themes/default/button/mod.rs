@@ -11,6 +11,7 @@ use embedded_gui::{
             background::{Background, BackgroundProperties},
             border::{Border, BorderProperties},
             fill::{Center, FillParent, HorizontalAndVertical},
+            spacing::Spacing,
         },
     },
 };
@@ -109,7 +110,10 @@ pub trait ButtonStyle<C: PixelColor> {
 
 pub type StyledButton<'a, 'b, 'c, C> = Button<
     Background<
-        Border<Label<&'static str, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>, BorderStyle<C>>,
+        Border<
+            Spacing<Label<&'static str, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>>,
+            BorderStyle<C>,
+        >,
         BackgroundStyle<C>,
     >,
 >;
@@ -124,9 +128,12 @@ where
     Button::new(
         Background::new(
             Border::new(
-                Label::new(label)
-                    .font(&S::FONT)
-                    .on_state_changed(S::apply_label),
+                Spacing::new(
+                    Label::new(label)
+                        .font(&S::FONT)
+                        .on_state_changed(S::apply_label),
+                )
+                .all(1),
             )
             .on_state_changed(S::apply_border),
         )
