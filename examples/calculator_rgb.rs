@@ -29,7 +29,7 @@ use embedded_gui::{
     },
     Window,
 };
-use heapless::{consts::U11, String};
+use heapless::String;
 
 fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
     unsafe {
@@ -233,7 +233,7 @@ fn main() {
                 Background::new(
                     Spacing::new(
                         FillParent::horizontal(
-                            Label::new(String::<U11>::from("0"))
+                            Label::new(String::<11>::from("0"))
                                 .font(&FONT_10X20)
                                 .text_color(Rgb888::BLACK)
                                 .bind(&calculator)
