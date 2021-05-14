@@ -77,24 +77,20 @@ where
         }
     }
 
-    fn set_border_color(&mut self, color: Self::Color) -> &mut Self {
+    fn set_border_color(&mut self, color: Self::Color) {
         self.border_color = color;
-        self
     }
 
-    fn set_background_color(&mut self, color: Self::Color) -> &mut Self {
+    fn set_background_color(&mut self, color: Self::Color) {
         self.background_color = color;
-        self
     }
 
-    fn set_check_mark_color(&mut self, color: Self::Color) -> &mut Self {
+    fn set_check_mark_color(&mut self, color: Self::Color) {
         self.checkmark_color = color;
-        self
     }
 
-    fn set_checked(&mut self, checked: bool) -> &mut Self {
+    fn set_checked(&mut self, checked: bool) {
         self.is_checked = checked;
-        self
     }
 }
 

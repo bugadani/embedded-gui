@@ -29,10 +29,9 @@ pub trait RadioButtonStateColors<C: PixelColor> {
     const CHECK_MARK_COLOR: C;
 
     fn apply_radio_button<P: RadioButtonProperties<Color = C>>(radio_button: &mut RadioButton<P>) {
-        radio_button
-            .set_background_color(Self::BACKGROUND_COLOR)
-            .set_border_color(Self::BORDER_COLOR)
-            .set_check_mark_color(Self::CHECK_MARK_COLOR);
+        radio_button.set_background_color(Self::BACKGROUND_COLOR);
+        radio_button.set_border_color(Self::BORDER_COLOR);
+        radio_button.set_check_mark_color(Self::CHECK_MARK_COLOR);
     }
 
     fn apply_label<S, T>(label: &mut Label<S, T>)

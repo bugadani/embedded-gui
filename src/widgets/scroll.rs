@@ -107,14 +107,12 @@ impl PointerFling {
         }
     }
 
-    pub fn friction(&mut self, friction: i32) -> &mut Self {
+    pub fn set_friction(&mut self, friction: i32) {
         self.friction = friction;
-        self
     }
 
-    pub fn divisor(&mut self, divisor: i32) -> &mut Self {
+    pub fn set_divisor(&mut self, divisor: i32) {
         self.divisor = divisor;
-        self
     }
 }
 
@@ -187,9 +185,8 @@ where
         self.direction.override_offset(PositionDelta { x, y });
     }
 
-    pub fn scroll_time(&mut self, time: u32) -> &mut Self {
+    pub fn set_scroll_time(&mut self, time: u32) {
         self.scroll_time = time;
-        self
     }
 }
 
@@ -197,11 +194,11 @@ impl<W, SD, D> ScrollFields<W, SD, D>
 where
     W: WidgetStateHolder,
 {
-    pub fn set_active(&mut self, active: bool) -> &mut Self {
+    pub fn set_active(&mut self, active: bool) {
         if active {
-            self.change_state(Scroll::STATE_ACTIVE)
+            self.change_state(Scroll::STATE_ACTIVE);
         } else {
-            self.change_state(Scroll::STATE_INACTIVE)
+            self.change_state(Scroll::STATE_INACTIVE);
         }
     }
 
@@ -302,7 +299,7 @@ where
     ///
     /// A higher value results in a shorter fling.
     pub fn friction(mut self, friction: i32) -> Self {
-        self.fling_controller.friction(friction);
+        self.fling_controller.set_friction(friction);
         self
     }
 
@@ -311,7 +308,7 @@ where
     /// A higher value results in a smaller overall friction value, i.e. a longer fling.
     /// Used to fine-tune the friction or to allow for smaller friction values.
     pub fn friction_divisor(mut self, divisor: i32) -> Self {
-        self.fling_controller.divisor(divisor);
+        self.fling_controller.set_divisor(divisor);
         self
     }
 
@@ -320,7 +317,7 @@ where
     /// The bigger the `time` parameter, the slower the scrolling speed. Does not affect manual
     /// scrolling speed.
     pub fn scroll_time(mut self, time: u32) -> Self {
-        self.fields.scroll_time(time);
+        self.fields.set_scroll_time(time);
         self
     }
 }

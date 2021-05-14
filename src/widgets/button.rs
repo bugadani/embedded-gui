@@ -32,14 +32,12 @@ where
         self
     }
 
-    pub fn set_active(&mut self, active: bool) -> &mut Self {
+    pub fn set_active(&mut self, active: bool) {
         if active {
             self.change_state(Button::STATE_ACTIVE);
         } else {
             self.change_state(Button::STATE_INACTIVE);
         }
-
-        self
     }
 }
 
@@ -116,9 +114,8 @@ where
         self
     }
 
-    pub fn set_active(&mut self, active: bool) -> &mut Self {
+    pub fn set_active(&mut self, active: bool) {
         self.fields.set_active(active);
-        self
     }
 
     pub fn on_data_changed(mut self, callback: fn(&mut ButtonFields<W, D::Data>, &D::Data)) -> Self

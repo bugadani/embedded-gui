@@ -10,13 +10,13 @@ use crate::{
 pub trait CheckBoxProperties {
     type Color;
 
-    fn set_background_color(&mut self, color: Self::Color) -> &mut Self;
+    fn set_background_color(&mut self, color: Self::Color);
 
-    fn set_border_color(&mut self, color: Self::Color) -> &mut Self;
+    fn set_border_color(&mut self, color: Self::Color);
 
-    fn set_check_mark_color(&mut self, color: Self::Color) -> &mut Self;
+    fn set_check_mark_color(&mut self, color: Self::Color);
 
-    fn set_checked(&mut self, checked: bool) -> &mut Self;
+    fn set_checked(&mut self, checked: bool);
 
     fn measure(&self, spec: MeasureSpec) -> MeasuredSize;
 }
@@ -52,9 +52,8 @@ where
         self
     }
 
-    pub fn set_background_color(&mut self, color: P::Color) -> &mut Self {
+    pub fn set_background_color(&mut self, color: P::Color) {
         self.checkbox_properties.set_background_color(color);
-        self
     }
 
     pub fn border_color(mut self, color: P::Color) -> Self {
@@ -62,9 +61,8 @@ where
         self
     }
 
-    pub fn set_border_color(&mut self, color: P::Color) -> &mut Self {
+    pub fn set_border_color(&mut self, color: P::Color) {
         self.checkbox_properties.set_border_color(color);
-        self
     }
 
     pub fn check_mark_color(mut self, color: P::Color) -> Self {
@@ -72,9 +70,8 @@ where
         self
     }
 
-    pub fn set_check_mark_color(&mut self, color: P::Color) -> &mut Self {
+    pub fn set_check_mark_color(&mut self, color: P::Color) {
         self.checkbox_properties.set_check_mark_color(color);
-        self
     }
 
     pub fn checked(mut self, checked: bool) -> Self {
@@ -82,9 +79,8 @@ where
         self
     }
 
-    pub fn set_checked(&mut self, checked: bool) -> &mut Self {
+    pub fn set_checked(&mut self, checked: bool) {
         self.checkbox_properties.set_checked(checked);
-        self
     }
 
     pub fn on_state_changed(mut self, callback: fn(&mut Self, WidgetState)) -> Self {

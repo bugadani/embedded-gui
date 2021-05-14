@@ -137,9 +137,7 @@ fn button_with_style<W: Widget>(
 fn main() {
     let display = SimulatorDisplay::new(EgSize::new(128, 64));
 
-    let flag = BoundData::new(true, |data| {
-        println!("Data changed to {:?}", data);
-    });
+    let flag = BoundData::new(true, |data| println!("Data changed to {:?}", data));
 
     let mut gui = Window::new(
         EgCanvas::new(display),
@@ -154,9 +152,7 @@ fn main() {
             .add(
                 Spacing::new(
                     button_with_style(Label::new("Click me").bind(&flag).on_data_changed(
-                        |widget, data| {
-                            widget.text = if *data { "on" } else { "off" };
-                        },
+                        |widget, data| widget.text = if *data { "on" } else { "off" },
                     ))
                     .bind(&flag)
                     .on_clicked(|data| {
