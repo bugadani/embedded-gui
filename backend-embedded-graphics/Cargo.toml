@@ -7,4 +7,3 @@ edition = "2018"
 [dependencies]
 embedded-graphics = "0.7.0-beta.1"
 embedded-gui = { path = ".." }
-heapless = "0.6"

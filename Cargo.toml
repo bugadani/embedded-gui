@@ -13,9 +13,9 @@ members = [
 
 [dependencies]
 object-chain = "0.1"
-heapless = "0.6"
 
 [dev-dependencies]
+heapless = "0.7"
 backend-embedded-graphics = {path = "backend-embedded-graphics"}
 embedded-graphics = "0.7.0-beta.1"
 embedded-graphics-simulator = "0.3.0-alpha.2"
