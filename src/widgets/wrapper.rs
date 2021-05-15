@@ -1,6 +1,6 @@
 use crate::{
     data::WidgetData,
-    geometry::{measurement::MeasureSpec, BoundingBox},
+    geometry::{measurement::MeasureSpec, BoundingBox, Position},
     state::WidgetState,
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
     Canvas, WidgetRenderer,
@@ -64,6 +64,10 @@ where
     W: Widget,
     D: WidgetData,
 {
+    fn arrange(&mut self, position: Position) {
+        self.widget.arrange(position);
+    }
+
     fn bounding_box(&self) -> BoundingBox {
         self.widget.bounding_box()
     }

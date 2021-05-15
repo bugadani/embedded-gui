@@ -20,7 +20,7 @@ use embedded_gui::{
     widgets::{
         label::Label,
         layouts::linear::{column::Column, row::Row},
-        primitives::{border::Border, fill::FillParent, spacing::Spacing},
+        primitives::{border::Border, fill::FillParent, spacing::Spacing, visibility::Visibility},
         textbox::TextBox,
     },
     Window,
@@ -185,11 +185,16 @@ fn main() {
                         .top(1),
                     ),
                 )
-                .add(Border::new(
-                    TextBox::new("Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically")
-                        .horizontal_alignment(CenterAligned)
-                        .vertical_alignment(CenterAligned),
-                ))
+                .add(
+                    Visibility::new(
+                        Border::new(
+                            TextBox::new("Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically")
+                                .horizontal_alignment(CenterAligned)
+                                .vertical_alignment(CenterAligned),
+                        )
+                    ).bind(&checkbox)
+                    .on_data_changed(|widget, data| widget.set_visible(*data))
+                )
                 .weight(1) // Nothing else is weighted so this takes up all remaining space
                 .add(
                     DefaultTheme::primary_button("Reset")
