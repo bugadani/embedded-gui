@@ -2,8 +2,8 @@ use std::{fmt::Write, thread, time::Duration};
 
 use backend_embedded_graphics::{
     themes::{default::DefaultTheme, Theme},
-    widgets::label::ascii::LabelConstructor,
-    widgets::textbox::ascii::TextBoxConstructor,
+    widgets::textbox::{ascii::TextBoxConstructor, TextBoxStyling},
+    widgets::{label::ascii::LabelConstructor, textbox::CenterAligned},
     EgCanvas,
 };
 use embedded_graphics::{
@@ -185,9 +185,12 @@ fn main() {
                         .top(1),
                     ),
                 )
-                .add(Border::new(TextBox::new(
-                    "Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically",
-                )))
+                .add(Border::new(
+                    TextBox::new("Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically")
+                        .horizontal_alignment(CenterAligned)
+                        .vertical_alignment(CenterAligned),
+                ))
+                .weight(1) // Nothing else is weighted so this takes up all remaining space
                 .add(
                     DefaultTheme::primary_button("Reset")
                         .bind(&everything)
