@@ -76,7 +76,7 @@ where
     }
 
     fn bounding_box_mut(&mut self) -> &mut BoundingBox {
-        self.widget.bounding_box_mut()
+        unimplemented!()
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
