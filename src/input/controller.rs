@@ -4,7 +4,16 @@ pub trait InputController {
     fn input_event(&mut self, root: &mut impl Widget, event: InputEvent);
 }
 
-pub struct InputContext {}
+pub struct InputContext {
+    bubbled: bool,
+}
+
+impl InputContext {
+    /// Returns whether the input event is bubbled.
+    pub fn is_bubbled(&self) -> bool {
+        self.bubbled
+    }
+}
 
 pub struct DefaultInputController {
     last_handler: Option<usize>,
@@ -46,12 +55,12 @@ impl InputController for DefaultInputController {
             let mut handler = orig_handler;
             loop {
                 let widget = self.get_mut_widget(root, handler);
-                let context = InputContext {};
+                let context = InputContext { bubbled: false };
                 if widget.handle_input(context, event) {
                     if handler != orig_handler {
                         // parent handled a bubbled event, should notify child somehow
                         let widget = self.get_mut_widget(root, orig_handler);
-                        let context = InputContext {};
+                        let context = InputContext { bubbled: true };
                         widget.handle_input(context, InputEvent::Cancel);
                     }
                     break;
