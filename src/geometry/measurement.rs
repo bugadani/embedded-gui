@@ -39,6 +39,11 @@ impl MeasureConstraint {
             MeasureConstraint::Unspecified => None,
         }
     }
+
+    /// Returns `true` if the measure_constraint is [`Exactly`].
+    pub fn is_exact(&self) -> bool {
+        matches!(self, Self::Exactly(..))
+    }
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -60,5 +65,9 @@ impl MeasureSpec {
             width: MeasureConstraint::Exactly(width),
             height: MeasureConstraint::Exactly(height),
         }
+    }
+
+    pub fn is_exact(&self) -> bool {
+        self.width.is_exact() && self.height.is_exact()
     }
 }
