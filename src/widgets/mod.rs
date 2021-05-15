@@ -125,5 +125,5 @@ pub trait UpdateHandler {
 pub trait ParentHolder {
     fn parent_index(&self) -> usize;
 
-    fn set_parent(&mut self, index: usize);
+    fn set_parent(&mut self, _index: usize) {}
 }

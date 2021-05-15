@@ -160,8 +160,7 @@ fn main() {
                         println!("Clicked!");
                     }),
                 )
-                .all(4)
-                .bind(&flag),
+                .all(4),
             ),
     );
 

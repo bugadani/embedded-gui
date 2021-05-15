@@ -18,7 +18,6 @@ pub struct SpacingSpec {
 pub struct Spacing<W> {
     pub inner: W,
     pub spacing: SpacingSpec,
-    pub parent_index: usize,
     pub on_state_changed: fn(&mut Self, WidgetState),
 }
 
@@ -28,7 +27,6 @@ where
 {
     pub fn new(inner: W) -> Spacing<W> {
         Spacing {
-            parent_index: 0,
             spacing: SpacingSpec::default(),
             inner,
             on_state_changed: |_, _| (),
@@ -121,8 +119,7 @@ where
     W: Widget,
 {
     fn attach(&mut self, parent: usize, self_index: usize) {
-        self.set_parent(parent);
-        self.inner.attach(self_index, self_index + 1);
+        self.inner.attach(parent, self_index);
     }
 
     fn arrange(&mut self, position: Position) {
@@ -203,11 +200,7 @@ where
     W: Widget,
 {
     fn parent_index(&self) -> usize {
-        self.parent_index
-    }
-
-    fn set_parent(&mut self, index: usize) {
-        self.parent_index = index;
+        self.inner.parent_index()
     }
 }
 

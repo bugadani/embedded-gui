@@ -20,7 +20,6 @@ where
 {
     pub inner: W,
     pub border_properties: P,
-    pub parent_index: usize,
     pub on_state_changed: fn(&mut Self, WidgetState),
 }
 
@@ -34,7 +33,6 @@ where
         P: Default,
     {
         Border {
-            parent_index: 0,
             border_properties: P::default(),
             inner,
             on_state_changed: |_, _| (),
@@ -92,8 +90,7 @@ where
     P: BorderProperties,
 {
     fn attach(&mut self, parent: usize, self_index: usize) {
-        self.set_parent(parent);
-        self.inner.attach(self_index, self_index + 1);
+        self.inner.attach(parent, self_index);
     }
 
     fn arrange(&mut self, position: Position) {
@@ -176,11 +173,7 @@ where
     P: BorderProperties,
 {
     fn parent_index(&self) -> usize {
-        self.parent_index
-    }
-
-    fn set_parent(&mut self, index: usize) {
-        self.parent_index = index;
+        self.inner.parent_index()
     }
 }
 
