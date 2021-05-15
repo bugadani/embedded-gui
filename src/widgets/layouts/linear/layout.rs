@@ -326,7 +326,14 @@ where
     }
 }
 
-impl<CE, L> UpdateHandler for LinearLayout<CE, L> {}
+impl<CE, L> UpdateHandler for LinearLayout<CE, L>
+where
+    CE: LinearLayoutChainElement,
+{
+    fn update(&mut self) {
+        self.widgets.update();
+    }
+}
 
 impl<C, CE, L> WidgetRenderer<C> for LinearLayout<CE, L>
 where

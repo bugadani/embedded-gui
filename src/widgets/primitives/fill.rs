@@ -288,6 +288,9 @@ where
     H: HorizontalAlignment,
     V: VerticalAlignment,
 {
+    fn update(&mut self) {
+        self.inner.update();
+    }
 }
 
 impl<C, W, FD, H, V> WidgetRenderer<C> for FillParent<W, FD, H, V>

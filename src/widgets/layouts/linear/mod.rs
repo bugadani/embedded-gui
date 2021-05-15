@@ -137,6 +137,8 @@ pub trait LinearLayoutChainElement {
         L: LayoutDirection;
 
     fn on_state_changed(&mut self, state: WidgetState);
+
+    fn update(&mut self);
 }
 
 impl<W, CW> LinearLayoutChainElement for Chain<Cell<W, CW>>
@@ -175,6 +177,10 @@ where
 
     fn on_state_changed(&mut self, state: WidgetState) {
         self.object.inner.on_state_changed(state);
+    }
+
+    fn update(&mut self) {
+        self.object.inner.update();
     }
 }
 
@@ -227,6 +233,11 @@ where
     fn on_state_changed(&mut self, state: WidgetState) {
         self.object.inner.on_state_changed(state);
         self.parent.on_state_changed(state);
+    }
+
+    fn update(&mut self) {
+        self.object.inner.update();
+        self.parent.update();
     }
 }
 

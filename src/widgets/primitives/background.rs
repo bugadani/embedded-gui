@@ -141,7 +141,9 @@ where
     W: Widget,
     P: BackgroundProperties,
 {
-    fn update(&mut self) {}
+    fn update(&mut self) {
+        self.inner.update();
+    }
 }
 
 impl<W, P> ParentHolder for Background<W, P>

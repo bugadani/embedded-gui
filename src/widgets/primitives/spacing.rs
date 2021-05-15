@@ -193,7 +193,9 @@ impl<W> UpdateHandler for Spacing<W>
 where
     W: Widget,
 {
-    fn update(&mut self) {}
+    fn update(&mut self) {
+        self.inner.update();
+    }
 }
 
 impl<W> ParentHolder for Spacing<W>

@@ -363,6 +363,7 @@ where
 {
     fn update(&mut self) {
         self.data_holder.update(&mut self.fields);
+        self.fields.inner.update();
     }
 }
 

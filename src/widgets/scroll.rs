@@ -654,6 +654,7 @@ where
 {
     fn update(&mut self) {
         self.data_holder.update(&mut self.fields);
+        self.fields.inner.update();
 
         if let Some(target) = self.fields.offset_target {
             let current_offset = SD::AxisOrder::main_axis(

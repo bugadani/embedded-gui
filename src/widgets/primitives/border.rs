@@ -165,7 +165,9 @@ where
     W: Widget,
     P: BorderProperties,
 {
-    fn update(&mut self) {}
+    fn update(&mut self) {
+        self.inner.update();
+    }
 }
 
 impl<W, P> ParentHolder for Border<W, P>

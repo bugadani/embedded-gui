@@ -133,7 +133,9 @@ impl<W> UpdateHandler for Visibility<W>
 where
     W: Widget,
 {
-    fn update(&mut self) {}
+    fn update(&mut self) {
+        self.inner.update();
+    }
 }
 
 impl<W> ParentHolder for Visibility<W>
