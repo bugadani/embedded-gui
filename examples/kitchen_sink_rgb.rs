@@ -2,13 +2,14 @@ use std::{fmt::Write, thread, time::Duration};
 
 use backend_embedded_graphics::{
     themes::{default::DefaultTheme, Theme},
-    widgets::label::{ascii::LabelConstructor, LabelStyling},
+    widgets::label::ascii::LabelConstructor,
+    widgets::textbox::ascii::TextBoxConstructor,
     EgCanvas,
 };
 use embedded_graphics::{
     draw_target::DrawTarget,
-    pixelcolor::{Rgb888, RgbColor},
-    prelude::Size as EgSize,
+    pixelcolor::Rgb888,
+    prelude::{Size as EgSize, WebColors},
 };
 use embedded_graphics_simulator::{
     sdl2::MouseButton, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window as SimWindow,
@@ -20,7 +21,8 @@ use embedded_gui::{
     widgets::{
         label::Label,
         layouts::linear::{column::Column, row::Row},
-        primitives::{fill::FillParent, spacing::Spacing},
+        primitives::{border::Border, fill::FillParent, spacing::Spacing},
+        textbox::TextBox,
     },
     Window,
 };
@@ -83,7 +85,7 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
 }
 
 fn main() {
-    let display = SimulatorDisplay::new(EgSize::new(192, 160));
+    let display = SimulatorDisplay::new(EgSize::new(192, 180));
 
     let radio = BoundData::new(0, |_| ());
     let checkbox = BoundData::new(false, |_| ());
@@ -96,7 +98,7 @@ fn main() {
         Spacing::new(
             Column::new()
                 .spacing(1)
-                .add(Label::new("Checkboxes and radio buttons").text_color(Rgb888::BLACK))
+                .add(Label::new("Checkboxes and radio buttons"))
                 .add(
                     DefaultTheme::check_box("Check me")
                         .bind(&checkbox)
@@ -183,6 +185,10 @@ fn main() {
                         )
                         .top(1),
                     ),
+                )
+                .add(
+                    Border::new(TextBox::new("Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically"))
+                        .border_color(Rgb888::CSS_LIGHT_GRAY),
                 )
                 .add(
                     DefaultTheme::primary_button("Reset")

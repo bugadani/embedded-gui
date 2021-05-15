@@ -2,13 +2,13 @@ use std::{fmt::Write, thread, time::Duration};
 
 use backend_embedded_graphics::{
     themes::{default::DefaultTheme, Theme},
-    widgets::label::{ascii::LabelConstructor, LabelStyling, MonoFontLabelStyling},
+    widgets::label::{ascii::LabelConstructor, MonoFontLabelStyling},
     EgCanvas,
 };
 use embedded_graphics::{
     draw_target::DrawTarget,
     mono_font::ascii::FONT_10X20,
-    pixelcolor::{Rgb888, RgbColor, WebColors},
+    pixelcolor::{Rgb888, WebColors},
     prelude::Size as EgSize,
 };
 use embedded_graphics_simulator::{
@@ -235,7 +235,6 @@ fn main() {
                         FillParent::horizontal(
                             Label::new(String::<11>::from("0"))
                                 .font(&FONT_10X20)
-                                .text_color(Rgb888::BLACK)
                                 .bind(&calculator)
                                 .on_data_changed(|label, calc| {
                                     label.text.clear();

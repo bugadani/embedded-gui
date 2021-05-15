@@ -3,6 +3,7 @@ use std::{fmt::Write, thread, time::Duration};
 use backend_embedded_graphics::{
     themes::{default::DefaultTheme, Theme},
     widgets::label::ascii::LabelConstructor,
+    widgets::textbox::ascii::TextBoxConstructor,
     EgCanvas,
 };
 use embedded_graphics::{
@@ -19,7 +20,8 @@ use embedded_gui::{
     widgets::{
         label::Label,
         layouts::linear::{column::Column, row::Row},
-        primitives::{fill::FillParent, spacing::Spacing},
+        primitives::{border::Border, fill::FillParent, spacing::Spacing},
+        textbox::TextBox,
     },
     Window,
 };
@@ -82,7 +84,7 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
 }
 
 fn main() {
-    let display = SimulatorDisplay::new(EgSize::new(192, 160));
+    let display = SimulatorDisplay::new(EgSize::new(192, 180));
 
     let radio = BoundData::new(0, |_| ());
     let checkbox = BoundData::new(false, |_| ());
@@ -183,6 +185,9 @@ fn main() {
                         .top(1),
                     ),
                 )
+                .add(Border::new(TextBox::new(
+                    "Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically",
+                )))
                 .add(
                     DefaultTheme::primary_button("Reset")
                         .bind(&everything)
