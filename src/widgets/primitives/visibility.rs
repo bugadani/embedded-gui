@@ -121,8 +121,12 @@ where
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
-        // We just relay whatever the child desires
-        self.inner.test_input(event).map(|i| i + 1)
+        if self.visibility {
+            // We just relay whatever the child desires
+            self.inner.test_input(event).map(|i| i + 1)
+        } else {
+            None
+        }
     }
 }
 

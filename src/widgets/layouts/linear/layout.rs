@@ -210,9 +210,7 @@ where
             let weight = cell.weight();
             if weight == 0 {
                 let spec = L::create_measure_spec(
-                    MeasureConstraint::AtMost(
-                        max_main_axis_size.saturating_sub(total_fixed_main_axis_size),
-                    ),
+                    MeasureConstraint::AtMost(max_main_axis_size - total_fixed_main_axis_size),
                     L::cross_axis_measure_spec(measure_spec),
                 );
 
