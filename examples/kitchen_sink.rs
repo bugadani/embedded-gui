@@ -88,6 +88,7 @@ fn main() {
 
     let radio = BoundData::new(0, |_| ());
     let checkbox = BoundData::new(false, |_| ());
+    let toggle = BoundData::new(false, |_| ());
     let slider1_data = BoundData::new(0, |_| ());
     let slider2_data = BoundData::new(0, |_| ());
     let everything = BoundData::new((&radio, &slider1_data, &slider2_data, &checkbox), |_| ());
@@ -127,6 +128,17 @@ fn main() {
                         .bind(&radio)
                         .on_selected_changed(|_, data| *data = 1)
                         .on_data_changed(|radio, data| radio.set_checked(*data == 1)),
+                )
+                .add(
+                    DefaultTheme::toggle_button("Click me!")
+                        .bind(&toggle)
+                        .on_selected_changed(|selected, data| *data = selected)
+                        .on_data_changed(|toggle, data| toggle.set_checked(*data)),
+                )
+                .add(
+                    Visibility::new(Label::new("Toggle checked"))
+                        .bind(&toggle)
+                        .on_data_changed(|widget, data| widget.set_visible(*data)),
                 )
                 .add(Spacing::new(Label::new("Numeric sliders")).top(4))
                 .add(

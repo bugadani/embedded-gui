@@ -35,6 +35,11 @@ use crate::themes::{
             binary_color::SliderStyle, rgb::SliderStyle as RgbSliderStyle, slider,
             SliderVisualStyle, StyledSlider,
         },
+        toggle_button::{
+            binary_color::ToggleButtonStyle, rgb::ToggleButtonStyle as RgbToggleButtonStyle,
+            styled_toggle_button, styled_toggle_button_stretched, StyledToggleButton,
+            StyledToggleButtonStretched, ToggleButtonStyle as ToggleButtonStyleTrait,
+        },
     },
     Theme,
 };
@@ -46,10 +51,12 @@ pub mod check_box;
 pub mod radio_button;
 pub mod scrollbar;
 pub mod slider;
+pub mod toggle_button;
 
 pub trait DefaultTheme: Theme {
     type PrimaryButton: ButtonStyle<Self>;
     type SecondaryButton: ButtonStyle<Self>;
+    type ToggleButton: ToggleButtonStyleTrait<Self>;
 
     type CheckBox: CheckBoxVisualStyle<Self>;
     type RadioButton: RadioButtonVisualStyle<Self>;
@@ -72,6 +79,14 @@ pub trait DefaultTheme: Theme {
 
     fn secondary_button_stretched(label: &'static str) -> StyledButtonStretched<Self> {
         styled_button_stretched::<Self, Self::SecondaryButton>(label)
+    }
+
+    fn toggle_button(label: &'static str) -> StyledToggleButton<Self> {
+        styled_toggle_button::<Self, Self::ToggleButton>(label)
+    }
+
+    fn toggle_button_stretched(label: &'static str) -> StyledToggleButtonStretched<Self> {
+        styled_toggle_button_stretched::<Self, Self::ToggleButton>(label)
     }
 
     fn check_box(label: &'static str) -> StyledCheckBox<Self> {
@@ -104,6 +119,7 @@ impl Theme for BinaryColor {
 impl DefaultTheme for BinaryColor {
     type PrimaryButton = PrimaryButtonStyle;
     type SecondaryButton = SecondaryButtonStyle;
+    type ToggleButton = ToggleButtonStyle;
 
     type CheckBox = CheckBoxStyle;
     type RadioButton = RadioButtonStyle;
@@ -123,6 +139,7 @@ macro_rules! impl_rgb_default_theme {
         impl DefaultTheme for $type {
             type PrimaryButton = RgbPrimaryButtonStyle<Self>;
             type SecondaryButton = RgbSecondaryButtonStyle<Self>;
+            type ToggleButton = RgbToggleButtonStyle<Self>;
 
             type CheckBox = RgbCheckBoxStyle<Self>;
             type RadioButton = RgbRadioButtonStyle<Self>;
