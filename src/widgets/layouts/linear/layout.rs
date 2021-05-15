@@ -155,7 +155,7 @@ where
     fn attach(&mut self, parent: usize, index: usize) {
         self.set_parent(parent);
 
-        let mut children = 0;
+        let mut children = index;
 
         for i in 0..self.widgets.len() {
             let widget = self.widgets.at_mut(i).widget_mut();
@@ -326,7 +326,14 @@ where
     }
 }
 
-impl<CE, L> UpdateHandler for LinearLayout<CE, L> {}
+impl<CE, L> UpdateHandler for LinearLayout<CE, L>
+where
+    CE: LinearLayoutChainElement,
+{
+    fn update(&mut self) {
+        self.widgets.update();
+    }
+}
 
 impl<C, CE, L> WidgetRenderer<C> for LinearLayout<CE, L>
 where

@@ -18,7 +18,6 @@ where
 {
     pub inner: W,
     pub background_properties: P,
-    pub parent_index: usize,
     pub on_state_changed: fn(&mut Self, WidgetState),
 }
 
@@ -32,7 +31,6 @@ where
         P: Default,
     {
         Background {
-            parent_index: 0,
             background_properties: P::default(),
             inner,
             on_state_changed: |_, _| (),
@@ -90,8 +88,7 @@ where
     P: BackgroundProperties,
 {
     fn attach(&mut self, parent: usize, self_index: usize) {
-        self.set_parent(parent);
-        self.inner.attach(self_index, self_index + 1);
+        self.inner.attach(parent, self_index);
     }
 
     fn arrange(&mut self, position: Position) {
@@ -141,7 +138,9 @@ where
     W: Widget,
     P: BackgroundProperties,
 {
-    fn update(&mut self) {}
+    fn update(&mut self) {
+        self.inner.update();
+    }
 }
 
 impl<W, P> ParentHolder for Background<W, P>
@@ -150,11 +149,7 @@ where
     P: BackgroundProperties,
 {
     fn parent_index(&self) -> usize {
-        self.parent_index
-    }
-
-    fn set_parent(&mut self, index: usize) {
-        self.parent_index = index;
+        self.inner.parent_index()
     }
 }
 
