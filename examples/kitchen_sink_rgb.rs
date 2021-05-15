@@ -96,13 +96,16 @@ enum Page {
 fn main() {
     let display = SimulatorDisplay::new(EgSize::new(192, 180));
 
-    let radio = BoundData::new(0, |_| ());
     let page = BoundData::new(Page::Textbox, |_| ());
+
+    let radio = BoundData::new(0, |_| ());
     let checkbox = BoundData::new(false, |_| ());
     let toggle = BoundData::new(false, |_| ());
+    let checkables = BoundData::new((&radio, &checkbox, &toggle), |_| ());
+
     let slider1_data = BoundData::new(0, |_| ());
     let slider2_data = BoundData::new(0, |_| ());
-    let everything = BoundData::new((&radio, &slider1_data, &slider2_data, &checkbox), |_| ());
+    let sliders = BoundData::new((&slider1_data, &slider2_data), |_| ());
 
     let mut gui = Window::new(
         EgCanvas::new(display),
@@ -131,70 +134,81 @@ fn main() {
                             .on_selected_changed(|_, page| *page = Page::Slider)
                             .on_data_changed(|toggle, data| toggle.set_checked(*data == Page::Slider))
                     ),
-            )
-            .add(
-                Visibility::new(Border::new(FillParent::both(
-                        TextBox::new(
-                            "Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically",
-                        )
-                        .horizontal_alignment(CenterAligned)
-                        .vertical_alignment(CenterAligned),
-                    ))
-                    .border_color(Rgb888::CSS_LIGHT_GRAY)
                 )
-                .bind(&page)
-                .on_data_changed(|widget, page| widget.set_visible(*page == Page::Textbox)),
-            )
-            .weight(1)
-            .add(
-                Visibility::new(
-                    Column::new()
-                        .spacing(1)
-                        .add(Label::new("Checkboxes and radio buttons"))
-                        .add(
-                            DefaultTheme::check_box("Check me")
-                                .bind(&checkbox)
-                                .on_selected_changed(|checked, data| *data = checked),
-                        )
-                        .add(
-                            DefaultTheme::check_box("Inactive")
-                                .bind(&checkbox)
-                                .active(false)
-                                .on_data_changed(|checkbox, data| checkbox.set_checked(*data)),
-                        )
-                        .add(
-                            DefaultTheme::radio_button("Can't select me")
-                                .bind(&radio)
-                                .on_selected_changed(|_, data| *data = 0)
-                                .on_data_changed(|radio, data| radio.set_checked(*data == 0))
-                                .active(false),
-                        )
-                        .add(
-                            DefaultTheme::radio_button("Select me")
-                                .bind(&radio)
-                                .on_selected_changed(|_, data| *data = 0)
-                                .on_data_changed(|radio, data| radio.set_checked(*data == 0)),
-                        )
-                        .add(
-                            DefaultTheme::radio_button("... or me!")
-                                .bind(&radio)
-                                .on_selected_changed(|_, data| *data = 1)
-                                .on_data_changed(|radio, data| radio.set_checked(*data == 1)),
-                        )
-                        .add(
-                            DefaultTheme::toggle_button("Click me!")
-                                .bind(&toggle)
-                                .on_selected_changed(|selected, data| *data = selected)
-                                .on_data_changed(|toggle, data| toggle.set_checked(*data)),
-                        )
-                        .add(
-                            Visibility::new(Label::new("Toggle checked"))
-                                .bind(&toggle)
-                                .on_data_changed(|widget, data| widget.set_visible(*data)),
-                        )
+                .add(
+                    Visibility::new(
+                        Border::new(
+                            FillParent::both(TextBox::new(
+                                "Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically",
+                            )
+                            .horizontal_alignment(CenterAligned)
+                            .vertical_alignment(CenterAligned),
+                        ))
+                        .border_color(Rgb888::CSS_LIGHT_GRAY)
                     )
                     .bind(&page)
-                    .on_data_changed(|widget, page| widget.set_visible(*page == Page::Checkable))
+                    .on_data_changed(|widget, page| widget.set_visible(*page == Page::Textbox)),
+                )
+                .weight(1)
+                .add(
+                    Visibility::new(
+                        Column::new()
+                            .spacing(1)
+                            .add(Label::new("Checkboxes and radio buttons"))
+                            .add(
+                                DefaultTheme::check_box("Check me")
+                                    .bind(&checkbox)
+                                    .on_selected_changed(|checked, data| *data = checked)
+                                    .on_data_changed(|checkbox, data| checkbox.set_checked(*data)),
+                            )
+                            .add(
+                                DefaultTheme::check_box("Inactive")
+                                    .bind(&checkbox)
+                                    .active(false)
+                                    .on_data_changed(|checkbox, data| checkbox.set_checked(*data)),
+                            )
+                            .add(
+                                DefaultTheme::radio_button("Can't select me")
+                                    .bind(&radio)
+                                    .on_selected_changed(|_, data| *data = 0)
+                                    .on_data_changed(|radio, data| radio.set_checked(*data == 0))
+                                    .active(false),
+                            )
+                            .add(
+                                DefaultTheme::radio_button("Select me")
+                                    .bind(&radio)
+                                    .on_selected_changed(|_, data| *data = 0)
+                                    .on_data_changed(|radio, data| radio.set_checked(*data == 0)),
+                            )
+                            .add(
+                                DefaultTheme::radio_button("... or me!")
+                                    .bind(&radio)
+                                    .on_selected_changed(|_, data| *data = 1)
+                                    .on_data_changed(|radio, data| radio.set_checked(*data == 1)),
+                            )
+                            .add(
+                                DefaultTheme::toggle_button("Click me!")
+                                    .bind(&toggle)
+                                    .on_selected_changed(|selected, data| *data = selected)
+                                    .on_data_changed(|toggle, data| toggle.set_checked(*data)),
+                            )
+                            .add(
+                                Visibility::new(Label::new("Toggle checked"))
+                                    .bind(&toggle)
+                                    .on_data_changed(|widget, data| widget.set_visible(*data)),
+                            )
+                            .add(
+                                DefaultTheme::primary_button("Reset")
+                                    .bind(&checkables)
+                                    .on_clicked(|data| {
+                                        data.0.update(|data| *data = 0);
+                                        data.1.update(|data| *data = false);
+                                        data.2.update(|data| *data = false);
+                                    }),
+                            ),
+                    )
+                    .bind(&page)
+                    .on_data_changed(|widget, page| widget.set_visible(*page == Page::Checkable)),
                 )
                 .add(
                     Visibility::new(
@@ -256,25 +270,25 @@ fn main() {
                                             .set_active(false)
                                             .bind(&slider2_data)
                                             .on_value_changed(|data, value| *data = value)
-                                            .on_data_changed(|slider, data| slider.set_value(*data)),
+                                            .on_data_changed(|slider, data| {
+                                                slider.set_value(*data)
+                                            }),
                                     )
                                     .top(1),
                                 ),
+                            )
+                            .add(
+                                DefaultTheme::primary_button("Reset")
+                                    .bind(&sliders)
+                                    .on_clicked(|data| {
+                                        data.0.update(|data| *data = 0);
+                                        data.1.update(|data| *data = 0);
+                                    }),
                             ),
-                        )
+                    )
                     .bind(&page)
                     .on_data_changed(|widget, page| widget.set_visible(*page == Page::Slider)),
-                )
-                .add(
-                    DefaultTheme::primary_button("Reset")
-                        .bind(&everything)
-                        .on_clicked(|data| {
-                            data.0.update(|data| *data = 0);
-                            data.1.update(|data| *data = 0);
-                            data.2.update(|data| *data = 0);
-                            data.3.update(|data| *data = false);
-                        }),
-                )
+                ),
         )
         .all(2),
     );
