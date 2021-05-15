@@ -1,6 +1,7 @@
 use crate::{
     data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, Position},
+    input::event::InputEvent,
     state::WidgetState,
     widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
     Canvas, WidgetRenderer,
@@ -54,9 +55,7 @@ where
         self.widget.parent_index()
     }
 
-    fn set_parent(&mut self, index: usize) {
-        self.widget.set_parent(index);
-    }
+    fn set_parent(&mut self, _index: usize) {}
 }
 
 impl<W, D> Widget for Wrapper<W, D>
@@ -64,6 +63,10 @@ where
     W: Widget,
     D: WidgetData,
 {
+    fn attach(&mut self, parent: usize, index: usize) {
+        self.widget.attach(parent, index);
+    }
+
     fn arrange(&mut self, position: Position) {
         self.widget.arrange(position);
     }
@@ -78,6 +81,22 @@ where
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
         self.widget.measure(measure_spec);
+    }
+
+    fn children(&self) -> usize {
+        self.widget.children()
+    }
+
+    fn get_child(&self, idx: usize) -> &dyn Widget {
+        self.widget.get_child(idx)
+    }
+
+    fn get_mut_child(&mut self, idx: usize) -> &mut dyn Widget {
+        self.widget.get_mut_child(idx)
+    }
+
+    fn test_input(&mut self, event: InputEvent) -> Option<usize> {
+        self.widget.test_input(event)
     }
 }
 
