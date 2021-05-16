@@ -72,13 +72,7 @@ where
     }
 }
 
-impl<S, P> UpdateHandler for Label<S, P>
-where
-    S: AsRef<str>,
-    P: LabelProperties,
-{
-    fn update(&mut self) {}
-}
+impl<S, P> UpdateHandler for Label<S, P> {}
 
 impl<S, P> ParentHolder for Label<S, P>
 where

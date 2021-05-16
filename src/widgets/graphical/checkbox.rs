@@ -126,12 +126,7 @@ where
     }
 }
 
-impl<P> UpdateHandler for CheckBox<P>
-where
-    P: CheckBoxProperties,
-{
-    fn update(&mut self) {}
-}
+impl<P> UpdateHandler for CheckBox<P> where P: CheckBoxProperties {}
 
 impl<P> ParentHolder for CheckBox<P>
 where

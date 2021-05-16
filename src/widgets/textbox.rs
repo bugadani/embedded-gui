@@ -74,13 +74,7 @@ where
     }
 }
 
-impl<S, P> UpdateHandler for TextBox<S, P>
-where
-    S: AsRef<str>,
-    P: TextBoxProperties,
-{
-    fn update(&mut self) {}
-}
+impl<S, P> UpdateHandler for TextBox<S, P> {}
 
 impl<S, P> ParentHolder for TextBox<S, P>
 where

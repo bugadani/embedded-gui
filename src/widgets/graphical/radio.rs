@@ -126,12 +126,7 @@ where
     }
 }
 
-impl<P> UpdateHandler for RadioButton<P>
-where
-    P: RadioButtonProperties,
-{
-    fn update(&mut self) {}
-}
+impl<P> UpdateHandler for RadioButton<P> where P: RadioButtonProperties {}
 
 impl<P> ParentHolder for RadioButton<P>
 where
