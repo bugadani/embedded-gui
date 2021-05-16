@@ -48,13 +48,13 @@ where
     W: Widget,
 {
     fn at(&self, index: usize) -> &dyn Widget {
-        assert!(index == 0);
+        debug_assert!(index == 0);
 
         &self.object
     }
 
     fn at_mut(&mut self, index: usize) -> &mut dyn Widget {
-        assert!(index == 0);
+        debug_assert!(index == 0);
 
         &mut self.object
     }

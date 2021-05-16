@@ -147,13 +147,13 @@ where
     CW: CellWeight,
 {
     fn at(&self, index: usize) -> &dyn LinearLayoutCell {
-        assert!(index == 0);
+        debug_assert!(index == 0);
 
         &self.object
     }
 
     fn at_mut(&mut self, index: usize) -> &mut dyn LinearLayoutCell {
-        assert!(index == 0);
+        debug_assert!(index == 0);
 
         &mut self.object
     }
