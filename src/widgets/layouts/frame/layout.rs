@@ -212,12 +212,11 @@ where
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
-        let size = self.widgets.measure(measure_spec);
-        self.set_measured_size(size);
+        self.bounds.size = self.widgets.measure(measure_spec);
     }
 
     fn arrange(&mut self, position: Position) {
-        self.bounding_box_mut().position = position;
+        self.bounds.position = position;
 
         self.widgets.arrange(position);
     }

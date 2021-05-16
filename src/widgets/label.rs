@@ -46,7 +46,7 @@ where
         let width = measure_spec.width.apply_to_measured(size.width);
         let height = measure_spec.height.apply_to_measured(size.height);
 
-        self.set_measured_size(MeasuredSize { width, height })
+        self.bounds.size = MeasuredSize { width, height };
     }
 
     fn parent_index(&self) -> usize {

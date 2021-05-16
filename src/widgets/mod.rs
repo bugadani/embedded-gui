@@ -1,6 +1,6 @@
 use crate::{
     data::WidgetData,
-    geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
+    geometry::{measurement::MeasureSpec, BoundingBox, Position},
     input::{controller::InputContext, event::InputEvent},
     state::WidgetState,
 };
@@ -14,6 +14,7 @@ pub mod scroll;
 pub mod slider;
 pub mod textbox;
 pub mod toggle;
+pub mod utils;
 pub mod wrapper;
 
 pub trait Widget {
@@ -27,7 +28,9 @@ pub trait Widget {
 
     fn bounding_box(&self) -> BoundingBox;
 
-    fn bounding_box_mut(&mut self) -> &mut BoundingBox;
+    fn bounding_box_mut(&mut self) -> &mut BoundingBox {
+        unimplemented!()
+    }
 
     fn children(&self) -> usize {
         0
@@ -51,10 +54,6 @@ pub trait Widget {
         self.bounding_box_mut().position = position;
     }
 
-    fn set_measured_size(&mut self, size: MeasuredSize) {
-        self.bounding_box_mut().size = size;
-    }
-
     fn update(&mut self) {}
 
     fn parent_index(&self) -> usize;
@@ -72,7 +71,7 @@ pub trait Widget {
     fn on_state_changed(&mut self, state: WidgetState);
 
     fn is_selectable(&self) -> bool {
-        true
+        false
     }
 }
 

@@ -193,10 +193,10 @@ where
                 total_fixed_main_axis_size += (count as u32 - 1) * self.direction.element_spacing();
 
                 // TODO this is almost the same as the bottom of the function. Should deduplicate.
-                self.set_measured_size(L::create_measured_size(
+                self.bounds.size = L::create_measured_size(
                     total_fixed_main_axis_size,
                     L::cross_axis_measure_spec(measure_spec).apply_to_measured(max_cross),
-                ));
+                );
 
                 return;
             }
@@ -259,18 +259,18 @@ where
             }
         }
 
-        self.set_measured_size(L::create_measured_size(
+        self.bounds.size = L::create_measured_size(
             if total_weight == 0 {
                 total_fixed_main_axis_size
             } else {
                 max_main_axis_size
             },
             L::cross_axis_measure_spec(measure_spec).apply_to_measured(max_cross),
-        ))
+        );
     }
 
     fn arrange(&mut self, position: Position) {
-        self.bounding_box_mut().position = position;
+        self.bounds.position = position;
 
         self.widgets
             .arrange(position, self.direction, self.direction.element_spacing());

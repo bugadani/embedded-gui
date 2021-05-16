@@ -1,9 +1,10 @@
 use crate::{
     data::WidgetData,
-    geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
+    geometry::{BoundingBox, MeasuredSize},
     input::event::InputEvent,
     state::WidgetState,
     widgets::{
+        utils::decorator::WidgetDecorator,
         wrapper::{Wrapper, WrapperBindable},
         Widget,
     },
@@ -64,16 +65,18 @@ where
     }
 }
 
-impl<W> Widget for Visibility<W>
+impl<W> WidgetDecorator for Visibility<W>
 where
     W: Widget,
 {
-    fn attach(&mut self, parent: usize, self_index: usize) {
-        self.inner.attach(parent, self_index);
+    type Widget = W;
+
+    fn widget(&self) -> &Self::Widget {
+        &self.inner
     }
 
-    fn arrange(&mut self, position: Position) {
-        self.inner.arrange(position);
+    fn widget_mut(&mut self) -> &mut Self::Widget {
+        &mut self.inner
     }
 
     fn bounding_box(&self) -> BoundingBox {
@@ -90,42 +93,6 @@ where
         }
     }
 
-    fn bounding_box_mut(&mut self) -> &mut BoundingBox {
-        unimplemented!()
-    }
-
-    fn measure(&mut self, measure_spec: MeasureSpec) {
-        self.inner.measure(measure_spec);
-    }
-
-    fn children(&self) -> usize {
-        1 + self.inner.children()
-    }
-
-    fn get_child(&self, idx: usize) -> &dyn Widget {
-        if idx == 0 {
-            &self.inner
-        } else {
-            self.inner.get_child(idx - 1)
-        }
-    }
-
-    fn get_mut_child(&mut self, idx: usize) -> &mut dyn Widget {
-        if idx == 0 {
-            &mut self.inner
-        } else {
-            self.inner.get_mut_child(idx - 1)
-        }
-    }
-
-    fn parent_index(&self) -> usize {
-        self.inner.parent_index()
-    }
-
-    fn update(&mut self) {
-        self.inner.update();
-    }
-
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
         if self.visibility {
             // We just relay whatever the child desires
@@ -133,15 +100,6 @@ where
         } else {
             None
         }
-    }
-
-    fn on_state_changed(&mut self, state: WidgetState) {
-        (self.on_state_changed)(self, state);
-        self.inner.on_state_changed(state);
-    }
-
-    fn is_selectable(&self) -> bool {
-        false
     }
 }
 

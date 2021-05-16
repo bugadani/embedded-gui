@@ -118,9 +118,7 @@ where
     }
 
     fn measure(&mut self, measure_spec: MeasureSpec) {
-        let size = self.radio_properties.measure(measure_spec);
-
-        self.set_measured_size(size)
+        self.bounds.size = self.radio_properties.measure(measure_spec);
     }
 
     fn parent_index(&self) -> usize {

@@ -434,7 +434,7 @@ where
         let offset = self.fields.direction.offset();
 
         self.fields.inner.arrange(position - offset);
-        self.bounding_box_mut().position = position;
+        self.fields.bounds.position = position;
     }
 
     fn bounding_box(&self) -> BoundingBox {
@@ -471,7 +471,7 @@ where
 
         let (width, height) = SD::AxisOrder::merge(main_size, cross_size);
 
-        self.set_measured_size(MeasuredSize { width, height });
+        self.fields.bounds.size = MeasuredSize { width, height };
 
         if inner_bb_old != self.fields.inner.bounding_box() || bb_old != self.bounding_box() {
             self.update_scroll_data();

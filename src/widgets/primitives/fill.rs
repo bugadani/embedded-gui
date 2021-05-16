@@ -4,9 +4,7 @@ use crate::{
         measurement::MeasureSpec,
         BoundingBox, MeasuredSize, Position,
     },
-    input::event::InputEvent,
-    state::WidgetState,
-    widgets::Widget,
+    widgets::{utils::decorator::WidgetDecorator, Widget},
     Canvas, WidgetRenderer,
 };
 
@@ -55,10 +53,14 @@ impl VerticalAlignment for Center {
     }
 }
 
-pub trait FillDirection {
+pub trait FillDirection: Sized {
     type AxisOrder: AxisOrder;
 
-    fn measure<W: Widget>(widget: &mut W, child_size: MeasuredSize, measure_spec: MeasureSpec) {
+    fn measure<W, H, V>(
+        widget: &mut FillParent<W, Self, H, V>,
+        child_size: MeasuredSize,
+        measure_spec: MeasureSpec,
+    ) {
         let main_child_size =
             <Self::AxisOrder as AxisOrder>::main_axis(child_size.width, child_size.height);
         let cross_child_size =
@@ -69,7 +71,7 @@ pub trait FillDirection {
         let main = main_spec.largest().unwrap_or(main_child_size);
         let (width, height) = <Self::AxisOrder as AxisOrder>::merge(main, cross_child_size);
 
-        widget.set_measured_size(MeasuredSize { width, height })
+        widget.bounds.size = MeasuredSize { width, height };
     }
 }
 
@@ -88,19 +90,21 @@ impl FillDirection for Vertical {
 impl FillDirection for HorizontalAndVertical {
     type AxisOrder = HorizontalHelper; // This isn't true but it's not used
 
-    fn measure<W: Widget>(widget: &mut W, child_size: MeasuredSize, measure_spec: MeasureSpec) {
+    fn measure<W, H, V>(
+        widget: &mut FillParent<W, Self, H, V>,
+        child_size: MeasuredSize,
+        measure_spec: MeasureSpec,
+    ) {
         let width = measure_spec.width.largest().unwrap_or(child_size.width);
         let height = measure_spec.height.largest().unwrap_or(child_size.height);
 
-        widget.set_measured_size(MeasuredSize { width, height })
+        widget.bounds.size = MeasuredSize { width, height };
     }
 }
 
 pub struct FillParent<W, FD, H, V>
 where
     FD: FillDirection,
-    H: HorizontalAlignment,
-    V: VerticalAlignment,
 {
     pub inner: W,
     pub direction: FD,
@@ -177,15 +181,21 @@ where
     }
 }
 
-impl<W, D, H, V> Widget for FillParent<W, D, H, V>
+impl<W, D, H, V> WidgetDecorator for FillParent<W, D, H, V>
 where
     W: Widget,
     D: FillDirection,
     H: HorizontalAlignment,
     V: VerticalAlignment,
 {
-    fn attach(&mut self, parent: usize, self_index: usize) {
-        self.inner.attach(parent, self_index);
+    type Widget = W;
+
+    fn widget(&self) -> &Self::Widget {
+        &self.inner
+    }
+
+    fn widget_mut(&mut self) -> &mut Self::Widget {
+        &mut self.inner
     }
 
     fn arrange(&mut self, position: Position) {
@@ -214,47 +224,6 @@ where
         });
 
         D::measure(self, self.inner.bounding_box().size, measure_spec);
-    }
-
-    fn children(&self) -> usize {
-        1 + self.inner.children()
-    }
-
-    fn get_child(&self, idx: usize) -> &dyn Widget {
-        if idx == 0 {
-            &self.inner
-        } else {
-            self.inner.get_child(idx - 1)
-        }
-    }
-
-    fn get_mut_child(&mut self, idx: usize) -> &mut dyn Widget {
-        if idx == 0 {
-            &mut self.inner
-        } else {
-            self.inner.get_mut_child(idx - 1)
-        }
-    }
-
-    fn parent_index(&self) -> usize {
-        self.inner.parent_index()
-    }
-
-    fn update(&mut self) {
-        self.inner.update();
-    }
-
-    fn test_input(&mut self, event: InputEvent) -> Option<usize> {
-        // We just relay whatever the child desires
-        self.inner.test_input(event).map(|i| i + 1)
-    }
-
-    fn on_state_changed(&mut self, state: WidgetState) {
-        self.inner.on_state_changed(state);
-    }
-
-    fn is_selectable(&self) -> bool {
-        false
     }
 }
 

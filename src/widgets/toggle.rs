@@ -1,14 +1,13 @@
 use crate::{
     data::WidgetData,
-    geometry::BoundingBox,
     input::{
         controller::InputContext,
         event::{InputEvent, PointerEvent},
     },
     state::{State, StateGroup, WidgetState},
     state_group,
-    widgets::{Widget, WidgetDataHolder},
-    Canvas, MeasureSpec, Position, WidgetRenderer,
+    widgets::{utils::decorator::WidgetDecorator, Widget, WidgetDataHolder},
+    Canvas, WidgetRenderer,
 };
 
 // It's necessary to split off the non-data fields so that callbacks can work on the widget while
@@ -195,58 +194,24 @@ where
     }
 }
 
-impl<W, D, const MANUAL_UNCHECK: bool> Widget for Toggle<W, D, MANUAL_UNCHECK>
+impl<W, D, const MANUAL_UNCHECK: bool> WidgetDecorator for Toggle<W, D, MANUAL_UNCHECK>
 where
     W: Widget,
     D: WidgetData,
 {
+    type Widget = W;
+
+    fn widget(&self) -> &Self::Widget {
+        &self.fields.inner
+    }
+
+    fn widget_mut(&mut self) -> &mut Self::Widget {
+        &mut self.fields.inner
+    }
+
     fn attach(&mut self, parent: usize, self_index: usize) {
-        self.set_parent(parent);
+        self.fields.parent_index = parent;
         self.fields.inner.attach(self_index, self_index + 1);
-    }
-
-    fn arrange(&mut self, position: Position) {
-        self.fields.inner.arrange(position);
-    }
-
-    fn bounding_box(&self) -> BoundingBox {
-        self.fields.inner.bounding_box()
-    }
-
-    fn bounding_box_mut(&mut self) -> &mut BoundingBox {
-        unimplemented!()
-    }
-
-    fn measure(&mut self, measure_spec: MeasureSpec) {
-        self.fields.inner.measure(measure_spec)
-    }
-
-    fn children(&self) -> usize {
-        1 + self.fields.inner.children()
-    }
-
-    fn get_child(&self, idx: usize) -> &dyn Widget {
-        if idx == 0 {
-            &self.fields.inner
-        } else {
-            self.fields.inner.get_child(idx - 1)
-        }
-    }
-
-    fn get_mut_child(&mut self, idx: usize) -> &mut dyn Widget {
-        if idx == 0 {
-            &mut self.fields.inner
-        } else {
-            self.fields.inner.get_mut_child(idx - 1)
-        }
-    }
-
-    fn parent_index(&self) -> usize {
-        self.fields.parent_index
-    }
-
-    fn set_parent(&mut self, index: usize) {
-        self.fields.parent_index = index;
     }
 
     fn update(&mut self) {
@@ -269,7 +234,7 @@ where
                 if let Some(idx) = self.fields.inner.test_input(event) {
                     // we give priority to our child
                     Some(idx + 1)
-                } else if self.bounding_box().contains(position) {
+                } else if self.fields.inner.bounding_box().contains(position) {
                     Some(0)
                 } else {
                     None
@@ -277,7 +242,7 @@ where
             }
 
             InputEvent::PointerEvent(position, PointerEvent::Drag) => {
-                if self.bounding_box().contains(position) {
+                if self.fields.inner.bounding_box().contains(position) {
                     if !self.fields.state.has_state(Toggle::STATE_PRESSED) {
                         self.fields.change_state(Toggle::STATE_HOVERED);
                     }
@@ -303,7 +268,7 @@ where
                     // we give priority to our child
                     self.fields.change_state(Toggle::STATE_IDLE);
                     Some(idx + 1)
-                } else if self.bounding_box().contains(position) {
+                } else if self.fields.inner.bounding_box().contains(position) {
                     self.fields.change_state(Toggle::STATE_HOVERED);
                     // We deliberately don't handle hover events. In case the button is partially
                     // displayed, handling hover would route clicks that fall on the hidden parts.
