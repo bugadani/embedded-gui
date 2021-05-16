@@ -21,6 +21,8 @@ use embedded_gui::{
         label::Label,
         layouts::linear::{column::Column, row::Row},
         primitives::{border::Border, fill::FillParent, spacing::Spacing, visibility::Visibility},
+        scroll::Scroll,
+        slider::ScrollbarConnector,
         textbox::TextBox,
     },
     Window,
@@ -88,10 +90,11 @@ enum Page {
     Textbox,
     Check,
     Slider,
+    Scroll,
 }
 
 fn main() {
-    let display = SimulatorDisplay::new(EgSize::new(192, 180));
+    let display = SimulatorDisplay::new(EgSize::new(240, 180));
 
     let page = BoundData::new(Page::Textbox, |_| ());
 
@@ -103,6 +106,9 @@ fn main() {
     let slider1_data = BoundData::new(0, |_| ());
     let slider2_data = BoundData::new(0, |_| ());
     let sliders = BoundData::new((&slider1_data, &slider2_data), |_| ());
+
+    let scroll_data = BoundData::new(ScrollbarConnector::new(), |_| ());
+    let horizontal_scroll_data = BoundData::new(ScrollbarConnector::new(), |_| ());
 
     let tabs = Row::new()
         .spacing(1)
@@ -126,6 +132,13 @@ fn main() {
                 .bind(&page)
                 .on_selected_changed(|_, page| *page = Page::Slider)
                 .on_data_changed(|toggle, data| toggle.set_checked(*data == Page::Slider)),
+        )
+        .add(
+            DefaultTheme::toggle_button("Scrolling")
+                .disallow_manual_uncheck()
+                .bind(&page)
+                .on_selected_changed(|_, page| *page = Page::Scroll)
+                .on_data_changed(|toggle, data| toggle.set_checked(*data == Page::Scroll)),
         );
 
     let textbox_page = Border::new(FillParent::both(
@@ -259,6 +272,91 @@ fn main() {
                 }),
         );
 
+    let scrolling_page = Column::new()
+        .add(FillParent::horizontal(
+            Label::new("Scroll down")
+                .bind(&scroll_data)
+                .on_data_changed(|label, data| {
+                    label.text = if data.offset == data.maximum_offset {
+                        "Scroll back"
+                    } else if data.offset == 0 {
+                        "Scroll down"
+                    } else {
+                        "Scroll more"
+                    };
+                }),
+        ))
+        .add(
+            Row::new()
+                .add(Border::new(
+                    Scroll::vertical(
+                        Spacing::new(
+                            Column::new()
+                                .add(Label::new("S"))
+                                .add(Label::new("c"))
+                                .add(Label::new("r"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("l"))
+                                .add(Label::new("o"))
+                                .add(Label::new("Scrollolo :)"))
+                                .add(
+                                    DefaultTheme::primary_button("Back to top")
+                                        .bind(&scroll_data)
+                                        .on_clicked(|data| data.scroll_to(0)),
+                                ),
+                        )
+                        .all(2),
+                    )
+                    .friction(1)
+                    .friction_divisor(2)
+                    .bind(&scroll_data)
+                    .on_scroll_changed(ScrollbarConnector::on_scroll_widget_scroll_changed)
+                    .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),
+                ))
+                .weight(8)
+                .add(
+                    DefaultTheme::vertical_scrollbar()
+                        .bind(&scroll_data)
+                        .on_data_changed(ScrollbarConnector::on_scrollbar_data_changed)
+                        .on_value_changed(ScrollbarConnector::on_scrollbar_value_changed),
+                ),
+        )
+        .weight(1)
+        .add(
+            Column::new()
+                .add(
+                    Scroll::horizontal(Label::new(
+                        "Some very long text that can be used to demonstrate horizontal scrollbars",
+                    ))
+                    .set_active(false)
+                    .bind(&horizontal_scroll_data)
+                    .on_scroll_changed(ScrollbarConnector::on_scroll_widget_scroll_changed)
+                    .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),
+                )
+                .add(
+                    DefaultTheme::horizontal_scrollbar()
+                        .bind(&horizontal_scroll_data)
+                        .on_data_changed(ScrollbarConnector::on_scrollbar_data_changed)
+                        .on_value_changed(ScrollbarConnector::on_scrollbar_value_changed),
+                ),
+        );
+
     let mut gui = Window::new(
         EgCanvas::new(display),
         Spacing::new(
@@ -279,6 +377,11 @@ fn main() {
                     Visibility::new(sliders_page)
                         .bind(&page)
                         .on_data_changed(|widget, page| widget.set_visible(*page == Page::Slider)),
+                )
+                .add(
+                    Visibility::new(scrolling_page)
+                        .bind(&page)
+                        .on_data_changed(|widget, page| widget.set_visible(*page == Page::Scroll)),
                 ),
         )
         .all(2),
