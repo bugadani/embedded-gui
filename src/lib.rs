@@ -15,6 +15,14 @@ use crate::{
     widgets::Widget,
 };
 
+pub mod prelude {
+    pub use crate::{
+        data::WidgetData,
+        widgets::{wrapper::WrapperBindable, Widget},
+        WidgetRenderer, Window,
+    };
+}
+
 pub trait WidgetRenderer<C: Canvas> {
     fn draw(&self, canvas: &mut C) -> Result<(), C::Error>;
 }

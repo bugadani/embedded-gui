@@ -18,6 +18,7 @@ use embedded_gui::{
     data::BoundData,
     geometry::Position,
     input::event::{InputEvent, PointerEvent},
+    prelude::*,
     widgets::{
         label::Label,
         layouts::linear::{column::Column, row::Row},
@@ -26,9 +27,7 @@ use embedded_gui::{
             fill::{FillParent, Right},
             spacing::Spacing,
         },
-        wrapper::WrapperBindable,
     },
-    Window,
 };
 use heapless::String;
 

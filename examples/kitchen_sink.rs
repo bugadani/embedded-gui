@@ -14,9 +14,10 @@ use embedded_graphics_simulator::{
     Window as SimWindow,
 };
 use embedded_gui::{
-    data::{BoundData, WidgetData},
+    data::BoundData,
     geometry::Position,
     input::event::{InputEvent, PointerEvent, ScrollEvent},
+    prelude::*,
     widgets::{
         label::Label,
         layouts::linear::{column::Column, row::Row},
@@ -24,9 +25,7 @@ use embedded_gui::{
         scroll::Scroll,
         slider::ScrollbarConnector,
         textbox::TextBox,
-        wrapper::WrapperBindable,
     },
-    Window,
 };
 use heapless::String;
 

@@ -19,6 +19,7 @@ use embedded_gui::{
     data::BoundData,
     geometry::Position,
     input::event::{InputEvent, PointerEvent},
+    prelude::*,
     state::WidgetState,
     widgets::{
         button::Button,
@@ -30,10 +31,7 @@ use embedded_gui::{
             fill::{Center, FillParent, HorizontalAndVertical},
             spacing::Spacing,
         },
-        wrapper::WrapperBindable,
-        Widget,
     },
-    Window,
 };
 
 fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
