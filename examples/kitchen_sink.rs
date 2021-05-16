@@ -287,10 +287,10 @@ fn main() {
         .all(2),
     );
 
-    println!("Size of struct: {}", std::mem::size_of_val(&gui.root));
     fn print_type_of<T>(_: &T) {
-        println!("type of tree: {}", std::any::type_name::<T>());
-        println!("length of type: {}", std::any::type_name::<T>().len());
+        println!("Type of tree: {}", std::any::type_name::<T>());
+        println!("Length of type: {}", std::any::type_name::<T>().len());
+        println!("Size of struct: {}", std::mem::size_of::<T>());
     }
 
     print_type_of(&gui.root);
