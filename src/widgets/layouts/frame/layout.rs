@@ -259,7 +259,7 @@ where
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
-        self.widgets.test_input(event)
+        self.widgets.test_input(event).map(|idx| idx + 1)
     }
 
     fn on_state_changed(&mut self, state: WidgetState) {
