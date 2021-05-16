@@ -23,7 +23,10 @@ use embedded_gui::{
     prelude::*,
     widgets::{
         label::Label,
-        layouts::linear::{column::Column, row::Row},
+        layouts::{
+            frame::Frame,
+            linear::{column::Column, row::Row},
+        },
         primitives::{border::Border, fill::FillParent, spacing::Spacing, visibility::Visibility},
         scroll::Scroll,
         slider::ScrollbarConnector,
@@ -361,35 +364,32 @@ fn main() {
                 ),
         );
 
-    let mut gui = Window::new(
-        EgCanvas::new(display),
-        Spacing::new(
-            Column::new()
-                .add(tabs)
-                .add(
-                    Visibility::new(textbox_page)
-                        .bind(&page)
-                        .on_data_changed(|widget, page| widget.set_visible(*page == Page::Textbox)),
-                )
-                .weight(1) // TODO replace with a Layer widget
-                .add(
-                    Visibility::new(checkables_page)
-                        .bind(&page)
-                        .on_data_changed(|widget, page| widget.set_visible(*page == Page::Check)),
-                )
-                .add(
-                    Visibility::new(sliders_page)
-                        .bind(&page)
-                        .on_data_changed(|widget, page| widget.set_visible(*page == Page::Slider)),
-                )
-                .add(
-                    Visibility::new(scrolling_page)
-                        .bind(&page)
-                        .on_data_changed(|widget, page| widget.set_visible(*page == Page::Scroll)),
+    let mut gui =
+        Window::new(
+            EgCanvas::new(display),
+            Spacing::new(
+                Column::new().add(tabs).add(
+                    Frame::new()
+                        .add_layer(Visibility::new(textbox_page).bind(&page).on_data_changed(
+                            |widget, page| widget.set_visible(*page == Page::Textbox),
+                        ))
+                        .add_layer(
+                            Visibility::new(checkables_page)
+                                .bind(&page)
+                                .on_data_changed(|widget, page| {
+                                    widget.set_visible(*page == Page::Check)
+                                }),
+                        )
+                        .add_layer(Visibility::new(sliders_page).bind(&page).on_data_changed(
+                            |widget, page| widget.set_visible(*page == Page::Slider),
+                        ))
+                        .add_layer(Visibility::new(scrolling_page).bind(&page).on_data_changed(
+                            |widget, page| widget.set_visible(*page == Page::Scroll),
+                        )),
                 ),
-        )
-        .all(2),
-    );
+            )
+            .all(2),
+        );
 
     fn print_type_of<T>(_: &T) {
         println!("Type of tree: {}", std::any::type_name::<T>());
