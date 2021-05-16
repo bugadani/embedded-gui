@@ -14,6 +14,7 @@ pub mod scroll;
 pub mod slider;
 pub mod textbox;
 pub mod toggle;
+pub mod utils;
 pub mod wrapper;
 
 pub trait Widget {
@@ -72,7 +73,7 @@ pub trait Widget {
     fn on_state_changed(&mut self, state: WidgetState);
 
     fn is_selectable(&self) -> bool {
-        true
+        false
     }
 }
 
