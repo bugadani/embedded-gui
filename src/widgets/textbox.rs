@@ -1,11 +1,7 @@
 use crate::{
-    data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
     state::WidgetState,
-    widgets::{
-        wrapper::{Wrapper, WrapperBindable},
-        Widget,
-    },
+    widgets::{wrapper::WrapperBindable, Widget},
 };
 
 pub trait TextBoxProperties {
@@ -28,13 +24,6 @@ where
     pub fn on_state_changed(mut self, callback: fn(&mut Self, WidgetState)) -> Self {
         self.on_state_changed = callback;
         self
-    }
-
-    pub fn bind<D>(self, data: D) -> Wrapper<Self, D>
-    where
-        D: WidgetData,
-    {
-        Wrapper::wrap(self, data)
     }
 }
 

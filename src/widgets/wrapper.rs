@@ -20,14 +20,8 @@ pub trait WrapperBindable: Widget + Sized {
     where
         D: WidgetData,
     {
-        Wrapper::wrap(self, data)
-    }
-}
-
-impl Wrapper<(), ()> {
-    pub fn wrap<W: Widget, D: WidgetData>(widget: W, data: D) -> Wrapper<W, D> {
         Wrapper {
-            widget,
+            widget: self,
             data_holder: WidgetDataHolder::new(data),
         }
     }

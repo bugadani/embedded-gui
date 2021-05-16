@@ -4,7 +4,10 @@ use crate::{
     data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
     state::WidgetState,
-    widgets::{wrapper::Wrapper, Widget},
+    widgets::{
+        wrapper::{Wrapper, WrapperBindable},
+        Widget,
+    },
 };
 
 pub trait CheckBoxProperties {
@@ -87,14 +90,9 @@ where
         self.on_state_changed = callback;
         self
     }
-
-    pub fn bind<D>(self, data: D) -> Wrapper<CheckBox<P>, D>
-    where
-        D: WidgetData,
-    {
-        Wrapper::wrap(self, data)
-    }
 }
+
+impl<P> WrapperBindable for CheckBox<P> where P: CheckBoxProperties {}
 
 impl<P, D> Wrapper<CheckBox<P>, D>
 where
