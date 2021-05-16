@@ -61,7 +61,7 @@ where
 
     fn measure(&mut self, spec: MeasureSpec) -> MeasuredSize {
         self.object.measure(spec);
-        return self.object.bounding_box().size;
+        self.object.bounding_box().size
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
@@ -111,10 +111,10 @@ where
         self.object.measure(spec);
         let size = self.object.bounding_box().size;
 
-        return MeasuredSize {
+        MeasuredSize {
             width: inner_size.width.max(size.width),
             height: inner_size.height.max(size.height),
-        };
+        }
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
