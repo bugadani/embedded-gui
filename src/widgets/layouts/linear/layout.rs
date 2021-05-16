@@ -10,7 +10,7 @@ use crate::{
     state::WidgetState,
     widgets::{
         layouts::linear::{Cell, CellWeight, LinearLayoutChainElement, NoWeight, Weight},
-        ParentHolder, UpdateHandler, Widget, WidgetStateHolder,
+        Widget,
     },
     Canvas, WidgetRenderer,
 };
@@ -302,12 +302,6 @@ where
         }
     }
 
-    fn test_input(&mut self, event: InputEvent) -> Option<usize> {
-        self.widgets.test_input(event).map(|idx| idx + 1)
-    }
-}
-
-impl<CE, L> ParentHolder for LinearLayout<CE, L> {
     fn parent_index(&self) -> usize {
         self.parent_index
     }
@@ -315,23 +309,21 @@ impl<CE, L> ParentHolder for LinearLayout<CE, L> {
     fn set_parent(&mut self, index: usize) {
         self.parent_index = index;
     }
-}
 
-impl<CE, L> WidgetStateHolder for LinearLayout<CE, L>
-where
-    CE: LinearLayoutChainElement + ChainElement,
-{
+    fn update(&mut self) {
+        self.widgets.update();
+    }
+
+    fn test_input(&mut self, event: InputEvent) -> Option<usize> {
+        self.widgets.test_input(event).map(|idx| idx + 1)
+    }
+
     fn on_state_changed(&mut self, state: WidgetState) {
         self.widgets.on_state_changed(state);
     }
-}
 
-impl<CE, L> UpdateHandler for LinearLayout<CE, L>
-where
-    CE: LinearLayoutChainElement,
-{
-    fn update(&mut self) {
-        self.widgets.update();
+    fn is_selectable(&self) -> bool {
+        false
     }
 }
 

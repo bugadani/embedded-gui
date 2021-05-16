@@ -4,7 +4,7 @@ use crate::{
     data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
     state::WidgetState,
-    widgets::{wrapper::Wrapper, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
+    widgets::{wrapper::Wrapper, Widget},
 };
 
 pub trait RadioButtonProperties {
@@ -124,14 +124,7 @@ where
 
         self.set_measured_size(size)
     }
-}
 
-impl<P> UpdateHandler for RadioButton<P> where P: RadioButtonProperties {}
-
-impl<P> ParentHolder for RadioButton<P>
-where
-    P: RadioButtonProperties,
-{
     fn parent_index(&self) -> usize {
         self.parent_index
     }
@@ -139,12 +132,7 @@ where
     fn set_parent(&mut self, index: usize) {
         self.parent_index = index;
     }
-}
 
-impl<P> WidgetStateHolder for RadioButton<P>
-where
-    P: RadioButtonProperties,
-{
     fn on_state_changed(&mut self, state: WidgetState) {
         (self.on_state_changed)(self, state);
     }

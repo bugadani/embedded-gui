@@ -7,7 +7,7 @@ use crate::{
     },
     state::{State, StateGroup, WidgetState},
     state_group,
-    widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
+    widgets::{Widget, WidgetDataHolder},
     Canvas, WidgetRenderer,
 };
 
@@ -140,20 +140,6 @@ where
     }
 }
 
-impl<W, D> WidgetStateHolder for Button<W, D>
-where
-    W: Widget,
-    D: WidgetData,
-{
-    fn on_state_changed(&mut self, _state: WidgetState) {
-        // don't react to parent's state change
-    }
-
-    fn is_selectable(&self) -> bool {
-        true
-    }
-}
-
 impl<W, D> Widget for Button<W, D>
 where
     W: Widget,
@@ -198,6 +184,19 @@ where
         } else {
             self.fields.inner.get_mut_child(idx - 1)
         }
+    }
+
+    fn parent_index(&self) -> usize {
+        self.fields.parent_index
+    }
+
+    fn set_parent(&mut self, index: usize) {
+        self.fields.parent_index = index;
+    }
+
+    fn update(&mut self) {
+        self.data_holder.update(&mut self.fields);
+        self.fields.inner.update();
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
@@ -299,30 +298,13 @@ where
             }
         }
     }
-}
 
-impl<W, D> UpdateHandler for Button<W, D>
-where
-    W: Widget,
-    D: WidgetData,
-{
-    fn update(&mut self) {
-        self.data_holder.update(&mut self.fields);
-        self.fields.inner.update();
-    }
-}
-
-impl<W, D> ParentHolder for Button<W, D>
-where
-    W: Widget,
-    D: WidgetData,
-{
-    fn parent_index(&self) -> usize {
-        self.fields.parent_index
+    fn on_state_changed(&mut self, _state: WidgetState) {
+        // don't react to parent's state change
     }
 
-    fn set_parent(&mut self, index: usize) {
-        self.fields.parent_index = index;
+    fn is_selectable(&self) -> bool {
+        true
     }
 }
 

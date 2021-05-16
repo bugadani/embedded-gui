@@ -3,7 +3,7 @@ use crate::{
     geometry::{measurement::MeasureSpec, BoundingBox, Position},
     input::event::InputEvent,
     state::WidgetState,
-    widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
+    widgets::{Widget, WidgetDataHolder},
     Canvas, WidgetRenderer,
 };
 
@@ -44,29 +44,6 @@ where
     }
 }
 
-impl<W, D> UpdateHandler for Wrapper<W, D>
-where
-    W: Widget,
-    D: WidgetData,
-{
-    fn update(&mut self) {
-        self.data_holder.update(&mut self.widget);
-        self.widget.update();
-    }
-}
-
-impl<W, D> ParentHolder for Wrapper<W, D>
-where
-    W: Widget,
-    D: WidgetData,
-{
-    fn parent_index(&self) -> usize {
-        self.widget.parent_index()
-    }
-
-    fn set_parent(&mut self, _index: usize) {}
-}
-
 impl<W, D> Widget for Wrapper<W, D>
 where
     W: Widget,
@@ -104,18 +81,27 @@ where
         self.widget.get_mut_child(idx)
     }
 
+    fn parent_index(&self) -> usize {
+        self.widget.parent_index()
+    }
+
+    fn set_parent(&mut self, _index: usize) {}
+
+    fn update(&mut self) {
+        self.data_holder.update(&mut self.widget);
+        self.widget.update();
+    }
+
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
         self.widget.test_input(event)
     }
-}
 
-impl<W, D> WidgetStateHolder for Wrapper<W, D>
-where
-    W: Widget,
-    D: WidgetData,
-{
     fn on_state_changed(&mut self, state: WidgetState) {
         self.widget.on_state_changed(state);
+    }
+
+    fn is_selectable(&self) -> bool {
+        self.widget.is_selectable()
     }
 }
 

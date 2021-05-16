@@ -7,7 +7,7 @@ use crate::{
     },
     state::{State, StateGroup, WidgetState},
     state_group,
-    widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
+    widgets::{Widget, WidgetDataHolder},
     Canvas, MeasureSpec, Position, WidgetRenderer,
 };
 
@@ -195,20 +195,6 @@ where
     }
 }
 
-impl<W, D, const MANUAL_UNCHECK: bool> WidgetStateHolder for Toggle<W, D, MANUAL_UNCHECK>
-where
-    W: Widget,
-    D: WidgetData,
-{
-    fn on_state_changed(&mut self, _state: WidgetState) {
-        // don't react to parent's state change
-    }
-
-    fn is_selectable(&self) -> bool {
-        true
-    }
-}
-
 impl<W, D, const MANUAL_UNCHECK: bool> Widget for Toggle<W, D, MANUAL_UNCHECK>
 where
     W: Widget,
@@ -253,6 +239,19 @@ where
         } else {
             self.fields.inner.get_mut_child(idx - 1)
         }
+    }
+
+    fn parent_index(&self) -> usize {
+        self.fields.parent_index
+    }
+
+    fn set_parent(&mut self, index: usize) {
+        self.fields.parent_index = index;
+    }
+
+    fn update(&mut self) {
+        self.data_holder.update(&mut self.fields);
+        self.fields.inner.update();
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
@@ -354,30 +353,13 @@ where
             }
         }
     }
-}
 
-impl<W, D, const MANUAL_UNCHECK: bool> UpdateHandler for Toggle<W, D, MANUAL_UNCHECK>
-where
-    W: Widget,
-    D: WidgetData,
-{
-    fn update(&mut self) {
-        self.data_holder.update(&mut self.fields);
-        self.fields.inner.update();
-    }
-}
-
-impl<W, D, const MANUAL_UNCHECK: bool> ParentHolder for Toggle<W, D, MANUAL_UNCHECK>
-where
-    W: Widget,
-    D: WidgetData,
-{
-    fn parent_index(&self) -> usize {
-        self.fields.parent_index
+    fn on_state_changed(&mut self, _state: WidgetState) {
+        // don't react to parent's state change
     }
 
-    fn set_parent(&mut self, index: usize) {
-        self.fields.parent_index = index;
+    fn is_selectable(&self) -> bool {
+        true
     }
 }
 

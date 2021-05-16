@@ -18,7 +18,7 @@ use crate::{
     state_group,
     widgets::{
         scroll::{ScrollData, ScrollDirection, ScrollFields},
-        ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder,
+        Widget, WidgetDataHolder,
     },
 };
 
@@ -386,19 +386,6 @@ where
     }
 }
 
-impl<SP, D> WidgetStateHolder for Slider<SP, D>
-where
-    D: WidgetData,
-{
-    fn on_state_changed(&mut self, _state: WidgetState) {
-        // don't react to parent's state change
-    }
-
-    fn is_selectable(&self) -> bool {
-        true
-    }
-}
-
 impl<SP, D> Widget for Slider<SP, D>
 where
     SP: SliderProperties,
@@ -423,6 +410,18 @@ where
         let (width, height) = SP::merge(main_size, cross_size);
 
         self.set_measured_size(MeasuredSize { width, height });
+    }
+
+    fn update(&mut self) {
+        self.data_holder.update(&mut self.fields);
+    }
+
+    fn parent_index(&self) -> usize {
+        self.fields.parent_index
+    }
+
+    fn set_parent(&mut self, index: usize) {
+        self.fields.parent_index = index;
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
@@ -552,26 +551,12 @@ where
 
         false
     }
-}
 
-impl<SP, D> UpdateHandler for Slider<SP, D>
-where
-    D: WidgetData,
-{
-    fn update(&mut self) {
-        self.data_holder.update(&mut self.fields);
-    }
-}
-
-impl<SP, D> ParentHolder for Slider<SP, D>
-where
-    D: WidgetData,
-{
-    fn parent_index(&self) -> usize {
-        self.fields.parent_index
+    fn on_state_changed(&mut self, _state: WidgetState) {
+        // don't react to parent's state change
     }
 
-    fn set_parent(&mut self, index: usize) {
-        self.fields.parent_index = index;
+    fn is_selectable(&self) -> bool {
+        true
     }
 }

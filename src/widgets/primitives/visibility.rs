@@ -5,7 +5,7 @@ use crate::{
     state::WidgetState,
     widgets::{
         wrapper::{Wrapper, WrapperBindable},
-        ParentHolder, UpdateHandler, Widget, WidgetStateHolder,
+        Widget,
     },
     Canvas, WidgetRenderer,
 };
@@ -118,6 +118,14 @@ where
         }
     }
 
+    fn parent_index(&self) -> usize {
+        self.inner.parent_index()
+    }
+
+    fn update(&mut self) {
+        self.inner.update();
+    }
+
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
         if self.visibility {
             // We just relay whatever the child desires
@@ -126,30 +134,7 @@ where
             None
         }
     }
-}
 
-impl<W> UpdateHandler for Visibility<W>
-where
-    W: Widget,
-{
-    fn update(&mut self) {
-        self.inner.update();
-    }
-}
-
-impl<W> ParentHolder for Visibility<W>
-where
-    W: Widget,
-{
-    fn parent_index(&self) -> usize {
-        self.inner.parent_index()
-    }
-}
-
-impl<W> WidgetStateHolder for Visibility<W>
-where
-    W: Widget,
-{
     fn on_state_changed(&mut self, state: WidgetState) {
         (self.on_state_changed)(self, state);
         self.inner.on_state_changed(state);

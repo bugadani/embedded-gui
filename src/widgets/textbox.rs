@@ -4,7 +4,7 @@ use crate::{
     state::WidgetState,
     widgets::{
         wrapper::{Wrapper, WrapperBindable},
-        ParentHolder, UpdateHandler, Widget, WidgetStateHolder,
+        Widget,
     },
 };
 
@@ -38,20 +38,6 @@ where
     }
 }
 
-impl<S, P> WidgetStateHolder for TextBox<S, P>
-where
-    S: AsRef<str>,
-    P: TextBoxProperties,
-{
-    fn on_state_changed(&mut self, state: WidgetState) {
-        (self.on_state_changed)(self, state);
-    }
-
-    fn is_selectable(&self) -> bool {
-        true
-    }
-}
-
 impl<S, P> Widget for TextBox<S, P>
 where
     S: AsRef<str>,
@@ -65,6 +51,14 @@ where
         &mut self.bounds
     }
 
+    fn parent_index(&self) -> usize {
+        self.parent_index
+    }
+
+    fn set_parent(&mut self, index: usize) {
+        self.parent_index = index;
+    }
+
     fn measure(&mut self, measure_spec: MeasureSpec) {
         let size = self
             .label_properties
@@ -75,27 +69,19 @@ where
 
         self.set_measured_size(MeasuredSize { width, height })
     }
-}
 
-impl<S, P> UpdateHandler for TextBox<S, P> {}
+    fn on_state_changed(&mut self, state: WidgetState) {
+        (self.on_state_changed)(self, state);
+    }
+
+    fn is_selectable(&self) -> bool {
+        false
+    }
+}
 
 impl<S, P> WrapperBindable for TextBox<S, P>
 where
     S: AsRef<str>,
     P: TextBoxProperties,
 {
-}
-
-impl<S, P> ParentHolder for TextBox<S, P>
-where
-    S: AsRef<str>,
-    P: TextBoxProperties,
-{
-    fn parent_index(&self) -> usize {
-        self.parent_index
-    }
-
-    fn set_parent(&mut self, index: usize) {
-        self.parent_index = index;
-    }
 }

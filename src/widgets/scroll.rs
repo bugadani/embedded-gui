@@ -11,7 +11,7 @@ use crate::{
     },
     state::{State, StateGroup, WidgetState},
     state_group,
-    widgets::{ParentHolder, UpdateHandler, Widget, WidgetDataHolder, WidgetStateHolder},
+    widgets::{Widget, WidgetDataHolder},
 };
 
 #[derive(Debug)]
@@ -192,7 +192,7 @@ where
 
 impl<W, SD, D> ScrollFields<W, SD, D>
 where
-    W: WidgetStateHolder,
+    W: Widget,
 {
     pub fn set_active(&mut self, active: bool) {
         if active {
@@ -419,20 +419,6 @@ where
     }
 }
 
-impl<W, SD, D> WidgetStateHolder for Scroll<W, SD, D>
-where
-    W: Widget,
-    D: WidgetData,
-{
-    fn on_state_changed(&mut self, _state: WidgetState) {
-        // don't react to parent's state change
-    }
-
-    fn is_selectable(&self) -> bool {
-        false
-    }
-}
-
 impl<W, SD, D> Widget for Scroll<W, SD, D>
 where
     W: Widget,
@@ -509,6 +495,56 @@ where
             &mut self.fields.inner
         } else {
             self.fields.inner.get_mut_child(idx - 1)
+        }
+    }
+
+    fn parent_index(&self) -> usize {
+        self.fields.parent_index
+    }
+
+    fn set_parent(&mut self, index: usize) {
+        self.fields.parent_index = index;
+    }
+
+    fn update(&mut self) {
+        self.data_holder.update(&mut self.fields);
+        self.fields.inner.update();
+
+        if let Some(target) = self.fields.offset_target {
+            let current_offset = SD::AxisOrder::main_axis(
+                self.fields.direction.offset().x,
+                self.fields.direction.offset().y,
+            );
+
+            if target == current_offset {
+                self.fields.offset_target = None;
+                return;
+            }
+
+            let delta = target - current_offset;
+            let frames = self.fields.scroll_time as i32;
+
+            let delta = if delta / frames == 0 {
+                if target > current_offset {
+                    1
+                } else {
+                    -1
+                }
+            } else {
+                delta / frames
+            };
+
+            let (x, y) = SD::AxisOrder::merge(delta, 0);
+            self.change_offset(PositionDelta { x, y });
+
+            self.fling_controller.stop_fling();
+        } else {
+            self.fling_controller.update();
+            let delta = self.fling_controller.fling_delta();
+            if delta != 0 {
+                let (x, y) = SD::AxisOrder::merge(delta, 0);
+                self.change_offset(PositionDelta { x, y });
+            }
         }
     }
 
@@ -644,67 +680,12 @@ where
 
         true
     }
-}
 
-impl<W, SD, D> UpdateHandler for Scroll<W, SD, D>
-where
-    W: Widget,
-    SD: ScrollDirection,
-    D: WidgetData,
-{
-    fn update(&mut self) {
-        self.data_holder.update(&mut self.fields);
-        self.fields.inner.update();
-
-        if let Some(target) = self.fields.offset_target {
-            let current_offset = SD::AxisOrder::main_axis(
-                self.fields.direction.offset().x,
-                self.fields.direction.offset().y,
-            );
-
-            if target == current_offset {
-                self.fields.offset_target = None;
-                return;
-            }
-
-            let delta = target - current_offset;
-            let frames = self.fields.scroll_time as i32;
-
-            let delta = if delta / frames == 0 {
-                if target > current_offset {
-                    1
-                } else {
-                    -1
-                }
-            } else {
-                delta / frames
-            };
-
-            let (x, y) = SD::AxisOrder::merge(delta, 0);
-            self.change_offset(PositionDelta { x, y });
-
-            self.fling_controller.stop_fling();
-        } else {
-            self.fling_controller.update();
-            let delta = self.fling_controller.fling_delta();
-            if delta != 0 {
-                let (x, y) = SD::AxisOrder::merge(delta, 0);
-                self.change_offset(PositionDelta { x, y });
-            }
-        }
-    }
-}
-
-impl<W, SD, D> ParentHolder for Scroll<W, SD, D>
-where
-    W: Widget,
-    D: WidgetData,
-{
-    fn parent_index(&self) -> usize {
-        self.fields.parent_index
+    fn on_state_changed(&mut self, _state: WidgetState) {
+        // don't react to parent's state change
     }
 
-    fn set_parent(&mut self, index: usize) {
-        self.fields.parent_index = index;
+    fn is_selectable(&self) -> bool {
+        false
     }
 }

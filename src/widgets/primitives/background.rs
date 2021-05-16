@@ -5,7 +5,7 @@ use crate::{
     state::WidgetState,
     widgets::{
         wrapper::{Wrapper, WrapperBindable},
-        ParentHolder, UpdateHandler, Widget, WidgetStateHolder,
+        Widget,
     },
 };
 
@@ -130,37 +130,19 @@ where
         }
     }
 
+    fn parent_index(&self) -> usize {
+        self.inner.parent_index()
+    }
+
+    fn update(&mut self) {
+        self.inner.update();
+    }
+
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
         // We just relay whatever the child desires
         self.inner.test_input(event).map(|i| i + 1)
     }
-}
 
-impl<W, P> UpdateHandler for Background<W, P>
-where
-    W: Widget,
-    P: BackgroundProperties,
-{
-    fn update(&mut self) {
-        self.inner.update();
-    }
-}
-
-impl<W, P> ParentHolder for Background<W, P>
-where
-    W: Widget,
-    P: BackgroundProperties,
-{
-    fn parent_index(&self) -> usize {
-        self.inner.parent_index()
-    }
-}
-
-impl<W, P> WidgetStateHolder for Background<W, P>
-where
-    W: Widget,
-    P: BackgroundProperties,
-{
     fn on_state_changed(&mut self, state: WidgetState) {
         (self.on_state_changed)(self, state);
         self.inner.on_state_changed(state);

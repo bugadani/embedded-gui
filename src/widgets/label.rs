@@ -1,7 +1,7 @@
 use crate::{
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
     state::WidgetState,
-    widgets::{wrapper::WrapperBindable, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
+    widgets::{wrapper::WrapperBindable, Widget},
 };
 
 pub trait LabelProperties {
@@ -27,20 +27,6 @@ where
     }
 }
 
-impl<S, P> WidgetStateHolder for Label<S, P>
-where
-    S: AsRef<str>,
-    P: LabelProperties,
-{
-    fn on_state_changed(&mut self, state: WidgetState) {
-        (self.on_state_changed)(self, state);
-    }
-
-    fn is_selectable(&self) -> bool {
-        true
-    }
-}
-
 impl<S, P> Widget for Label<S, P>
 where
     S: AsRef<str>,
@@ -62,22 +48,7 @@ where
 
         self.set_measured_size(MeasuredSize { width, height })
     }
-}
 
-impl<S, P> UpdateHandler for Label<S, P> {}
-
-impl<S, P> WrapperBindable for Label<S, P>
-where
-    S: AsRef<str>,
-    P: LabelProperties,
-{
-}
-
-impl<S, P> ParentHolder for Label<S, P>
-where
-    S: AsRef<str>,
-    P: LabelProperties,
-{
     fn parent_index(&self) -> usize {
         self.parent_index
     }
@@ -85,4 +56,19 @@ where
     fn set_parent(&mut self, index: usize) {
         self.parent_index = index;
     }
+
+    fn on_state_changed(&mut self, state: WidgetState) {
+        (self.on_state_changed)(self, state);
+    }
+
+    fn is_selectable(&self) -> bool {
+        false
+    }
+}
+
+impl<S, P> WrapperBindable for Label<S, P>
+where
+    S: AsRef<str>,
+    P: LabelProperties,
+{
 }

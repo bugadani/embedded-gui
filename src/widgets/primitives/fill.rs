@@ -6,7 +6,7 @@ use crate::{
     },
     input::event::InputEvent,
     state::WidgetState,
-    widgets::{ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
+    widgets::Widget,
     Canvas, WidgetRenderer,
 };
 
@@ -177,22 +177,6 @@ where
     }
 }
 
-impl<W, D, H, V> WidgetStateHolder for FillParent<W, D, H, V>
-where
-    W: Widget,
-    D: FillDirection,
-    H: HorizontalAlignment,
-    V: VerticalAlignment,
-{
-    fn on_state_changed(&mut self, state: WidgetState) {
-        self.inner.on_state_changed(state);
-    }
-
-    fn is_selectable(&self) -> bool {
-        false
-    }
-}
-
 impl<W, D, H, V> Widget for FillParent<W, D, H, V>
 where
     W: Widget,
@@ -252,33 +236,25 @@ where
         }
     }
 
+    fn parent_index(&self) -> usize {
+        self.inner.parent_index()
+    }
+
+    fn update(&mut self) {
+        self.inner.update();
+    }
+
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
         // We just relay whatever the child desires
         self.inner.test_input(event).map(|i| i + 1)
     }
-}
 
-impl<W, D, H, V> ParentHolder for FillParent<W, D, H, V>
-where
-    W: Widget,
-    D: FillDirection,
-    H: HorizontalAlignment,
-    V: VerticalAlignment,
-{
-    fn parent_index(&self) -> usize {
-        self.inner.parent_index()
+    fn on_state_changed(&mut self, state: WidgetState) {
+        self.inner.on_state_changed(state);
     }
-}
 
-impl<W, D, H, V> UpdateHandler for FillParent<W, D, H, V>
-where
-    W: Widget,
-    D: FillDirection,
-    H: HorizontalAlignment,
-    V: VerticalAlignment,
-{
-    fn update(&mut self) {
-        self.inner.update();
+    fn is_selectable(&self) -> bool {
+        false
     }
 }
 

@@ -16,7 +16,7 @@ pub mod textbox;
 pub mod toggle;
 pub mod wrapper;
 
-pub trait Widget: WidgetStateHolder + ParentHolder + UpdateHandler {
+pub trait Widget {
     fn attach(&mut self, parent: usize, _index: usize) {
         debug_assert!(
             self.children() == 0,
@@ -55,12 +55,24 @@ pub trait Widget: WidgetStateHolder + ParentHolder + UpdateHandler {
         self.bounding_box_mut().size = size;
     }
 
+    fn update(&mut self) {}
+
+    fn parent_index(&self) -> usize;
+
+    fn set_parent(&mut self, _index: usize) {}
+
     fn test_input(&mut self, _event: InputEvent) -> Option<usize> {
         None
     }
 
     fn handle_input(&mut self, _ctxt: InputContext, _event: InputEvent) -> bool {
         false
+    }
+
+    fn on_state_changed(&mut self, state: WidgetState);
+
+    fn is_selectable(&self) -> bool {
+        true
     }
 }
 
@@ -108,22 +120,4 @@ where
             self.data.read(widget, self.on_data_changed);
         }
     }
-}
-
-pub trait WidgetStateHolder {
-    fn on_state_changed(&mut self, state: WidgetState);
-
-    fn is_selectable(&self) -> bool {
-        true
-    }
-}
-
-pub trait UpdateHandler {
-    fn update(&mut self) {}
-}
-
-pub trait ParentHolder {
-    fn parent_index(&self) -> usize;
-
-    fn set_parent(&mut self, _index: usize) {}
 }
