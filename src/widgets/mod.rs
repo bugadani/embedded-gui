@@ -1,6 +1,6 @@
 use crate::{
     data::WidgetData,
-    geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
+    geometry::{measurement::MeasureSpec, BoundingBox, Position},
     input::{controller::InputContext, event::InputEvent},
     state::WidgetState,
 };
@@ -28,7 +28,9 @@ pub trait Widget {
 
     fn bounding_box(&self) -> BoundingBox;
 
-    fn bounding_box_mut(&mut self) -> &mut BoundingBox;
+    fn bounding_box_mut(&mut self) -> &mut BoundingBox {
+        unimplemented!()
+    }
 
     fn children(&self) -> usize {
         0
@@ -50,10 +52,6 @@ pub trait Widget {
             "Arrange must be implemented by non-leaf widgets"
         );
         self.bounding_box_mut().position = position;
-    }
-
-    fn set_measured_size(&mut self, size: MeasuredSize) {
-        self.bounding_box_mut().size = size;
     }
 
     fn update(&mut self) {}

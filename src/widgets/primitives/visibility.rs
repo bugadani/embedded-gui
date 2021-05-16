@@ -93,10 +93,6 @@ where
         }
     }
 
-    fn bounding_box_mut(&mut self) -> &mut BoundingBox {
-        unimplemented!()
-    }
-
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
         if self.visibility {
             // We just relay whatever the child desires

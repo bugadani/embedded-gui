@@ -1,7 +1,7 @@
 //! Helper to simplify implementation of widget decorators.
 
 use crate::{
-    geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
+    geometry::{measurement::MeasureSpec, BoundingBox, Position},
     input::{controller::InputContext, event::InputEvent},
     state::WidgetState,
     widgets::Widget,
@@ -28,10 +28,6 @@ pub trait WidgetDecorator {
 
     fn arrange(&mut self, position: Position) {
         self.widget_mut().arrange(position);
-    }
-
-    fn set_measured_size(&mut self, size: MeasuredSize) {
-        self.widget_mut().set_measured_size(size);
     }
 
     fn children(&self) -> usize {
@@ -124,11 +120,6 @@ where
 
     fn arrange(&mut self, position: Position) {
         WidgetDecorator::arrange(self, position);
-    }
-
-    fn set_measured_size(&mut self, size: MeasuredSize) {
-        // TODO this doesn't belong in the Widget interface
-        WidgetDecorator::set_measured_size(self, size)
     }
 
     fn update(&mut self) {

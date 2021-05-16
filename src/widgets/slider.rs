@@ -409,7 +409,7 @@ where
 
         let (width, height) = SP::merge(main_size, cross_size);
 
-        self.set_measured_size(MeasuredSize { width, height });
+        self.fields.bounds.size = MeasuredSize { width, height };
     }
 
     fn update(&mut self) {

@@ -137,10 +137,6 @@ where
         }
     }
 
-    fn bounding_box_mut(&mut self) -> &mut BoundingBox {
-        unimplemented!()
-    }
-
     fn measure(&mut self, measure_spec: MeasureSpec) {
         let spacing = self.spacing;
 

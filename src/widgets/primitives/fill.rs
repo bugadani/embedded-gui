@@ -53,11 +53,11 @@ impl VerticalAlignment for Center {
     }
 }
 
-pub trait FillDirection {
+pub trait FillDirection: Sized {
     type AxisOrder: AxisOrder;
 
-    fn measure<W: WidgetDecorator>(
-        widget: &mut W,
+    fn measure<W, H, V>(
+        widget: &mut FillParent<W, Self, H, V>,
         child_size: MeasuredSize,
         measure_spec: MeasureSpec,
     ) {
@@ -71,7 +71,7 @@ pub trait FillDirection {
         let main = main_spec.largest().unwrap_or(main_child_size);
         let (width, height) = <Self::AxisOrder as AxisOrder>::merge(main, cross_child_size);
 
-        widget.set_measured_size(MeasuredSize { width, height })
+        widget.bounds.size = MeasuredSize { width, height };
     }
 }
 
@@ -90,23 +90,21 @@ impl FillDirection for Vertical {
 impl FillDirection for HorizontalAndVertical {
     type AxisOrder = HorizontalHelper; // This isn't true but it's not used
 
-    fn measure<W: WidgetDecorator>(
-        widget: &mut W,
+    fn measure<W, H, V>(
+        widget: &mut FillParent<W, Self, H, V>,
         child_size: MeasuredSize,
         measure_spec: MeasureSpec,
     ) {
         let width = measure_spec.width.largest().unwrap_or(child_size.width);
         let height = measure_spec.height.largest().unwrap_or(child_size.height);
 
-        widget.set_measured_size(MeasuredSize { width, height })
+        widget.bounds.size = MeasuredSize { width, height };
     }
 }
 
 pub struct FillParent<W, FD, H, V>
 where
     FD: FillDirection,
-    H: HorizontalAlignment,
-    V: VerticalAlignment,
 {
     pub inner: W,
     pub direction: FD,
@@ -226,10 +224,6 @@ where
         });
 
         D::measure(self, self.inner.bounding_box().size, measure_spec);
-    }
-
-    fn set_measured_size(&mut self, size: MeasuredSize) {
-        self.bounds.size = size;
     }
 }
 
