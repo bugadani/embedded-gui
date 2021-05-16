@@ -3,7 +3,10 @@ use crate::{
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
     input::event::InputEvent,
     state::WidgetState,
-    widgets::{wrapper::Wrapper, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
+    widgets::{
+        wrapper::{Wrapper, WrapperBindable},
+        ParentHolder, UpdateHandler, Widget, WidgetStateHolder,
+    },
 };
 
 pub trait BorderProperties {
@@ -38,13 +41,13 @@ where
             on_state_changed: |_, _| (),
         }
     }
+}
 
-    pub fn bind<D>(self, data: D) -> Wrapper<Border<W, P>, D>
-    where
-        D: WidgetData,
-    {
-        Wrapper::wrap(self, data)
-    }
+impl<W, P> WrapperBindable for Border<W, P>
+where
+    W: Widget,
+    P: BorderProperties,
+{
 }
 
 impl<W, P> Border<W, P>

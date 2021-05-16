@@ -3,7 +3,10 @@ use crate::{
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
     input::event::InputEvent,
     state::WidgetState,
-    widgets::{wrapper::Wrapper, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
+    widgets::{
+        wrapper::{Wrapper, WrapperBindable},
+        ParentHolder, UpdateHandler, Widget, WidgetStateHolder,
+    },
     Canvas, WidgetRenderer,
 };
 
@@ -60,14 +63,9 @@ where
         self = self.left(space);
         self
     }
-
-    pub fn bind<D>(self, data: D) -> Wrapper<Spacing<W>, D>
-    where
-        D: WidgetData,
-    {
-        Wrapper::wrap(self, data)
-    }
 }
+
+impl<W> WrapperBindable for Spacing<W> where W: Widget {}
 
 impl<W, D> Wrapper<Spacing<W>, D>
 where

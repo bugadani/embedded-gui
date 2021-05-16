@@ -2,7 +2,10 @@ use crate::{
     data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
     state::WidgetState,
-    widgets::{wrapper::Wrapper, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
+    widgets::{
+        wrapper::{Wrapper, WrapperBindable},
+        ParentHolder, UpdateHandler, Widget, WidgetStateHolder,
+    },
 };
 
 pub trait TextBoxProperties {
@@ -75,6 +78,13 @@ where
 }
 
 impl<S, P> UpdateHandler for TextBox<S, P> {}
+
+impl<S, P> WrapperBindable for TextBox<S, P>
+where
+    S: AsRef<str>,
+    P: TextBoxProperties,
+{
+}
 
 impl<S, P> ParentHolder for TextBox<S, P>
 where

@@ -24,6 +24,7 @@ use embedded_gui::{
             fill::{FillParent, Right},
             spacing::Spacing,
         },
+        wrapper::WrapperBindable,
     },
     Window,
 };

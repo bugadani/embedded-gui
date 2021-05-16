@@ -24,6 +24,7 @@ use embedded_gui::{
         scroll::Scroll,
         slider::ScrollbarConnector,
         textbox::TextBox,
+        wrapper::WrapperBindable,
     },
     Window,
 };

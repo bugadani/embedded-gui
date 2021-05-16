@@ -15,6 +15,15 @@ where
     pub data_holder: WidgetDataHolder<W, D>,
 }
 
+pub trait WrapperBindable: Widget + Sized {
+    fn bind<D>(self, data: D) -> Wrapper<Self, D>
+    where
+        D: WidgetData,
+    {
+        Wrapper::wrap(self, data)
+    }
+}
+
 impl Wrapper<(), ()> {
     pub fn wrap<W: Widget, D: WidgetData>(widget: W, data: D) -> Wrapper<W, D> {
         Wrapper {

@@ -30,6 +30,7 @@ use embedded_gui::{
             fill::{Center, FillParent, HorizontalAndVertical},
             spacing::Spacing,
         },
+        wrapper::WrapperBindable,
         Widget,
     },
     Window,

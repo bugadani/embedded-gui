@@ -3,7 +3,10 @@ use crate::{
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
     input::event::InputEvent,
     state::WidgetState,
-    widgets::{wrapper::Wrapper, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
+    widgets::{
+        wrapper::{Wrapper, WrapperBindable},
+        ParentHolder, UpdateHandler, Widget, WidgetStateHolder,
+    },
     Canvas, WidgetRenderer,
 };
 
@@ -24,14 +27,9 @@ where
             on_state_changed: |_, _| (),
         }
     }
-
-    pub fn bind<D>(self, data: D) -> Wrapper<Visibility<W>, D>
-    where
-        D: WidgetData,
-    {
-        Wrapper::wrap(self, data)
-    }
 }
+
+impl<W> WrapperBindable for Visibility<W> where W: Widget {}
 
 impl<W> Visibility<W> {
     pub fn visible(mut self, visibility: bool) -> Self {

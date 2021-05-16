@@ -1,8 +1,7 @@
 use crate::{
-    data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
     state::WidgetState,
-    widgets::{wrapper::Wrapper, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
+    widgets::{wrapper::WrapperBindable, ParentHolder, UpdateHandler, Widget, WidgetStateHolder},
 };
 
 pub trait LabelProperties {
@@ -25,13 +24,6 @@ where
     pub fn on_state_changed(mut self, callback: fn(&mut Self, WidgetState)) -> Self {
         self.on_state_changed = callback;
         self
-    }
-
-    pub fn bind<D>(self, data: D) -> Wrapper<Self, D>
-    where
-        D: WidgetData,
-    {
-        Wrapper::wrap(self, data)
     }
 }
 
@@ -73,6 +65,13 @@ where
 }
 
 impl<S, P> UpdateHandler for Label<S, P> {}
+
+impl<S, P> WrapperBindable for Label<S, P>
+where
+    S: AsRef<str>,
+    P: LabelProperties,
+{
+}
 
 impl<S, P> ParentHolder for Label<S, P>
 where
