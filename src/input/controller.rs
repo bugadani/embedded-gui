@@ -70,6 +70,7 @@ impl InputController for DefaultInputController {
                         // I am Root
                         break;
                     } else {
+                        debug_assert!(parent != handler);
                         handler = parent;
                     }
                 }
