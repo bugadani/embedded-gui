@@ -426,6 +426,7 @@ where
     D: WidgetData,
 {
     fn attach(&mut self, parent: usize, self_index: usize) {
+        debug_assert!(self_index == 0 || parent != self_index);
         self.set_parent(parent);
         self.fields.inner.attach(self_index, self_index + 1);
     }

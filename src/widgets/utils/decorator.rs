@@ -11,6 +11,7 @@ pub trait WidgetDecorator {
     type Widget: Widget;
 
     fn attach(&mut self, parent: usize, self_index: usize) {
+        debug_assert!(self_index == 0 || parent != self_index);
         self.widget_mut().attach(parent, self_index);
     }
 

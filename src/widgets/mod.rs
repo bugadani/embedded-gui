@@ -18,7 +18,8 @@ pub mod utils;
 pub mod wrapper;
 
 pub trait Widget {
-    fn attach(&mut self, parent: usize, _index: usize) {
+    fn attach(&mut self, parent: usize, index: usize) {
+        debug_assert!(index == 0 || parent != index);
         debug_assert!(
             self.children() == 0,
             "Attach must be implemented by non-leaf widgets"

@@ -66,7 +66,6 @@ pub trait LayoutDirection: Copy {
 }
 
 pub struct LinearLayout<CE, L> {
-    pub parent_index: usize,
     pub bounds: BoundingBox,
     pub widgets: CE,
     pub direction: L,
@@ -79,7 +78,6 @@ where
 {
     pub fn weight(self, weight: u32) -> LinearLayout<Link<Cell<W, Weight>, CE>, L> {
         LinearLayout {
-            parent_index: self.parent_index,
             bounds: self.bounds,
             widgets: Link {
                 object: self.widgets.object.weight(weight),
@@ -96,7 +94,6 @@ where
 {
     pub fn weight(self, weight: u32) -> LinearLayout<Chain<Cell<W, Weight>>, L> {
         LinearLayout {
-            parent_index: self.parent_index,
             bounds: self.bounds,
             widgets: Chain {
                 object: self.widgets.object.weight(weight),
@@ -116,7 +113,6 @@ where
         CW: CellWeight,
     {
         LinearLayout {
-            parent_index: self.parent_index,
             bounds: self.bounds,
             widgets: self.widgets.append(widget),
             direction: self.direction,
@@ -153,14 +149,13 @@ where
     L: LayoutDirection,
 {
     fn attach(&mut self, parent: usize, index: usize) {
-        self.set_parent(parent);
-
+        debug_assert!(index == 0 || parent != index);
         let mut children = index;
 
         for i in 0..self.widgets.len() {
             let widget = self.widgets.at_mut(i).widget_mut();
 
-            widget.attach(index, children + i + 1);
+            widget.attach(parent, children + i);
             children += widget.children();
         }
     }
@@ -303,12 +298,10 @@ where
     }
 
     fn parent_index(&self) -> usize {
-        self.parent_index
+        self.widgets.at(0).widget().parent_index()
     }
 
-    fn set_parent(&mut self, index: usize) {
-        self.parent_index = index;
-    }
+    fn set_parent(&mut self, _index: usize) {}
 
     fn update(&mut self) {
         self.widgets.update();

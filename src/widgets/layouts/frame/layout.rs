@@ -193,6 +193,7 @@ where
     CE: FrameLayoutChainElement + ChainElement,
 {
     fn attach(&mut self, parent: usize, index: usize) {
+        debug_assert!(index == 0 || parent != index);
         let mut children = index;
 
         for i in 0..self.widgets.len() {
@@ -248,7 +249,7 @@ where
     }
 
     fn parent_index(&self) -> usize {
-        unimplemented!()
+        self.widgets.at(0).parent_index()
     }
 
     fn set_parent(&mut self, _index: usize) {}
