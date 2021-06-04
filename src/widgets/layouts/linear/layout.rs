@@ -153,6 +153,7 @@ where
     L: LayoutDirection,
 {
     fn attach(&mut self, parent: usize, index: usize) {
+        debug_assert!(index == 0 || parent != index);
         self.set_parent(parent);
 
         let mut children = index;

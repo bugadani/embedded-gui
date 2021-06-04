@@ -193,6 +193,7 @@ where
     CE: FrameLayoutChainElement + ChainElement,
 {
     fn attach(&mut self, parent: usize, index: usize) {
+        debug_assert!(index == 0 || parent != index);
         let mut children = index;
 
         for i in 0..self.widgets.len() {
