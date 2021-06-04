@@ -54,7 +54,6 @@ where
         CW: CellWeight,
     {
         LinearLayout {
-            parent_index: 0,
             bounds: BoundingBox::default(),
             widgets: Chain::new(widget),
             direction: self,

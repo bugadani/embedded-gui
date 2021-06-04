@@ -249,7 +249,7 @@ where
     }
 
     fn parent_index(&self) -> usize {
-        unimplemented!()
+        self.widgets.at(0).parent_index()
     }
 
     fn set_parent(&mut self, _index: usize) {}
