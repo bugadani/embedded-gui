@@ -41,5 +41,5 @@ impl ButtonStyle<BinaryColor> for SecondaryButtonStyle {
     type Hovered = SecondaryButtonHovered;
     type Pressed = SecondaryButtonPressed;
 
-    const FONT: MonoFont<'static, 'static> = FONT_6X10;
+    const FONT: MonoFont<'static> = FONT_6X10;
 }

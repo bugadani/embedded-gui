@@ -11,9 +11,6 @@ use embedded_gui::{
     WidgetRenderer,
 };
 
-pub mod ascii;
-pub mod latin1;
-
 use crate::EgCanvas;
 
 pub struct LabelStyle<T>
@@ -23,7 +20,7 @@ where
     renderer: T,
 }
 
-impl<'a, 'b, 'c, C> LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>
+impl<'a, C> LabelStyle<MonoTextStyle<'a, C>>
 where
     C: PixelColor,
 {
@@ -35,10 +32,7 @@ where
     }
 
     /// Customize the font
-    pub fn font<'a2, 'b2, 'c2>(
-        self,
-        font: &'a2 MonoFont<'b2, 'c2>,
-    ) -> LabelStyle<MonoTextStyle<'a2, 'b2, 'c2, C>> {
+    pub fn font<'a2>(self, font: &'a2 MonoFont<'a2>) -> LabelStyle<MonoTextStyle<'a2, C>> {
         LabelStyle {
             renderer: MonoTextStyleBuilder::from(&self.renderer)
                 .font(font)
@@ -83,7 +77,7 @@ pub trait LabelStyling<S>: Sized {
         P: LabelProperties;
 }
 
-impl<'a, 'b, 'c, C, S> LabelStyling<S> for Label<S, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>
+impl<'a, C, S> LabelStyling<S> for Label<S, LabelStyle<MonoTextStyle<'a, C>>>
 where
     S: AsRef<str>,
     C: PixelColor,
@@ -118,22 +112,15 @@ where
     S: AsRef<str>,
     C: PixelColor,
 {
-    fn font<'a, 'b, 'c>(
-        self,
-        font: &'a MonoFont<'b, 'c>,
-    ) -> Label<S, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>;
+    fn font<'a>(self, font: &'a MonoFont<'a>) -> Label<S, LabelStyle<MonoTextStyle<'a, C>>>;
 }
 
-impl<'a, 'b, 'c, C, S> MonoFontLabelStyling<C, S>
-    for Label<S, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>
+impl<'a, C, S> MonoFontLabelStyling<C, S> for Label<S, LabelStyle<MonoTextStyle<'a, C>>>
 where
     S: AsRef<str>,
     C: PixelColor,
 {
-    fn font<'a2, 'b2, 'c2>(
-        self,
-        font: &'a2 MonoFont<'b2, 'c2>,
-    ) -> Label<S, LabelStyle<MonoTextStyle<'a2, 'b2, 'c2, C>>> {
+    fn font<'a2>(self, font: &'a2 MonoFont<'a2>) -> Label<S, LabelStyle<MonoTextStyle<'a2, C>>> {
         let renderer = MonoTextStyleBuilder::from(&self.label_properties.renderer)
             .font(font)
             .build();
@@ -161,3 +148,61 @@ where
             .map(|_| ())
     }
 }
+
+macro_rules! label_for_charset {
+    ($charset:ident) => {
+        pub mod $charset {
+            use embedded_graphics::{
+                mono_font::{$charset, MonoTextStyle, MonoTextStyleBuilder},
+                pixelcolor::PixelColor,
+            };
+            use embedded_gui::{geometry::BoundingBox, widgets::label::Label};
+
+            use crate::{themes::Theme, widgets::label::LabelStyle};
+
+            pub trait LabelConstructor<'a, S, C>
+            where
+                S: AsRef<str>,
+                C: PixelColor,
+            {
+                fn new(text: S) -> Label<S, LabelStyle<MonoTextStyle<'a, C>>>;
+            }
+
+            impl<'a, C, S> LabelConstructor<'a, S, C> for Label<S, LabelStyle<MonoTextStyle<'a, C>>>
+            where
+                S: AsRef<str>,
+                C: PixelColor + Theme,
+            {
+                fn new(text: S) -> Self {
+                    Label {
+                        parent_index: 0,
+                        text,
+                        label_properties: LabelStyle {
+                            renderer: MonoTextStyleBuilder::new()
+                                .font(&$charset::FONT_6X10)
+                                .text_color(<C as Theme>::TEXT_COLOR)
+                                .build(),
+                        },
+                        bounds: BoundingBox::default(),
+                        on_state_changed: |_, _| (),
+                    }
+                }
+            }
+        }
+    };
+}
+
+label_for_charset!(ascii);
+label_for_charset!(iso_8859_1);
+label_for_charset!(iso_8859_10);
+label_for_charset!(iso_8859_13);
+label_for_charset!(iso_8859_14);
+label_for_charset!(iso_8859_15);
+label_for_charset!(iso_8859_16);
+label_for_charset!(iso_8859_2);
+label_for_charset!(iso_8859_3);
+label_for_charset!(iso_8859_4);
+label_for_charset!(iso_8859_5);
+label_for_charset!(iso_8859_7);
+label_for_charset!(iso_8859_9);
+label_for_charset!(jis_x0201);

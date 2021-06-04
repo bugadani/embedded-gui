@@ -3,7 +3,10 @@ use std::{fmt::Write, thread, time::Duration};
 use backend_embedded_graphics::{
     themes::{default::DefaultTheme, Theme},
     widgets::textbox::{ascii::TextBoxConstructor, TextBoxStyling},
-    widgets::{label::ascii::LabelConstructor, textbox::CenterAligned},
+    widgets::{
+        label::ascii::LabelConstructor,
+        textbox::{HorizontalAlignment, VerticalAlignment},
+    },
     EgCanvas,
 };
 use embedded_graphics::{
@@ -148,8 +151,8 @@ fn main() {
         TextBox::new(
             "Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically",
         )
-        .horizontal_alignment(CenterAligned)
-        .vertical_alignment(CenterAligned),
+        .horizontal_alignment(HorizontalAlignment::Center)
+        .vertical_alignment(VerticalAlignment::Middle),
     ));
 
     let checkables_page = Column::new()

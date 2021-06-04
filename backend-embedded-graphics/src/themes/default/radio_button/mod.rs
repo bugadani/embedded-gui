@@ -48,7 +48,7 @@ pub trait RadioButtonVisualStyle<C: PixelColor> {
     type Hovered: RadioButtonStateColors<C>;
     type Pressed: RadioButtonStateColors<C>;
 
-    const FONT: MonoFont<'static, 'static>;
+    const FONT: MonoFont<'static>;
 
     fn apply_radio_button<P: RadioButtonProperties<Color = C>>(
         radio_button: &mut RadioButton<P>,
@@ -88,7 +88,7 @@ pub trait RadioButtonVisualStyle<C: PixelColor> {
 pub type StyledRadioButton<'a, 'b, 'c, C> = Toggle<
     LinearLayout<
         Link<
-            Cell<Label<&'static str, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>>,
+            Cell<Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>,
             Chain<Cell<RadioButton<RadioButtonStyle<C>>>>,
         >,
         Row<WithSpacing>,

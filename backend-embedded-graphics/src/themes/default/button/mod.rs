@@ -60,7 +60,7 @@ pub trait ButtonStyle<C: PixelColor> {
     type Hovered: ButtonStateColors<C>;
     type Pressed: ButtonStateColors<C>;
 
-    const FONT: MonoFont<'static, 'static>;
+    const FONT: MonoFont<'static>;
 
     fn apply_label<S, T>(label: &mut Label<S, T>, state: WidgetState)
     where
@@ -110,10 +110,7 @@ pub trait ButtonStyle<C: PixelColor> {
 
 pub type StyledButton<'a, 'b, 'c, C> = Button<
     Background<
-        Border<
-            Spacing<Label<&'static str, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>>,
-            BorderStyle<C>,
-        >,
+        Border<Spacing<Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>, BorderStyle<C>>,
         BackgroundStyle<C>,
     >,
 >;
@@ -145,7 +142,7 @@ pub type StyledButtonStretched<'a, 'b, 'c, C> = Button<
     Background<
         Border<
             FillParent<
-                Label<&'static str, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>,
+                Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>,
                 HorizontalAndVertical,
                 Center,
                 Center,

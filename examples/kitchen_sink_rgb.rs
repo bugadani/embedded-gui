@@ -4,7 +4,9 @@ use backend_embedded_graphics::{
     themes::{default::DefaultTheme, Theme},
     widgets::{
         label::ascii::LabelConstructor,
-        textbox::{ascii::TextBoxConstructor, CenterAligned, TextBoxStyling},
+        textbox::{
+            ascii::TextBoxConstructor, HorizontalAlignment, TextBoxStyling, VerticalAlignment,
+        },
     },
     EgCanvas,
 };
@@ -151,8 +153,8 @@ fn main() {
         TextBox::new(
             "Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically",
         )
-        .horizontal_alignment(CenterAligned)
-        .vertical_alignment(CenterAligned),
+        .horizontal_alignment(HorizontalAlignment::Center)
+        .vertical_alignment(VerticalAlignment::Middle),
     ))
     .border_color(Rgb888::CSS_LIGHT_GRAY);
 

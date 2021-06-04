@@ -58,5 +58,5 @@ where
     type Hovered = SecondaryButtonHovered<C>;
     type Pressed = SecondaryButtonPressed<C>;
 
-    const FONT: MonoFont<'static, 'static> = FONT_6X10;
+    const FONT: MonoFont<'static> = FONT_6X10;
 }

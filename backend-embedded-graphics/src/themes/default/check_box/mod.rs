@@ -48,7 +48,7 @@ pub trait CheckBoxVisualStyle<C: PixelColor> {
     type Hovered: CheckBoxStateColors<C>;
     type Pressed: CheckBoxStateColors<C>;
 
-    const FONT: MonoFont<'static, 'static>;
+    const FONT: MonoFont<'static>;
 
     fn apply_check_box<P: CheckBoxProperties<Color = C>>(
         check_box: &mut CheckBox<P>,
@@ -85,7 +85,7 @@ pub trait CheckBoxVisualStyle<C: PixelColor> {
 pub type StyledCheckBox<'a, 'b, 'c, C> = Toggle<
     LinearLayout<
         Link<
-            Cell<Label<&'static str, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>>,
+            Cell<Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>,
             Chain<Cell<CheckBox<CheckBoxStyle<C>>>>,
         >,
         Row<WithSpacing>,

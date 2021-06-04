@@ -62,5 +62,5 @@ where
     type Hovered = CheckBoxHovered;
     type Pressed = CheckBoxPressed;
 
-    const FONT: MonoFont<'static, 'static> = FONT_6X10;
+    const FONT: MonoFont<'static> = FONT_6X10;
 }

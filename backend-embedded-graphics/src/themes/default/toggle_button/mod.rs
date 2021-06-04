@@ -38,7 +38,7 @@ pub trait ToggleButtonStyle<C: PixelColor> {
     type HoveredChecked: ButtonStateColors<C>;
     type PressedChecked: ButtonStateColors<C>;
 
-    const FONT: MonoFont<'static, 'static>;
+    const FONT: MonoFont<'static>;
 
     fn apply_label<S, T>(label: &mut Label<S, T>, state: WidgetState)
     where
@@ -134,12 +134,9 @@ pub trait ToggleButtonStyle<C: PixelColor> {
     }
 }
 
-pub type StyledToggleButton<'a, 'b, 'c, C> = Toggle<
+pub type StyledToggleButton<'a, C> = Toggle<
     Background<
-        Border<
-            Spacing<Label<&'static str, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>>,
-            BorderStyle<C>,
-        >,
+        Border<Spacing<Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>, BorderStyle<C>>,
         BackgroundStyle<C>,
     >,
     (),
@@ -169,11 +166,11 @@ where
     )
 }
 
-pub type StyledToggleButtonStretched<'a, 'b, 'c, C> = Toggle<
+pub type StyledToggleButtonStretched<'a, C> = Toggle<
     Background<
         Border<
             FillParent<
-                Label<&'static str, LabelStyle<MonoTextStyle<'a, 'b, 'c, C>>>,
+                Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>,
                 HorizontalAndVertical,
                 Center,
                 Center,

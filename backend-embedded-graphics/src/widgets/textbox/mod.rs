@@ -13,36 +13,26 @@ use embedded_gui::{
     WidgetRenderer,
 };
 use embedded_text::{
-    alignment::{HorizontalTextAlignment, VerticalTextAlignment},
     style::{HeightMode, TextBoxStyleBuilder, VerticalOverdraw},
     TextBox as EgTextBox,
 };
 
-pub use embedded_text::alignment::{
-    BottomAligned, CenterAligned, Justified, LeftAligned, RightAligned, Scrolling, TopAligned,
-};
-
-pub mod ascii;
-pub mod latin1;
+pub use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
 
 use crate::{EgCanvas, ToRectangle};
 
-pub struct TextBoxStyle<T, H = LeftAligned, V = TopAligned>
+pub struct TextBoxStyle<T>
 where
     T: TextRenderer + CharacterStyle<Color = <T as TextRenderer>::Color>,
-    H: HorizontalTextAlignment,
-    V: VerticalTextAlignment,
 {
     renderer: T,
-    horizontal: H,
-    vertical: V,
+    horizontal: HorizontalAlignment,
+    vertical: VerticalAlignment,
 }
 
-impl<'a, 'b, 'c, C, H, V> TextBoxStyle<MonoTextStyle<'a, 'b, 'c, C>, H, V>
+impl<'a, 'b, 'c, C> TextBoxStyle<MonoTextStyle<'a, C>>
 where
     C: PixelColor,
-    H: HorizontalTextAlignment,
-    V: VerticalTextAlignment,
 {
     /// Customize the text color
     pub fn text_color(&mut self, text_color: C) {
@@ -52,10 +42,7 @@ where
     }
 
     /// Customize the font
-    pub fn font<'a2, 'b2, 'c2>(
-        self,
-        font: &'a2 MonoFont<'b2, 'c2>,
-    ) -> TextBoxStyle<MonoTextStyle<'a2, 'b2, 'c2, C>, H, V> {
+    pub fn font<'a2>(self, font: &'a2 MonoFont<'a2>) -> TextBoxStyle<MonoTextStyle<'a2, C>> {
         TextBoxStyle {
             renderer: MonoTextStyleBuilder::from(&self.renderer)
                 .font(font)
@@ -66,12 +53,10 @@ where
     }
 }
 
-impl<F, C, H, V> TextBoxProperties for TextBoxStyle<F, H, V>
+impl<F, C> TextBoxProperties for TextBoxStyle<F>
 where
     F: TextRenderer<Color = C> + CharacterStyle<Color = C>,
     C: PixelColor,
-    H: HorizontalTextAlignment,
-    V: VerticalTextAlignment,
 {
     fn measure_text(&self, text: &str, spec: MeasureSpec) -> MeasuredSize {
         let max_width = spec.width.largest().unwrap_or(u32::MAX);
@@ -102,12 +87,10 @@ where
     }
 }
 
-pub trait TextBoxStyling<'a, 'b, 'c, C, S, T, H, V>: Sized
+pub trait TextBoxStyling<'a, C, S, T>: Sized
 where
     C: PixelColor,
     T: TextRenderer + CharacterStyle<Color = <T as TextRenderer>::Color>,
-    H: HorizontalTextAlignment,
-    V: VerticalTextAlignment,
 {
     type Color;
 
@@ -118,7 +101,7 @@ where
 
     fn set_text_color(&mut self, color: Self::Color);
 
-    fn text_renderer<T2>(self, renderer: T2) -> TextBox<S, TextBoxStyle<T2, H, V>>
+    fn text_renderer<T2>(self, renderer: T2) -> TextBox<S, TextBoxStyle<T2>>
     where
         T2: TextRenderer + CharacterStyle<Color = <T2 as TextRenderer>::Color>;
 
@@ -126,24 +109,16 @@ where
     where
         P: TextBoxProperties;
 
-    fn horizontal_alignment<H2: HorizontalTextAlignment>(
-        self,
-        alignment: H2,
-    ) -> TextBox<S, TextBoxStyle<T, H2, V>>;
+    fn horizontal_alignment(self, alignment: HorizontalAlignment) -> Self;
 
-    fn vertical_alignment<V2: VerticalTextAlignment>(
-        self,
-        alignment: V2,
-    ) -> TextBox<S, TextBoxStyle<MonoTextStyle<'a, 'b, 'c, C>, H, V2>>;
+    fn vertical_alignment(self, alignment: VerticalAlignment) -> Self;
 }
 
-impl<'a, 'b, 'c, C, S, H, V> TextBoxStyling<'a, 'b, 'c, C, S, MonoTextStyle<'a, 'b, 'c, C>, H, V>
-    for TextBox<S, TextBoxStyle<MonoTextStyle<'a, 'b, 'c, C>, H, V>>
+impl<'a, C, S> TextBoxStyling<'a, C, S, MonoTextStyle<'a, C>>
+    for TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>
 where
     S: AsRef<str>,
     C: PixelColor,
-    H: HorizontalTextAlignment,
-    V: VerticalTextAlignment,
 {
     type Color = C;
 
@@ -151,7 +126,7 @@ where
         self.label_properties.text_color(color);
     }
 
-    fn text_renderer<T>(self, renderer: T) -> TextBox<S, TextBoxStyle<T, H, V>>
+    fn text_renderer<T>(self, renderer: T) -> TextBox<S, TextBoxStyle<T>>
     where
         T: TextRenderer + CharacterStyle<Color = <T as TextRenderer>::Color>,
     {
@@ -178,10 +153,7 @@ where
         }
     }
 
-    fn horizontal_alignment<H2: HorizontalTextAlignment>(
-        self,
-        alignment: H2,
-    ) -> TextBox<S, TextBoxStyle<MonoTextStyle<'a, 'b, 'c, C>, H2, V>> {
+    fn horizontal_alignment(self, alignment: HorizontalAlignment) -> Self {
         let renderer = self.label_properties.renderer;
         let horizontal = alignment;
         let vertical = self.label_properties.vertical;
@@ -193,10 +165,7 @@ where
         })
     }
 
-    fn vertical_alignment<V2: VerticalTextAlignment>(
-        self,
-        alignment: V2,
-    ) -> TextBox<S, TextBoxStyle<MonoTextStyle<'a, 'b, 'c, C>, H, V2>> {
+    fn vertical_alignment(self, alignment: VerticalAlignment) -> Self {
         let renderer = self.label_properties.renderer;
         let horizontal = self.label_properties.horizontal;
         let vertical = alignment;
@@ -210,31 +179,23 @@ where
 }
 
 /// Font settings specific to `MonoFont`'s renderer.
-pub trait MonoFontTextBoxStyling<C, S, H, V>: Sized
+pub trait MonoFontTextBoxStyling<C, S>: Sized
 where
     S: AsRef<str>,
     C: PixelColor,
-    H: HorizontalTextAlignment,
-    V: VerticalTextAlignment,
 {
-    fn font<'a, 'b, 'c>(
-        self,
-        font: &'a MonoFont<'b, 'c>,
-    ) -> TextBox<S, TextBoxStyle<MonoTextStyle<'a, 'b, 'c, C>, H, V>>;
+    fn font<'a>(self, font: &'a MonoFont<'a>) -> TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>;
 }
 
-impl<'a, 'b, 'c, C, S, H, V> MonoFontTextBoxStyling<C, S, H, V>
-    for TextBox<S, TextBoxStyle<MonoTextStyle<'a, 'b, 'c, C>, H, V>>
+impl<'a, C, S> MonoFontTextBoxStyling<C, S> for TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>
 where
     S: AsRef<str>,
     C: PixelColor,
-    H: HorizontalTextAlignment,
-    V: VerticalTextAlignment,
 {
-    fn font<'a2, 'b2, 'c2>(
+    fn font<'a2>(
         self,
-        font: &'a2 MonoFont<'b2, 'c2>,
-    ) -> TextBox<S, TextBoxStyle<MonoTextStyle<'a2, 'b2, 'c2, C>, H, V>> {
+        font: &'a2 MonoFont<'a2>,
+    ) -> TextBox<S, TextBoxStyle<MonoTextStyle<'a2, C>>> {
         let renderer = MonoTextStyleBuilder::from(&self.label_properties.renderer)
             .font(font)
             .build();
@@ -249,14 +210,12 @@ where
     }
 }
 
-impl<S, F, C, DT, H, V> WidgetRenderer<EgCanvas<DT>> for TextBox<S, TextBoxStyle<F, H, V>>
+impl<S, F, C, DT> WidgetRenderer<EgCanvas<DT>> for TextBox<S, TextBoxStyle<F>>
 where
     S: AsRef<str>,
     F: TextRenderer<Color = C> + CharacterStyle<Color = C>,
     C: PixelColor + From<Rgb888>,
     DT: DrawTarget<Color = C>,
-    H: HorizontalTextAlignment,
-    V: VerticalTextAlignment,
 {
     fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
         EgTextBox::with_textbox_style(
@@ -273,3 +232,65 @@ where
         .map(|_| ())
     }
 }
+
+macro_rules! textbox_for_charset {
+    ($charset:ident) => {
+        pub mod $charset {
+            use embedded_graphics::{
+                mono_font::{$charset, MonoTextStyle, MonoTextStyleBuilder},
+                pixelcolor::PixelColor,
+            };
+            use embedded_gui::{geometry::BoundingBox, widgets::textbox::TextBox};
+            use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
+
+            use crate::{themes::Theme, widgets::textbox::TextBoxStyle};
+
+            pub trait TextBoxConstructor<'a, S, C>
+            where
+                S: AsRef<str>,
+                C: PixelColor,
+            {
+                fn new(text: S) -> TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>;
+            }
+
+            impl<'a, 'b, 'c, C, S> TextBoxConstructor<'a, S, C>
+                for TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>
+            where
+                S: AsRef<str>,
+                C: PixelColor + Theme,
+            {
+                fn new(text: S) -> Self {
+                    TextBox {
+                        parent_index: 0,
+                        text,
+                        label_properties: TextBoxStyle {
+                            renderer: MonoTextStyleBuilder::new()
+                                .font(&$charset::FONT_6X10)
+                                .text_color(<C as Theme>::TEXT_COLOR)
+                                .build(),
+                            horizontal: HorizontalAlignment::Left,
+                            vertical: VerticalAlignment::Top,
+                        },
+                        bounds: BoundingBox::default(),
+                        on_state_changed: |_, _| (),
+                    }
+                }
+            }
+        }
+    };
+}
+
+textbox_for_charset!(ascii);
+textbox_for_charset!(iso_8859_1);
+textbox_for_charset!(iso_8859_10);
+textbox_for_charset!(iso_8859_13);
+textbox_for_charset!(iso_8859_14);
+textbox_for_charset!(iso_8859_15);
+textbox_for_charset!(iso_8859_16);
+textbox_for_charset!(iso_8859_2);
+textbox_for_charset!(iso_8859_3);
+textbox_for_charset!(iso_8859_4);
+textbox_for_charset!(iso_8859_5);
+textbox_for_charset!(iso_8859_7);
+textbox_for_charset!(iso_8859_9);
+textbox_for_charset!(jis_x0201);
