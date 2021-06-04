@@ -237,7 +237,7 @@ macro_rules! textbox_for_charset {
     ($charset:ident) => {
         pub mod $charset {
             use embedded_graphics::{
-                mono_font::{$charset, MonoTextStyle, MonoTextStyleBuilder},
+                mono_font::{$charset, MonoTextStyle},
                 pixelcolor::PixelColor,
             };
             use embedded_gui::{geometry::BoundingBox, widgets::textbox::TextBox};
@@ -264,10 +264,10 @@ macro_rules! textbox_for_charset {
                         parent_index: 0,
                         text,
                         label_properties: TextBoxStyle {
-                            renderer: MonoTextStyleBuilder::new()
-                                .font(&$charset::FONT_6X10)
-                                .text_color(<C as Theme>::TEXT_COLOR)
-                                .build(),
+                            renderer: MonoTextStyle::new(
+                                &$charset::FONT_6X10,
+                                <C as Theme>::TEXT_COLOR,
+                            ),
                             horizontal: HorizontalAlignment::Left,
                             vertical: VerticalAlignment::Top,
                         },
