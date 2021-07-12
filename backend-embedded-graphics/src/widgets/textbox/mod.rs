@@ -56,7 +56,7 @@ where
 impl<F, C> TextBoxProperties for TextBoxStyle<F>
 where
     F: TextRenderer<Color = C> + CharacterStyle<Color = C>,
-    C: PixelColor,
+    C: PixelColor + From<Rgb888>,
 {
     fn measure_text(&self, text: &str, spec: MeasureSpec) -> MeasuredSize {
         let max_width = spec.width.largest().unwrap_or(u32::MAX);
@@ -103,7 +103,8 @@ where
 
     fn text_renderer<T2>(self, renderer: T2) -> TextBox<S, TextBoxStyle<T2>>
     where
-        T2: TextRenderer + CharacterStyle<Color = <T2 as TextRenderer>::Color>;
+        T2: TextRenderer + CharacterStyle<Color = <T2 as TextRenderer>::Color>,
+        <T2 as TextRenderer>::Color: From<Rgb888>;
 
     fn style<P>(self, props: P) -> TextBox<S, P>
     where
@@ -118,7 +119,7 @@ impl<'a, C, S> TextBoxStyling<'a, C, S, MonoTextStyle<'a, C>>
     for TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>
 where
     S: AsRef<str>,
-    C: PixelColor,
+    C: PixelColor + From<Rgb888>,
 {
     type Color = C;
 
@@ -129,6 +130,7 @@ where
     fn text_renderer<T>(self, renderer: T) -> TextBox<S, TextBoxStyle<T>>
     where
         T: TextRenderer + CharacterStyle<Color = <T as TextRenderer>::Color>,
+        <T as TextRenderer>::Color: From<Rgb888>,
     {
         let horizontal = self.label_properties.horizontal;
         let vertical = self.label_properties.vertical;
@@ -190,7 +192,7 @@ where
 impl<'a, C, S> MonoFontTextBoxStyling<C, S> for TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>
 where
     S: AsRef<str>,
-    C: PixelColor,
+    C: PixelColor + From<Rgb888>,
 {
     fn font<'a2>(
         self,
@@ -234,7 +236,7 @@ where
 }
 
 macro_rules! textbox_for_charset {
-    ($charset:ident) => {
+    ($charset:ident, $font:ident) => {
         pub mod $charset {
             use embedded_graphics::{
                 mono_font::{$charset, MonoTextStyle},
@@ -265,7 +267,7 @@ macro_rules! textbox_for_charset {
                         text,
                         label_properties: TextBoxStyle {
                             renderer: MonoTextStyle::new(
-                                &$charset::FONT_6X10,
+                                &$charset::$font,
                                 <C as Theme>::TEXT_COLOR,
                             ),
                             horizontal: HorizontalAlignment::Left,
@@ -277,6 +279,10 @@ macro_rules! textbox_for_charset {
                 }
             }
         }
+    };
+
+    ($charset:ident) => {
+        textbox_for_charset!($charset, FONT_6X10);
     };
 }
 
@@ -293,4 +299,4 @@ textbox_for_charset!(iso_8859_4);
 textbox_for_charset!(iso_8859_5);
 textbox_for_charset!(iso_8859_7);
 textbox_for_charset!(iso_8859_9);
-textbox_for_charset!(jis_x0201);
+textbox_for_charset!(jis_x0201, FONT_6X13);

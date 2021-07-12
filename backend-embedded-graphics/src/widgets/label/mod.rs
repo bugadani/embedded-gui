@@ -150,7 +150,7 @@ where
 }
 
 macro_rules! label_for_charset {
-    ($charset:ident) => {
+    ($charset:ident, $font:ident) => {
         pub mod $charset {
             use embedded_graphics::{
                 mono_font::{$charset, MonoTextStyle},
@@ -179,7 +179,7 @@ macro_rules! label_for_charset {
                         text,
                         label_properties: LabelStyle {
                             renderer: MonoTextStyle::new(
-                                &$charset::FONT_6X10,
+                                &$charset::$font,
                                 <C as Theme>::TEXT_COLOR,
                             ),
                         },
@@ -189,6 +189,10 @@ macro_rules! label_for_charset {
                 }
             }
         }
+    };
+
+    ($charset:ident) => {
+        label_for_charset!($charset, FONT_6X10);
     };
 }
 
@@ -205,4 +209,4 @@ label_for_charset!(iso_8859_4);
 label_for_charset!(iso_8859_5);
 label_for_charset!(iso_8859_7);
 label_for_charset!(iso_8859_9);
-label_for_charset!(jis_x0201);
+label_for_charset!(jis_x0201, FONT_6X13);
