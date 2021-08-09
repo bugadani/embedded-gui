@@ -13,6 +13,7 @@ pub mod primitives;
 pub mod scroll;
 pub mod slider;
 pub mod text_block;
+pub mod text_box;
 pub mod toggle;
 pub mod utils;
 pub mod wrapper;
