@@ -13,6 +13,7 @@ use embedded_gui::{
     WidgetRenderer,
 };
 use embedded_text::{
+    plugin::ansi::Ansi,
     style::{HeightMode, TextBoxStyleBuilder, VerticalOverdraw},
     TextBox as EgTextBox,
 };
@@ -231,6 +232,7 @@ where
                 .vertical_alignment(self.label_properties.vertical)
                 .build(),
         )
+        .add_plugin(Ansi::new())
         .draw(&mut canvas.target)
         .map(|_| ())
     }

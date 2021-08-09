@@ -165,7 +165,7 @@ fn main() {
                     "Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically",
                 )
                 .horizontal_alignment(HorizontalAlignment::Center)
-                .vertical_alignment(VerticalAlignment::Middle),
+                .vertical_alignment(VerticalAlignment::Middle)
             )
             .align_vertical(Top))
             .border_color(Rgb888::CSS_LIGHT_GRAY))
