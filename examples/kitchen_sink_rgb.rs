@@ -7,6 +7,7 @@ use backend_embedded_graphics::{
         text_block::{
             ascii::TextBlockConstructor, HorizontalAlignment, TextBlockStyling, VerticalAlignment,
         },
+        text_box::ascii::TextBoxConstructor,
     },
     EgCanvas,
 };
@@ -29,10 +30,16 @@ use embedded_gui::{
             frame::Frame,
             linear::{column::Column, row::Row},
         },
-        primitives::{border::Border, fill::FillParent, spacing::Spacing, visibility::Visibility},
+        primitives::{
+            border::Border,
+            fill::{FillParent, Top},
+            spacing::Spacing,
+            visibility::Visibility,
+        },
         scroll::Scroll,
         slider::ScrollbarConnector,
         text_block::TextBlock,
+        text_box::TextBox,
     },
 };
 use heapless::String;
@@ -95,16 +102,16 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
 
 #[derive(PartialEq)]
 enum Page {
-    Textbox,
+    TextBlock,
     Check,
     Slider,
     Scroll,
 }
 
 fn main() {
-    let display = SimulatorDisplay::new(EgSize::new(240, 180));
+    let display = SimulatorDisplay::new(EgSize::new(300, 180));
 
-    let page = BoundData::new(Page::Textbox, |_| ());
+    let page = BoundData::new(Page::TextBlock, |_| ());
 
     let radio = BoundData::new(0, |_| ());
     let checkbox = BoundData::new(false, |_| ());
@@ -121,11 +128,11 @@ fn main() {
     let tabs = Row::new()
         .spacing(1)
         .add(
-            DefaultTheme::toggle_button("Text block")
+            DefaultTheme::toggle_button("Multiline text")
                 .disallow_manual_uncheck()
                 .bind(&page)
-                .on_selected_changed(|_, page| *page = Page::Textbox)
-                .on_data_changed(|toggle, data| toggle.set_checked(*data == Page::Textbox)),
+                .on_selected_changed(|_, page| *page = Page::TextBlock)
+                .on_data_changed(|toggle, data| toggle.set_checked(*data == Page::TextBlock)),
         )
         .add(
             DefaultTheme::toggle_button("Checkables")
@@ -149,14 +156,30 @@ fn main() {
                 .on_data_changed(|toggle, data| toggle.set_checked(*data == Page::Scroll)),
         );
 
-    let textbox_page = Border::new(FillParent::both(
-        TextBlock::new(
-            "Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically",
+    let text_block_page = Row::new()
+        .spacing(1)
+        .add(
+            Column::new().add(Label::new("TextBlock")).add(
+            Border::new(FillParent::both(
+                TextBlock::new(
+                    "Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically",
+                )
+                .horizontal_alignment(HorizontalAlignment::Center)
+                .vertical_alignment(VerticalAlignment::Middle),
+            )
+            .align_vertical(Top))
+            .border_color(Rgb888::CSS_LIGHT_GRAY))
         )
-        .horizontal_alignment(HorizontalAlignment::Center)
-        .vertical_alignment(VerticalAlignment::Middle),
-    ))
-    .border_color(Rgb888::CSS_LIGHT_GRAY);
+        .weight(1)
+        .add(
+            Column::new().add(Label::new("TextBox")).add(
+            Border::new(FillParent::both(TextBox::new(
+                "A TextBox with editable content. Click me and start typing!",
+            ))
+            .align_vertical(Top))
+            .border_color(Rgb888::CSS_LIGHT_GRAY))
+        )
+        .weight(1);
 
     let checkables_page = Column::new()
         .spacing(1)
@@ -372,9 +395,13 @@ fn main() {
             Spacing::new(
                 Column::new().add(tabs).add(
                     Frame::new()
-                        .add_layer(Visibility::new(textbox_page).bind(&page).on_data_changed(
-                            |widget, page| widget.set_visible(*page == Page::Textbox),
-                        ))
+                        .add_layer(
+                            Visibility::new(text_block_page)
+                                .bind(&page)
+                                .on_data_changed(|widget, page| {
+                                    widget.set_visible(*page == Page::TextBlock)
+                                }),
+                        )
                         .add_layer(
                             Visibility::new(checkables_page)
                                 .bind(&page)
