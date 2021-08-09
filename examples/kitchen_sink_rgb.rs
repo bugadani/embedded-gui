@@ -4,8 +4,8 @@ use backend_embedded_graphics::{
     themes::{default::DefaultTheme, Theme},
     widgets::{
         label::ascii::LabelConstructor,
-        textbox::{
-            ascii::TextBoxConstructor, HorizontalAlignment, TextBoxStyling, VerticalAlignment,
+        text_block::{
+            ascii::TextBlockConstructor, HorizontalAlignment, TextBlockStyling, VerticalAlignment,
         },
     },
     EgCanvas,
@@ -32,7 +32,7 @@ use embedded_gui::{
         primitives::{border::Border, fill::FillParent, spacing::Spacing, visibility::Visibility},
         scroll::Scroll,
         slider::ScrollbarConnector,
-        textbox::TextBox,
+        text_block::TextBlock,
     },
 };
 use heapless::String;
@@ -121,7 +121,7 @@ fn main() {
     let tabs = Row::new()
         .spacing(1)
         .add(
-            DefaultTheme::toggle_button("Textbox")
+            DefaultTheme::toggle_button("Text block")
                 .disallow_manual_uncheck()
                 .bind(&page)
                 .on_selected_changed(|_, page| *page = Page::Textbox)
@@ -150,7 +150,7 @@ fn main() {
         );
 
     let textbox_page = Border::new(FillParent::both(
-        TextBox::new(
+        TextBlock::new(
             "Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically",
         )
         .horizontal_alignment(HorizontalAlignment::Center)

@@ -9,7 +9,7 @@ use embedded_graphics::{
 };
 use embedded_gui::{
     geometry::{measurement::MeasureSpec, MeasuredSize},
-    widgets::textbox::{TextBox, TextBoxProperties},
+    widgets::text_block::{TextBlock, TextBlockProperties},
     WidgetRenderer,
 };
 use embedded_text::{
@@ -21,7 +21,7 @@ pub use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
 
 use crate::{EgCanvas, ToRectangle};
 
-pub struct TextBoxStyle<T>
+pub struct TextBlockStyle<T>
 where
     T: TextRenderer + CharacterStyle<Color = <T as TextRenderer>::Color>,
 {
@@ -30,7 +30,7 @@ where
     vertical: VerticalAlignment,
 }
 
-impl<'a, 'b, 'c, C> TextBoxStyle<MonoTextStyle<'a, C>>
+impl<'a, 'b, 'c, C> TextBlockStyle<MonoTextStyle<'a, C>>
 where
     C: PixelColor,
 {
@@ -42,8 +42,8 @@ where
     }
 
     /// Customize the font
-    pub fn font<'a2>(self, font: &'a2 MonoFont<'a2>) -> TextBoxStyle<MonoTextStyle<'a2, C>> {
-        TextBoxStyle {
+    pub fn font<'a2>(self, font: &'a2 MonoFont<'a2>) -> TextBlockStyle<MonoTextStyle<'a2, C>> {
+        TextBlockStyle {
             renderer: MonoTextStyleBuilder::from(&self.renderer)
                 .font(font)
                 .build(),
@@ -53,7 +53,7 @@ where
     }
 }
 
-impl<F, C> TextBoxProperties for TextBoxStyle<F>
+impl<F, C> TextBlockProperties for TextBlockStyle<F>
 where
     F: TextRenderer<Color = C> + CharacterStyle<Color = C>,
     C: PixelColor + From<Rgb888>,
@@ -87,7 +87,7 @@ where
     }
 }
 
-pub trait TextBoxStyling<'a, C, S, T>: Sized
+pub trait TextBlockStyling<'a, C, S, T>: Sized
 where
     C: PixelColor,
     T: TextRenderer + CharacterStyle<Color = <T as TextRenderer>::Color>,
@@ -101,22 +101,22 @@ where
 
     fn set_text_color(&mut self, color: Self::Color);
 
-    fn text_renderer<T2>(self, renderer: T2) -> TextBox<S, TextBoxStyle<T2>>
+    fn text_renderer<T2>(self, renderer: T2) -> TextBlock<S, TextBlockStyle<T2>>
     where
         T2: TextRenderer + CharacterStyle<Color = <T2 as TextRenderer>::Color>,
         <T2 as TextRenderer>::Color: From<Rgb888>;
 
-    fn style<P>(self, props: P) -> TextBox<S, P>
+    fn style<P>(self, props: P) -> TextBlock<S, P>
     where
-        P: TextBoxProperties;
+        P: TextBlockProperties;
 
     fn horizontal_alignment(self, alignment: HorizontalAlignment) -> Self;
 
     fn vertical_alignment(self, alignment: VerticalAlignment) -> Self;
 }
 
-impl<'a, C, S> TextBoxStyling<'a, C, S, MonoTextStyle<'a, C>>
-    for TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>
+impl<'a, C, S> TextBlockStyling<'a, C, S, MonoTextStyle<'a, C>>
+    for TextBlock<S, TextBlockStyle<MonoTextStyle<'a, C>>>
 where
     S: AsRef<str>,
     C: PixelColor + From<Rgb888>,
@@ -127,7 +127,7 @@ where
         self.label_properties.text_color(color);
     }
 
-    fn text_renderer<T>(self, renderer: T) -> TextBox<S, TextBoxStyle<T>>
+    fn text_renderer<T>(self, renderer: T) -> TextBlock<S, TextBlockStyle<T>>
     where
         T: TextRenderer + CharacterStyle<Color = <T as TextRenderer>::Color>,
         <T as TextRenderer>::Color: From<Rgb888>,
@@ -135,18 +135,18 @@ where
         let horizontal = self.label_properties.horizontal;
         let vertical = self.label_properties.vertical;
 
-        self.style(TextBoxStyle {
+        self.style(TextBlockStyle {
             renderer,
             horizontal,
             vertical,
         })
     }
 
-    fn style<P>(self, props: P) -> TextBox<S, P>
+    fn style<P>(self, props: P) -> TextBlock<S, P>
     where
-        P: TextBoxProperties,
+        P: TextBlockProperties,
     {
-        TextBox {
+        TextBlock {
             parent_index: self.parent_index,
             text: self.text,
             bounds: self.bounds,
@@ -160,7 +160,7 @@ where
         let horizontal = alignment;
         let vertical = self.label_properties.vertical;
 
-        self.style(TextBoxStyle {
+        self.style(TextBlockStyle {
             renderer,
             horizontal,
             vertical,
@@ -172,7 +172,7 @@ where
         let horizontal = self.label_properties.horizontal;
         let vertical = alignment;
 
-        self.style(TextBoxStyle {
+        self.style(TextBlockStyle {
             renderer,
             horizontal,
             vertical,
@@ -181,15 +181,16 @@ where
 }
 
 /// Font settings specific to `MonoFont`'s renderer.
-pub trait MonoFontTextBoxStyling<C, S>: Sized
+pub trait MonoFontTextBlockStyling<C, S>: Sized
 where
     S: AsRef<str>,
     C: PixelColor,
 {
-    fn font<'a>(self, font: &'a MonoFont<'a>) -> TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>;
+    fn font<'a>(self, font: &'a MonoFont<'a>)
+        -> TextBlock<S, TextBlockStyle<MonoTextStyle<'a, C>>>;
 }
 
-impl<'a, C, S> MonoFontTextBoxStyling<C, S> for TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>
+impl<'a, C, S> MonoFontTextBlockStyling<C, S> for TextBlock<S, TextBlockStyle<MonoTextStyle<'a, C>>>
 where
     S: AsRef<str>,
     C: PixelColor + From<Rgb888>,
@@ -197,14 +198,14 @@ where
     fn font<'a2>(
         self,
         font: &'a2 MonoFont<'a2>,
-    ) -> TextBox<S, TextBoxStyle<MonoTextStyle<'a2, C>>> {
+    ) -> TextBlock<S, TextBlockStyle<MonoTextStyle<'a2, C>>> {
         let renderer = MonoTextStyleBuilder::from(&self.label_properties.renderer)
             .font(font)
             .build();
         let horizontal = self.label_properties.horizontal;
         let vertical = self.label_properties.vertical;
 
-        self.style(TextBoxStyle {
+        self.style(TextBlockStyle {
             renderer,
             horizontal,
             vertical,
@@ -212,7 +213,7 @@ where
     }
 }
 
-impl<S, F, C, DT> WidgetRenderer<EgCanvas<DT>> for TextBox<S, TextBoxStyle<F>>
+impl<S, F, C, DT> WidgetRenderer<EgCanvas<DT>> for TextBlock<S, TextBlockStyle<F>>
 where
     S: AsRef<str>,
     F: TextRenderer<Color = C> + CharacterStyle<Color = C>,
@@ -242,30 +243,30 @@ macro_rules! textbox_for_charset {
                 mono_font::{$charset, MonoTextStyle},
                 pixelcolor::PixelColor,
             };
-            use embedded_gui::{geometry::BoundingBox, widgets::textbox::TextBox};
+            use embedded_gui::{geometry::BoundingBox, widgets::text_block::TextBlock};
             use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
 
-            use crate::{themes::Theme, widgets::textbox::TextBoxStyle};
+            use crate::{themes::Theme, widgets::text_block::TextBlockStyle};
 
-            pub trait TextBoxConstructor<'a, S, C>
+            pub trait TextBlockConstructor<'a, S, C>
             where
                 S: AsRef<str>,
                 C: PixelColor,
             {
-                fn new(text: S) -> TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>;
+                fn new(text: S) -> TextBlock<S, TextBlockStyle<MonoTextStyle<'a, C>>>;
             }
 
-            impl<'a, 'b, 'c, C, S> TextBoxConstructor<'a, S, C>
-                for TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>
+            impl<'a, 'b, 'c, C, S> TextBlockConstructor<'a, S, C>
+                for TextBlock<S, TextBlockStyle<MonoTextStyle<'a, C>>>
             where
                 S: AsRef<str>,
                 C: PixelColor + Theme,
             {
                 fn new(text: S) -> Self {
-                    TextBox {
+                    TextBlock {
                         parent_index: 0,
                         text,
-                        label_properties: TextBoxStyle {
+                        label_properties: TextBlockStyle {
                             renderer: MonoTextStyle::new(
                                 &$charset::$font,
                                 <C as Theme>::TEXT_COLOR,
