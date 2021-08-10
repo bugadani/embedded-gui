@@ -1,6 +1,9 @@
 use crate::{
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
-    state::WidgetState,
+    state::{
+        selection::{Selected, Unselected},
+        WidgetState,
+    },
     widgets::{wrapper::WrapperBindable, Widget},
 };
 
@@ -14,6 +17,7 @@ pub struct TextBox<S, P> {
     pub bounds: BoundingBox,
     pub parent_index: usize,
     pub on_state_changed: fn(&mut Self, WidgetState),
+    pub state: WidgetState,
 }
 
 impl<S, P> TextBox<S, P>
@@ -25,6 +29,11 @@ where
         self.on_state_changed = callback;
         self
     }
+}
+
+impl TextBox<(), ()> {
+    pub const STATE_SELECTED: Selected = Selected;
+    pub const STATE_UNSELECTED: Unselected = Unselected;
 }
 
 impl<S, P> Widget for TextBox<S, P>
@@ -59,12 +68,12 @@ where
         self.bounds.size = MeasuredSize { width, height };
     }
 
-    fn on_state_changed(&mut self, state: WidgetState) {
-        (self.on_state_changed)(self, state);
+    fn on_state_changed(&mut self, _state: WidgetState) {
+        // don't react to parent's state change
     }
 
     fn is_selectable(&self) -> bool {
-        false
+        true
     }
 }
 

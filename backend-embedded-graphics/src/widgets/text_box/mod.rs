@@ -2,13 +2,14 @@ use embedded_graphics::{
     draw_target::DrawTarget,
     mono_font::{MonoFont, MonoTextStyle, MonoTextStyleBuilder},
     pixelcolor::{PixelColor, Rgb888},
-    prelude::{Dimensions, Point, Size},
-    primitives::Rectangle,
+    prelude::{Dimensions, Point, Size, WebColors},
+    primitives::{PrimitiveStyle, Rectangle, StyledDrawable},
     text::renderer::{CharacterStyle, TextRenderer},
     Drawable,
 };
 use embedded_gui::{
     geometry::{measurement::MeasureSpec, MeasuredSize},
+    state::selection::Selected,
     widgets::text_box::{TextBox, TextBoxProperties},
     WidgetRenderer,
 };
@@ -147,6 +148,7 @@ where
         P: TextBoxProperties,
     {
         TextBox {
+            state: self.state,
             parent_index: self.parent_index,
             text: self.text,
             bounds: self.bounds,
@@ -220,6 +222,13 @@ where
     DT: DrawTarget<Color = C>,
 {
     fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
+        if self.state.has_state(Selected) {
+            self.bounds.to_rectangle().draw_styled(
+                &PrimitiveStyle::with_stroke(Rgb888::CSS_DODGER_BLUE.into(), 1),
+                &mut canvas.target,
+            )?;
+        }
+
         EgTextBox::with_textbox_style(
             self.text.as_ref(),
             self.bounds.to_rectangle(),
@@ -242,7 +251,9 @@ macro_rules! textbox_for_charset {
                 mono_font::{$charset, MonoTextStyle},
                 pixelcolor::PixelColor,
             };
-            use embedded_gui::{geometry::BoundingBox, widgets::text_box::TextBox};
+            use embedded_gui::{
+                geometry::BoundingBox, state::WidgetState, widgets::text_box::TextBox,
+            };
             use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
 
             use crate::{themes::Theme, widgets::text_box::TextBoxStyle};
@@ -263,6 +274,7 @@ macro_rules! textbox_for_charset {
             {
                 fn new(text: S) -> Self {
                     TextBox {
+                        state: WidgetState::default(),
                         parent_index: 0,
                         text,
                         label_properties: TextBoxStyle {

@@ -1,5 +1,5 @@
 //! Visual state container.
-mod selection;
+pub mod selection;
 
 pub trait StateGroup {
     const MASK: u32;
