@@ -22,6 +22,8 @@ pub use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
 
 use crate::{EgCanvas, ToRectangle};
 
+mod plugin;
+
 pub struct TextBoxStyle<T>
 where
     T: TextRenderer + CharacterStyle<Color = <T as TextRenderer>::Color>,
@@ -88,7 +90,7 @@ where
     }
 }
 
-pub trait TextBoxStyling<'a, C, S, T>: Sized
+pub trait TextBoxStyling<'a, C, T, const N: usize>: Sized
 where
     C: PixelColor,
     T: TextRenderer + CharacterStyle<Color = <T as TextRenderer>::Color>,
@@ -102,12 +104,12 @@ where
 
     fn set_text_color(&mut self, color: Self::Color);
 
-    fn text_renderer<T2>(self, renderer: T2) -> TextBox<S, TextBoxStyle<T2>>
+    fn text_renderer<T2>(self, renderer: T2) -> TextBox<TextBoxStyle<T2>, N>
     where
         T2: TextRenderer + CharacterStyle<Color = <T2 as TextRenderer>::Color>,
         <T2 as TextRenderer>::Color: From<Rgb888>;
 
-    fn style<P>(self, props: P) -> TextBox<S, P>
+    fn style<P>(self, props: P) -> TextBox<P, N>
     where
         P: TextBoxProperties;
 
@@ -116,10 +118,9 @@ where
     fn vertical_alignment(self, alignment: VerticalAlignment) -> Self;
 }
 
-impl<'a, C, S> TextBoxStyling<'a, C, S, MonoTextStyle<'a, C>>
-    for TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>
+impl<'a, C, const N: usize> TextBoxStyling<'a, C, MonoTextStyle<'a, C>, N>
+    for TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, N>
 where
-    S: AsRef<str>,
     C: PixelColor + From<Rgb888>,
 {
     type Color = C;
@@ -128,7 +129,7 @@ where
         self.label_properties.text_color(color);
     }
 
-    fn text_renderer<T>(self, renderer: T) -> TextBox<S, TextBoxStyle<T>>
+    fn text_renderer<T>(self, renderer: T) -> TextBox<TextBoxStyle<T>, N>
     where
         T: TextRenderer + CharacterStyle<Color = <T as TextRenderer>::Color>,
         <T as TextRenderer>::Color: From<Rgb888>,
@@ -143,7 +144,7 @@ where
         })
     }
 
-    fn style<P>(self, props: P) -> TextBox<S, P>
+    fn style<P>(self, props: P) -> TextBox<P, N>
     where
         P: TextBoxProperties,
     {
@@ -182,23 +183,22 @@ where
 }
 
 /// Font settings specific to `MonoFont`'s renderer.
-pub trait MonoFontTextBoxStyling<C, S>: Sized
+pub trait MonoFontTextBoxStyling<C, const N: usize>: Sized
 where
-    S: AsRef<str>,
     C: PixelColor,
 {
-    fn font<'a>(self, font: &'a MonoFont<'a>) -> TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>;
+    fn font<'a>(self, font: &'a MonoFont<'a>) -> TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, N>;
 }
 
-impl<'a, C, S> MonoFontTextBoxStyling<C, S> for TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>
+impl<'a, C, const N: usize> MonoFontTextBoxStyling<C, N>
+    for TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, N>
 where
-    S: AsRef<str>,
     C: PixelColor + From<Rgb888>,
 {
     fn font<'a2>(
         self,
         font: &'a2 MonoFont<'a2>,
-    ) -> TextBox<S, TextBoxStyle<MonoTextStyle<'a2, C>>> {
+    ) -> TextBox<TextBoxStyle<MonoTextStyle<'a2, C>>, N> {
         let renderer = MonoTextStyleBuilder::from(&self.label_properties.renderer)
             .font(font)
             .build();
@@ -213,9 +213,8 @@ where
     }
 }
 
-impl<S, F, C, DT> WidgetRenderer<EgCanvas<DT>> for TextBox<S, TextBoxStyle<F>>
+impl<F, C, DT, const N: usize> WidgetRenderer<EgCanvas<DT>> for TextBox<TextBoxStyle<F>, N>
 where
-    S: AsRef<str>,
     F: TextRenderer<Color = C> + CharacterStyle<Color = C>,
     C: PixelColor + From<Rgb888>,
     DT: DrawTarget<Color = C>,
@@ -257,21 +256,20 @@ macro_rules! textbox_for_charset {
 
             use crate::{themes::Theme, widgets::text_box::TextBoxStyle};
 
-            pub trait TextBoxConstructor<'a, S, C>
+            pub trait TextBoxConstructor<'a, C, const N: usize>
             where
-                S: AsRef<str>,
                 C: PixelColor,
             {
-                fn new(text: S) -> TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>;
+                fn new(text: heapless::String<N>)
+                    -> TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, N>;
             }
 
-            impl<'a, 'b, 'c, C, S> TextBoxConstructor<'a, S, C>
-                for TextBox<S, TextBoxStyle<MonoTextStyle<'a, C>>>
+            impl<'a, 'b, 'c, C, const N: usize> TextBoxConstructor<'a, C, N>
+                for TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, N>
             where
-                S: AsRef<str>,
                 C: PixelColor + Theme,
             {
-                fn new(text: S) -> Self {
+                fn new(text: heapless::String<N>) -> Self {
                     TextBox {
                         state: WidgetState::default(),
                         parent_index: 0,

@@ -212,7 +212,7 @@ fn main() {
         .add(
             Column::new().add(Label::new("TextBox")).add(
             Border::new(FillParent::both(TextBox::new(
-                "A TextBox with editable content. Click me and start typing!",
+                String::<100>::from("A TextBox with editable content. Click me and start typing!"),
             ))
             .align_vertical(Top))
             .border_color(Rgb888::CSS_LIGHT_GRAY))

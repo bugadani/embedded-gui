@@ -11,22 +11,22 @@ use crate::{
     state_group,
     widgets::{wrapper::WrapperBindable, Widget},
 };
+use heapless::String;
 
 pub trait TextBoxProperties {
     fn measure_text(&self, text: &str, spec: MeasureSpec) -> MeasuredSize;
 }
 
-pub struct TextBox<S, P> {
-    pub text: S,
+pub struct TextBox<P, const N: usize> {
+    pub text: String<N>,
     pub label_properties: P,
     pub bounds: BoundingBox,
     pub parent_index: usize,
     pub state: WidgetState,
 }
 
-impl<S, P> TextBox<S, P>
+impl<P, const N: usize> TextBox<P, N>
 where
-    S: AsRef<str>,
     P: TextBoxProperties,
 {
     fn change_state(&mut self, state: impl State) -> &mut Self {
@@ -51,16 +51,15 @@ state_group! {
     }
 }
 
-impl TextBox<(), ()> {
+impl TextBox<(), 0> {
     pub const STATE_INACTIVE: Inactive = Inactive;
     pub const STATE_ACTIVE: Active = Active;
     pub const STATE_SELECTED: Selected = Selected;
     pub const STATE_UNSELECTED: Unselected = Unselected;
 }
 
-impl<S, P> Widget for TextBox<S, P>
+impl<P, const N: usize> Widget for TextBox<P, N>
 where
-    S: AsRef<str>,
     P: TextBoxProperties,
 {
     fn bounding_box(&self) -> BoundingBox {
@@ -173,9 +172,4 @@ where
     }
 }
 
-impl<S, P> WrapperBindable for TextBox<S, P>
-where
-    S: AsRef<str>,
-    P: TextBoxProperties,
-{
-}
+impl<P, const N: usize> WrapperBindable for TextBox<P, N> where P: TextBoxProperties {}
