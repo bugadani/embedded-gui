@@ -12,6 +12,9 @@ where
     pub data_holder: WidgetDataHolder<W, D>,
 }
 
+/// Trait that lets you bind data to a widget.
+///
+/// Bound data allows manipulating the widget when the data changes.
 pub trait WrapperBindable: Widget + Sized {
     fn bind<D>(self, data: D) -> Wrapper<Self, D>
     where

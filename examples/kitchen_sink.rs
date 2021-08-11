@@ -15,13 +15,13 @@ use embedded_graphics::{
     draw_target::DrawTarget, pixelcolor::BinaryColor, prelude::Size as EgSize,
 };
 use embedded_graphics_simulator::{
-    sdl2::MouseButton, BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent,
-    Window as SimWindow,
+    sdl2::{Keycode, Mod, MouseButton},
+    BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window as SimWindow,
 };
 use embedded_gui::{
     data::BoundData,
     geometry::Position,
-    input::event::{InputEvent, PointerEvent, ScrollEvent},
+    input::event::{InputEvent, Key, KeyEvent, Modifier, PointerEvent, ScrollEvent},
     prelude::*,
     widgets::{
         label::Label,
@@ -42,6 +42,28 @@ use embedded_gui::{
     },
 };
 use heapless::String;
+
+trait Convert {
+    type Output;
+
+    fn convert(self) -> Self::Output;
+}
+
+impl Convert for Keycode {
+    type Output = Key;
+
+    fn convert(self) -> Self::Output {
+        Key::A
+    }
+}
+
+impl Convert for Mod {
+    type Output = Modifier;
+
+    fn convert(self) -> Self::Output {
+        Modifier::None
+    }
+}
 
 fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
     unsafe {
@@ -93,6 +115,21 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
                     ScrollEvent::HorizontalScroll(scroll_delta.x * 4)
                 }))
             }
+            SimulatorEvent::KeyDown {
+                keycode, keymod, ..
+            } => Ok(InputEvent::KeyEvent(KeyEvent::KeyDown(
+                keycode.convert(),
+                keymod.convert(),
+                0,
+            ))),
+
+            SimulatorEvent::KeyUp {
+                keycode, keymod, ..
+            } => Ok(InputEvent::KeyEvent(KeyEvent::KeyUp(
+                keycode.convert(),
+                keymod.convert(),
+            ))),
+
             SimulatorEvent::Quit => Err(true),
             _ => Err(false),
         }

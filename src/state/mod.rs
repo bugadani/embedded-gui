@@ -18,13 +18,13 @@ macro_rules! state_group {
     })+) => {
         $(
             pub struct $group;
-            impl StateGroup for $group {
+            impl $crate::state::StateGroup for $group {
                 const MASK: u32 = $mask;
             }
 
             $(
                 pub struct $state;
-                impl State for $state {
+                impl $crate::state::State for $state {
                     type Group = $group;
 
                     const VALUE: u32 = $value;

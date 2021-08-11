@@ -153,7 +153,6 @@ where
             text: self.text,
             bounds: self.bounds,
             label_properties: props,
-            on_state_changed: |_, _| (),
         }
     }
 
@@ -286,7 +285,6 @@ macro_rules! textbox_for_charset {
                             vertical: VerticalAlignment::Top,
                         },
                         bounds: BoundingBox::default(),
-                        on_state_changed: |_, _| (),
                     }
                 }
             }

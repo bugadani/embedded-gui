@@ -4,7 +4,7 @@ use crate::{
         controller::InputContext,
         event::{InputEvent, PointerEvent},
     },
-    state::{State, StateGroup, WidgetState},
+    state::{State, WidgetState},
     state_group,
     widgets::{utils::decorator::WidgetDecorator, Widget, WidgetDataHolder},
     Canvas, WidgetRenderer,
