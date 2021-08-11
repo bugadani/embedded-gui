@@ -33,6 +33,66 @@ impl StrExt for str {
     }
 }
 
+trait HeaplessStringExt {
+    fn insert_str(&mut self, offset: usize, s: &str) -> bool;
+    fn remove(&mut self, offset: usize) -> bool;
+}
+
+impl<const N: usize> HeaplessStringExt for String<N> {
+    fn insert_str(&mut self, offset: usize, s: &str) -> bool {
+        if self.len() + s.len() > N {
+            return false;
+        }
+
+        // TODO: this can be done more efficiently
+        let mut new_str = String::<N>::from(&self[0..offset]);
+        let _ = new_str.push_str(s);
+        let _ = new_str.push_str(&self[offset..]);
+
+        *self = new_str;
+
+        true
+    }
+
+    fn remove(&mut self, offset: usize) -> bool {
+        if let Some(char_length) = self[offset..].char_indices().skip(1).next().map(|(i, _)| i) {
+            let mut new_str = String::<N>::from(&self[0..offset]);
+            let _ = new_str.push_str(&self[offset + char_length..]);
+
+            *self = new_str;
+
+            true
+        } else {
+            false
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use heapless::String;
+
+    use crate::widgets::text_box::plugin::HeaplessStringExt;
+
+    #[test]
+    fn string_ext() {
+        let mut s = String::<50>::from("foobar");
+
+        assert!(s.insert_str(3, " and "));
+        assert_eq!(s, "foo and bar");
+
+        // Verify that we don't remove characters offset by one (i.e. " and" instead of "and ")
+        s.remove(4);
+        assert_eq!(s, "foo nd bar");
+
+        s.remove(5);
+        s.remove(6);
+        s.remove(7);
+
+        assert_eq!(s, "foo bar");
+    }
+}
+
 pub(super) struct Cursor {
     /// character offset
     offset: usize,
@@ -80,22 +140,23 @@ impl<const N: usize> EditorInput<N> {
     }
 
     pub fn insert(&mut self, s: &str) {
-        //self.text.insert_str(self.cursor.offset, s);
-        self.cursor.offset += s.len();
-        self.cursor.desired_position = DesiredPosition::Offset(self.cursor.offset);
+        if self.text.insert_str(self.cursor.offset, s) {
+            self.cursor.offset += s.len();
+            self.cursor.desired_position = DesiredPosition::Offset(self.cursor.offset);
+        }
     }
 
     pub fn delete_before(&mut self) {
         if self.cursor.offset > 0 {
             self.cursor.offset -= 1;
             self.cursor.desired_position = DesiredPosition::Offset(self.cursor.offset);
-            //self.text.remove(self.cursor.offset);
+            self.text.remove(self.cursor.offset);
         }
     }
 
     pub fn delete_after(&mut self) {
         if self.cursor.offset < self.text.chars().count() {
-            //self.text.remove(self.cursor.offset);
+            self.text.remove(self.cursor.offset);
         }
     }
 
