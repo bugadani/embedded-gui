@@ -278,9 +278,10 @@ fn main() {
                     .bind(&text_reset)
                     .on_data_changed(|text_box, reset| {
                         if *reset {
-                            text_box.text = String::<100>::new();
+                            text_box.set_text("");
                         }
                     })
+                    .on_text_changed(|reset, _text| *reset = false)
                 )
                 .border_color(Rgb888::CSS_LIGHT_GRAY)
             )

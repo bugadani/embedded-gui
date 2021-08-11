@@ -12,8 +12,12 @@ use embedded_graphics::{
 use embedded_gui::{
     geometry::{measurement::MeasureSpec, MeasuredSize, Position},
     input::event::{Key, Modifier, ToStr},
+    prelude::WidgetData,
     state::selection::Selected,
-    widgets::text_box::{TextBox, TextBoxProperties},
+    widgets::{
+        text_box::{TextBox, TextBoxFields, TextBoxProperties},
+        WidgetDataHolder,
+    },
     WidgetRenderer,
 };
 use embedded_text::{
@@ -116,7 +120,7 @@ where
         key: Key,
         modifier: Modifier,
         text: &mut String<N>,
-    ) {
+    ) -> bool {
         let cursor = self.cursor.get_mut();
 
         match key {
@@ -129,9 +133,12 @@ where
             _ => {
                 if let Some(str) = (key, modifier).to_str() {
                     cursor.insert(text, str);
+                } else {
+                    return false;
                 }
             }
         }
+        true
     }
 
     fn handle_cursor_down(&mut self, coordinates: Position) {
@@ -139,9 +146,10 @@ where
     }
 }
 
-pub trait TextBoxStyling<'a, C, T, const N: usize>: Sized
+pub trait TextBoxStyling<'a, C, D, T, const N: usize>: Sized
 where
     C: PixelColor,
+    D: WidgetData,
     T: TextRenderer + CharacterStyle<Color = <T as TextRenderer>::Color>,
 {
     type Color;
@@ -153,12 +161,12 @@ where
 
     fn set_text_color(&mut self, color: Self::Color);
 
-    fn text_renderer<T2>(self, renderer: T2) -> TextBox<TextBoxStyle<T2>, N>
+    fn text_renderer<T2>(self, renderer: T2) -> TextBox<TextBoxStyle<T2>, D, N>
     where
         T2: TextRenderer + CharacterStyle<Color = <T2 as TextRenderer>::Color>,
         <T2 as TextRenderer>::Color: From<Rgb888>;
 
-    fn style<P>(self, props: P) -> TextBox<P, N>
+    fn style<P>(self, props: P) -> TextBox<P, D, N>
     where
         P: TextBoxProperties;
 
@@ -169,25 +177,26 @@ where
     fn cursor_color(self, color: Self::Color) -> Self;
 }
 
-impl<'a, C, const N: usize> TextBoxStyling<'a, C, MonoTextStyle<'a, C>, N>
-    for TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, N>
+impl<'a, C, D, const N: usize> TextBoxStyling<'a, C, D, MonoTextStyle<'a, C>, N>
+    for TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, D, N>
 where
+    D: WidgetData,
     C: PixelColor + From<Rgb888>,
 {
     type Color = C;
 
     fn set_text_color(&mut self, color: Self::Color) {
-        self.label_properties.text_color(color);
+        self.fields.label_properties.text_color(color);
     }
 
-    fn text_renderer<T>(self, renderer: T) -> TextBox<TextBoxStyle<T>, N>
+    fn text_renderer<T>(self, renderer: T) -> TextBox<TextBoxStyle<T>, D, N>
     where
         T: TextRenderer + CharacterStyle<Color = <T as TextRenderer>::Color>,
         <T as TextRenderer>::Color: From<Rgb888>,
     {
-        let horizontal = self.label_properties.horizontal;
-        let vertical = self.label_properties.vertical;
-        let cursor = self.label_properties.cursor.clone();
+        let horizontal = self.fields.label_properties.horizontal;
+        let vertical = self.fields.label_properties.vertical;
+        let cursor = self.fields.label_properties.cursor.clone();
 
         self.style(TextBoxStyle {
             renderer,
@@ -198,25 +207,29 @@ where
         })
     }
 
-    fn style<P>(self, props: P) -> TextBox<P, N>
+    fn style<P>(self, props: P) -> TextBox<P, D, N>
     where
         P: TextBoxProperties,
     {
         TextBox {
-            state: self.state,
-            parent_index: self.parent_index,
-            text: self.text,
-            bounds: self.bounds,
-            label_properties: props,
+            fields: TextBoxFields {
+                state: self.fields.state,
+                parent_index: self.fields.parent_index,
+                text: self.fields.text,
+                bounds: self.fields.bounds,
+                label_properties: props,
+                on_text_changed: self.fields.on_text_changed,
+            },
+            data_holder: WidgetDataHolder::new(self.data_holder.data),
         }
     }
 
     fn horizontal_alignment(self, alignment: HorizontalAlignment) -> Self {
-        let renderer = self.label_properties.renderer;
+        let renderer = self.fields.label_properties.renderer;
         let horizontal = alignment;
-        let vertical = self.label_properties.vertical;
-        let cursor = self.label_properties.cursor.clone();
-        let cursor_color = self.label_properties.cursor_color;
+        let vertical = self.fields.label_properties.vertical;
+        let cursor = self.fields.label_properties.cursor.clone();
+        let cursor_color = self.fields.label_properties.cursor_color;
 
         self.style(TextBoxStyle {
             renderer,
@@ -228,11 +241,11 @@ where
     }
 
     fn vertical_alignment(self, alignment: VerticalAlignment) -> Self {
-        let renderer = self.label_properties.renderer;
-        let horizontal = self.label_properties.horizontal;
+        let renderer = self.fields.label_properties.renderer;
+        let horizontal = self.fields.label_properties.horizontal;
         let vertical = alignment;
-        let cursor = self.label_properties.cursor.clone();
-        let cursor_color = self.label_properties.cursor_color;
+        let cursor = self.fields.label_properties.cursor.clone();
+        let cursor_color = self.fields.label_properties.cursor_color;
 
         self.style(TextBoxStyle {
             renderer,
@@ -244,10 +257,10 @@ where
     }
 
     fn cursor_color(self, color: C) -> Self {
-        let renderer = self.label_properties.renderer;
-        let horizontal = self.label_properties.horizontal;
-        let vertical = self.label_properties.vertical;
-        let cursor = self.label_properties.cursor.clone();
+        let renderer = self.fields.label_properties.renderer;
+        let horizontal = self.fields.label_properties.horizontal;
+        let vertical = self.fields.label_properties.vertical;
+        let cursor = self.fields.label_properties.cursor.clone();
         let cursor_color = Some(color);
 
         self.style(TextBoxStyle {
@@ -261,29 +274,31 @@ where
 }
 
 /// Font settings specific to `MonoFont`'s renderer.
-pub trait MonoFontTextBoxStyling<C, const N: usize>: Sized
+pub trait MonoFontTextBoxStyling<C, D, const N: usize>: Sized
 where
+    D: WidgetData,
     C: PixelColor,
 {
-    fn font<'a>(self, font: &'a MonoFont<'a>) -> TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, N>;
+    fn font<'a>(self, font: &'a MonoFont<'a>) -> TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, D, N>;
 }
 
-impl<'a, C, const N: usize> MonoFontTextBoxStyling<C, N>
-    for TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, N>
+impl<'a, C, D, const N: usize> MonoFontTextBoxStyling<C, D, N>
+    for TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, D, N>
 where
+    D: WidgetData,
     C: PixelColor + From<Rgb888>,
 {
     fn font<'a2>(
         self,
         font: &'a2 MonoFont<'a2>,
-    ) -> TextBox<TextBoxStyle<MonoTextStyle<'a2, C>>, N> {
-        let renderer = MonoTextStyleBuilder::from(&self.label_properties.renderer)
+    ) -> TextBox<TextBoxStyle<MonoTextStyle<'a2, C>>, D, N> {
+        let renderer = MonoTextStyleBuilder::from(&self.fields.label_properties.renderer)
             .font(font)
             .build();
-        let horizontal = self.label_properties.horizontal;
-        let vertical = self.label_properties.vertical;
-        let cursor = self.label_properties.cursor.clone();
-        let cursor_color = self.label_properties.cursor_color;
+        let horizontal = self.fields.label_properties.horizontal;
+        let vertical = self.fields.label_properties.vertical;
+        let cursor = self.fields.label_properties.cursor.clone();
+        let cursor_color = self.fields.label_properties.cursor_color;
 
         self.style(TextBoxStyle {
             renderer,
@@ -295,27 +310,29 @@ where
     }
 }
 
-impl<F, C, DT, const N: usize> WidgetRenderer<EgCanvas<DT>> for TextBox<TextBoxStyle<F>, N>
+impl<F, C, DT, D, const N: usize> WidgetRenderer<EgCanvas<DT>> for TextBox<TextBoxStyle<F>, D, N>
 where
     F: TextRenderer<Color = C> + CharacterStyle<Color = C>,
     C: PixelColor + From<Rgb888>,
     DT: DrawTarget<Color = C>,
+    D: WidgetData,
 {
     fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
-        let cursor_color = self.label_properties.cursor_color;
-        if self.state.has_state(Selected) && cursor_color.is_some() {
+        let cursor_color = self.fields.label_properties.cursor_color;
+        if self.fields.state.has_state(Selected) && cursor_color.is_some() {
             let textbox = EgTextBox::with_textbox_style(
-                self.text.as_ref(),
-                self.bounds.to_rectangle(),
-                self.label_properties.renderer.clone(),
+                self.fields.text.as_ref(),
+                self.fields.bounds.to_rectangle(),
+                self.fields.label_properties.renderer.clone(),
                 TextBoxStyleBuilder::new()
                     .height_mode(HeightMode::Exact(VerticalOverdraw::Hidden))
-                    .alignment(self.label_properties.horizontal)
-                    .vertical_alignment(self.label_properties.vertical)
+                    .alignment(self.fields.label_properties.horizontal)
+                    .vertical_alignment(self.fields.label_properties.vertical)
                     .build(),
             )
             .add_plugin(
-                self.label_properties
+                self.fields
+                    .label_properties
                     .cursor
                     .get()
                     .plugin(cursor_color.unwrap()),
@@ -324,18 +341,18 @@ where
             let result = textbox.draw(&mut canvas.target).map(|_| ());
 
             let Chain { object: plugin } = textbox.take_plugins();
-            self.label_properties.cursor.set(plugin.get_cursor());
+            self.fields.label_properties.cursor.set(plugin.get_cursor());
 
             result
         } else {
             EgTextBox::with_textbox_style(
-                self.text.as_ref(),
-                self.bounds.to_rectangle(),
-                self.label_properties.renderer.clone(),
+                self.fields.text.as_ref(),
+                self.fields.bounds.to_rectangle(),
+                self.fields.label_properties.renderer.clone(),
                 TextBoxStyleBuilder::new()
                     .height_mode(HeightMode::Exact(VerticalOverdraw::Hidden))
-                    .alignment(self.label_properties.horizontal)
-                    .vertical_alignment(self.label_properties.vertical)
+                    .alignment(self.fields.label_properties.horizontal)
+                    .vertical_alignment(self.fields.label_properties.vertical)
                     .build(),
             )
             .draw(&mut canvas.target)
@@ -353,7 +370,13 @@ macro_rules! textbox_for_charset {
                 pixelcolor::PixelColor,
             };
             use embedded_gui::{
-                geometry::BoundingBox, state::WidgetState, widgets::text_box::TextBox,
+                data::WidgetData,
+                geometry::BoundingBox,
+                state::WidgetState,
+                widgets::{
+                    text_box::{TextBox, TextBoxFields},
+                    WidgetDataHolder,
+                },
             };
             use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
 
@@ -362,35 +385,41 @@ macro_rules! textbox_for_charset {
                 widgets::text_box::{plugin::Cursor, TextBoxStyle},
             };
 
-            pub trait TextBoxConstructor<'a, C, const N: usize>
+            pub trait TextBoxConstructor<'a, C, D, const N: usize>
             where
+                D: WidgetData,
                 C: PixelColor,
             {
-                fn new(text: heapless::String<N>)
-                    -> TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, N>;
+                fn new(
+                    text: heapless::String<N>,
+                ) -> TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, D, N>;
             }
 
-            impl<'a, 'b, 'c, C, const N: usize> TextBoxConstructor<'a, C, N>
-                for TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, N>
+            impl<'a, 'b, 'c, C, const N: usize> TextBoxConstructor<'a, C, (), N>
+                for TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, (), N>
             where
                 C: PixelColor + Theme,
             {
                 fn new(text: heapless::String<N>) -> Self {
                     TextBox {
-                        state: WidgetState::default(),
-                        parent_index: 0,
-                        text,
-                        label_properties: TextBoxStyle {
-                            renderer: MonoTextStyle::new(
-                                &$charset::$font,
-                                <C as Theme>::TEXT_COLOR,
-                            ),
-                            horizontal: HorizontalAlignment::Left,
-                            vertical: VerticalAlignment::Top,
-                            cursor: Cell::new(Cursor::default()),
-                            cursor_color: Some(<C as Theme>::TEXT_COLOR),
+                        fields: TextBoxFields {
+                            state: WidgetState::default(),
+                            parent_index: 0,
+                            text,
+                            label_properties: TextBoxStyle {
+                                renderer: MonoTextStyle::new(
+                                    &$charset::$font,
+                                    <C as Theme>::TEXT_COLOR,
+                                ),
+                                horizontal: HorizontalAlignment::Left,
+                                vertical: VerticalAlignment::Top,
+                                cursor: Cell::new(Cursor::default()),
+                                cursor_color: Some(<C as Theme>::TEXT_COLOR),
+                            },
+                            bounds: BoundingBox::default(),
+                            on_text_changed: |_, _| (),
                         },
-                        bounds: BoundingBox::default(),
+                        data_holder: WidgetDataHolder::default(),
                     }
                 }
             }

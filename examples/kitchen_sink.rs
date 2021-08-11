@@ -212,6 +212,8 @@ fn main() {
     let toggle = BoundData::new(false, |_| ());
     let checkables = BoundData::new((&radio, &checkbox, &toggle), |_| ());
 
+    let text_reset = BoundData::new(false, |_| ());
+
     let slider1_data = BoundData::new(0, |_| ());
     let slider2_data = BoundData::new(0, |_| ());
     let sliders = BoundData::new((&slider1_data, &slider2_data), |_| ());
@@ -265,11 +267,27 @@ fn main() {
         )
         .weight(1)
         .add(
-            Column::new().add(Label::new("TextBox")).add(
-            Border::new(FillParent::both(TextBox::new(
-                String::<100>::from("A TextBox with editable content. Click me and start typing!"),
-            ))
-            .align_vertical(Top)))
+            Column::new().add(Label::new("TextBox"))
+            .add(
+                Border::new(
+                    TextBox::new(
+                        String::<100>::from("A TextBox with editable content. Click me and start typing!"),
+                    )
+                    .bind(&text_reset)
+                    .on_data_changed(|text_box, reset| {
+                        if *reset {
+                            text_box.set_text("");
+                        }
+                    })
+                    .on_text_changed(|reset, _text| *reset = false)
+                )
+            )
+            .weight(1)
+            .add(
+                DefaultTheme::primary_button("Clear")
+                .bind(&text_reset)
+                .on_clicked(|reset| *reset = true)
+            )
         )
         .weight(1);
 
