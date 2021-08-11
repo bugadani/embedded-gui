@@ -93,6 +93,7 @@ mod test {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
 pub(super) struct Cursor {
     /// character offset
     offset: usize,
@@ -107,8 +108,64 @@ pub(super) struct Cursor {
     vertical_offset: i32,
 }
 
+impl Default for Cursor {
+    fn default() -> Self {
+        Cursor {
+            offset: 0,
+            pos: Point::zero(),
+            desired_position: DesiredPosition::EndOfText,
+            vertical_offset: 0,
+        }
+    }
+}
+
 impl Cursor {
-    fn plugin<C: PixelColor>(&mut self, color: C) -> EditorPlugin<C> {
+    pub fn insert<const N: usize>(&mut self, text: &mut String<N>, s: &str) {
+        if text.insert_str(self.offset, s) {
+            self.offset += s.len();
+            self.desired_position = DesiredPosition::Offset(self.offset);
+        }
+    }
+
+    pub fn delete_before<const N: usize>(&mut self, text: &mut String<N>) {
+        if self.offset > 0 {
+            self.offset -= 1;
+            self.desired_position = DesiredPosition::Offset(self.offset);
+            text.remove(self.offset);
+        }
+    }
+
+    pub fn delete_after<const N: usize>(&mut self, text: &mut String<N>) {
+        if self.offset < text.chars().count() {
+            text.remove(self.offset);
+        }
+    }
+
+    pub fn cursor_left(&mut self) {
+        if self.offset > 0 {
+            self.desired_position = DesiredPosition::Offset(self.offset - 1);
+        }
+    }
+
+    pub fn cursor_right(&mut self) {
+        self.desired_position = DesiredPosition::Offset(self.offset + 1);
+    }
+
+    pub fn cursor_up(&mut self) {
+        self.desired_position =
+            DesiredPosition::OneLineUp(self.desired_position.coordinates_or(self.pos));
+    }
+
+    pub fn cursor_down(&mut self) {
+        self.desired_position =
+            DesiredPosition::OneLineDown(self.desired_position.coordinates_or(self.pos));
+    }
+
+    pub fn move_cursor_to(&mut self, point: Point) {
+        self.desired_position = DesiredPosition::ScreenCoordinates(point);
+    }
+
+    pub fn plugin<C: PixelColor>(&self, color: C) -> EditorPlugin<C> {
         EditorPlugin {
             cursor_position: self.pos,
             current_offset: 0,
@@ -118,74 +175,6 @@ impl Cursor {
             vertical_offset: self.vertical_offset,
             top_left: Point::zero(),
         }
-    }
-}
-
-pub(super) struct EditorInput<'a, const N: usize> {
-    pub text: &'a mut String<N>,
-    pub cursor: Cursor,
-}
-
-impl<'a, const N: usize> EditorInput<'a, N> {
-    pub fn new(text: &'a mut String<N>) -> Self {
-        Self {
-            cursor: Cursor {
-                offset: text.len(),
-                pos: Point::zero(),
-                desired_position: DesiredPosition::EndOfText,
-                vertical_offset: 0,
-            },
-            text,
-        }
-    }
-
-    pub fn insert(&mut self, s: &str) {
-        if self.text.insert_str(self.cursor.offset, s) {
-            self.cursor.offset += s.len();
-            self.cursor.desired_position = DesiredPosition::Offset(self.cursor.offset);
-        }
-    }
-
-    pub fn delete_before(&mut self) {
-        if self.cursor.offset > 0 {
-            self.cursor.offset -= 1;
-            self.cursor.desired_position = DesiredPosition::Offset(self.cursor.offset);
-            self.text.remove(self.cursor.offset);
-        }
-    }
-
-    pub fn delete_after(&mut self) {
-        if self.cursor.offset < self.text.chars().count() {
-            self.text.remove(self.cursor.offset);
-        }
-    }
-
-    pub fn cursor_left(&mut self) {
-        if self.cursor.offset > 0 {
-            self.cursor.desired_position = DesiredPosition::Offset(self.cursor.offset - 1);
-        }
-    }
-
-    pub fn cursor_right(&mut self) {
-        if self.cursor.offset < self.text.len() {
-            self.cursor.desired_position = DesiredPosition::Offset(self.cursor.offset + 1);
-        }
-    }
-
-    pub fn cursor_up(&mut self) {
-        self.cursor.desired_position = DesiredPosition::OneLineUp(
-            self.cursor.desired_position.coordinates_or(self.cursor.pos),
-        );
-    }
-
-    pub fn cursor_down(&mut self) {
-        self.cursor.desired_position = DesiredPosition::OneLineDown(
-            self.cursor.desired_position.coordinates_or(self.cursor.pos),
-        );
-    }
-
-    pub fn move_cursor_to(&mut self, point: Point) {
-        self.cursor.desired_position = DesiredPosition::ScreenCoordinates(point);
     }
 }
 
@@ -211,7 +200,7 @@ impl DesiredPosition {
 }
 
 #[derive(Clone)]
-struct EditorPlugin<C> {
+pub(super) struct EditorPlugin<C> {
     desired_cursor_position: DesiredPosition,
     cursor_position: Point,
     current_offset: usize,
@@ -255,11 +244,13 @@ impl<C: PixelColor> EditorPlugin<C> {
         point + Point::new(0, self.vertical_offset) + self.top_left
     }
 
-    fn update_cursor(self, cursor: &mut Cursor) {
-        cursor.pos = self.cursor_position;
-        cursor.offset = self.current_offset;
-        cursor.desired_position = self.desired_cursor_position;
-        cursor.vertical_offset = self.vertical_offset;
+    pub(super) fn get_cursor(self) -> Cursor {
+        Cursor {
+            pos: self.cursor_position,
+            offset: self.current_offset,
+            desired_position: self.desired_cursor_position,
+            vertical_offset: self.vertical_offset,
+        }
     }
 }
 

@@ -31,7 +31,7 @@ where
     vertical: VerticalAlignment,
 }
 
-impl<'a, 'b, 'c, C> TextBlockStyle<MonoTextStyle<'a, C>>
+impl<'a, C> TextBlockStyle<MonoTextStyle<'a, C>>
 where
     C: PixelColor,
 {

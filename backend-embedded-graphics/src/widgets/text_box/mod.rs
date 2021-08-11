@@ -1,9 +1,11 @@
+use core::cell::Cell;
+
 use embedded_graphics::{
     draw_target::DrawTarget,
     mono_font::{MonoFont, MonoTextStyle, MonoTextStyleBuilder},
     pixelcolor::{PixelColor, Rgb888},
-    prelude::{Dimensions, Point, Size, WebColors},
-    primitives::{PrimitiveStyle, Rectangle, StyledDrawable},
+    prelude::{Dimensions, Point, Size},
+    primitives::Rectangle,
     text::renderer::{CharacterStyle, TextRenderer},
     Drawable,
 };
@@ -19,8 +21,9 @@ use embedded_text::{
 };
 
 pub use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
+use object_chain::Chain;
 
-use crate::{EgCanvas, ToRectangle};
+use crate::{widgets::text_box::plugin::Cursor, EgCanvas, ToRectangle};
 
 mod plugin;
 
@@ -31,17 +34,32 @@ where
     renderer: T,
     horizontal: HorizontalAlignment,
     vertical: VerticalAlignment,
+    cursor: Cell<Cursor>,
+    cursor_color: Option<<T as TextRenderer>::Color>,
 }
 
-impl<'a, 'b, 'c, C> TextBoxStyle<MonoTextStyle<'a, C>>
+impl<'a, C> TextBoxStyle<MonoTextStyle<'a, C>>
 where
     C: PixelColor,
 {
+    pub fn get_text_color(&self) -> Option<C> {
+        self.renderer.text_color
+    }
+
     /// Customize the text color
     pub fn text_color(&mut self, text_color: C) {
         self.renderer = MonoTextStyleBuilder::from(&self.renderer)
             .text_color(text_color)
             .build();
+
+        if self.cursor_color.is_none() {
+            self.cursor_color(text_color);
+        }
+    }
+
+    /// Customize the cursor color
+    pub fn cursor_color(&mut self, color: C) {
+        self.cursor_color = Some(color);
     }
 
     /// Customize the font
@@ -52,6 +70,8 @@ where
                 .build(),
             horizontal: self.horizontal,
             vertical: self.vertical,
+            cursor: Cell::new(Cursor::default()),
+            cursor_color: None,
         }
     }
 }
@@ -116,6 +136,8 @@ where
     fn horizontal_alignment(self, alignment: HorizontalAlignment) -> Self;
 
     fn vertical_alignment(self, alignment: VerticalAlignment) -> Self;
+
+    fn cursor_color(self, color: Self::Color) -> Self;
 }
 
 impl<'a, C, const N: usize> TextBoxStyling<'a, C, MonoTextStyle<'a, C>, N>
@@ -136,11 +158,14 @@ where
     {
         let horizontal = self.label_properties.horizontal;
         let vertical = self.label_properties.vertical;
+        let cursor = self.label_properties.cursor.clone();
 
         self.style(TextBoxStyle {
             renderer,
             horizontal,
             vertical,
+            cursor,
+            cursor_color: None, // TODO: convert
         })
     }
 
@@ -161,11 +186,15 @@ where
         let renderer = self.label_properties.renderer;
         let horizontal = alignment;
         let vertical = self.label_properties.vertical;
+        let cursor = self.label_properties.cursor.clone();
+        let cursor_color = self.label_properties.cursor_color;
 
         self.style(TextBoxStyle {
             renderer,
             horizontal,
             vertical,
+            cursor,
+            cursor_color,
         })
     }
 
@@ -173,11 +202,31 @@ where
         let renderer = self.label_properties.renderer;
         let horizontal = self.label_properties.horizontal;
         let vertical = alignment;
+        let cursor = self.label_properties.cursor.clone();
+        let cursor_color = self.label_properties.cursor_color;
 
         self.style(TextBoxStyle {
             renderer,
             horizontal,
             vertical,
+            cursor,
+            cursor_color,
+        })
+    }
+
+    fn cursor_color(self, color: C) -> Self {
+        let renderer = self.label_properties.renderer;
+        let horizontal = self.label_properties.horizontal;
+        let vertical = self.label_properties.vertical;
+        let cursor = self.label_properties.cursor.clone();
+        let cursor_color = Some(color);
+
+        self.style(TextBoxStyle {
+            renderer,
+            horizontal,
+            vertical,
+            cursor,
+            cursor_color,
         })
     }
 }
@@ -204,11 +253,15 @@ where
             .build();
         let horizontal = self.label_properties.horizontal;
         let vertical = self.label_properties.vertical;
+        let cursor = self.label_properties.cursor.clone();
+        let cursor_color = self.label_properties.cursor_color;
 
         self.style(TextBoxStyle {
             renderer,
             horizontal,
             vertical,
+            cursor,
+            cursor_color,
         })
     }
 }
@@ -220,8 +273,9 @@ where
     DT: DrawTarget<Color = C>,
 {
     fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
-        if self.state.has_state(Selected) {
-            EgTextBox::with_textbox_style(
+        let cursor_color = self.label_properties.cursor_color;
+        if self.state.has_state(Selected) && cursor_color.is_some() {
+            let textbox = EgTextBox::with_textbox_style(
                 self.text.as_ref(),
                 self.bounds.to_rectangle(),
                 self.label_properties.renderer.clone(),
@@ -231,9 +285,19 @@ where
                     .vertical_alignment(self.label_properties.vertical)
                     .build(),
             )
-            //.add_plugin(self.editor_input.plugin())
-            .draw(&mut canvas.target)
-            .map(|_| ())
+            .add_plugin(
+                self.label_properties
+                    .cursor
+                    .get()
+                    .plugin(cursor_color.unwrap()),
+            );
+
+            let result = textbox.draw(&mut canvas.target).map(|_| ());
+
+            let Chain { object: plugin } = textbox.take_plugins();
+            self.label_properties.cursor.set(plugin.get_cursor());
+
+            result
         } else {
             EgTextBox::with_textbox_style(
                 self.text.as_ref(),
@@ -254,6 +318,7 @@ where
 macro_rules! textbox_for_charset {
     ($charset:ident, $font:ident) => {
         pub mod $charset {
+            use core::cell::Cell;
             use embedded_graphics::{
                 mono_font::{$charset, MonoTextStyle},
                 pixelcolor::PixelColor,
@@ -263,7 +328,10 @@ macro_rules! textbox_for_charset {
             };
             use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
 
-            use crate::{themes::Theme, widgets::text_box::TextBoxStyle};
+            use crate::{
+                themes::Theme,
+                widgets::text_box::{plugin::Cursor, TextBoxStyle},
+            };
 
             pub trait TextBoxConstructor<'a, C, const N: usize>
             where
@@ -290,6 +358,8 @@ macro_rules! textbox_for_charset {
                             ),
                             horizontal: HorizontalAlignment::Left,
                             vertical: VerticalAlignment::Top,
+                            cursor: Cell::new(Cursor::default()),
+                            cursor_color: Some(<C as Theme>::TEXT_COLOR),
                         },
                         bounds: BoundingBox::default(),
                     }
