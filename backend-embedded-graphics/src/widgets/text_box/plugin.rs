@@ -121,13 +121,13 @@ impl Cursor {
     }
 }
 
-pub(super) struct EditorInput<const N: usize> {
-    pub text: String<N>,
+pub(super) struct EditorInput<'a, const N: usize> {
+    pub text: &'a mut String<N>,
     pub cursor: Cursor,
 }
 
-impl<const N: usize> EditorInput<N> {
-    pub fn new(text: String<N>) -> Self {
+impl<'a, const N: usize> EditorInput<'a, N> {
+    pub fn new(text: &'a mut String<N>) -> Self {
         Self {
             cursor: Cursor {
                 offset: text.len(),

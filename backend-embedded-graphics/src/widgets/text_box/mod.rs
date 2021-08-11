@@ -221,24 +221,33 @@ where
 {
     fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
         if self.state.has_state(Selected) {
-            self.bounds.to_rectangle().draw_styled(
-                &PrimitiveStyle::with_stroke(Rgb888::CSS_DODGER_BLUE.into(), 1),
-                &mut canvas.target,
-            )?;
+            EgTextBox::with_textbox_style(
+                self.text.as_ref(),
+                self.bounds.to_rectangle(),
+                self.label_properties.renderer.clone(),
+                TextBoxStyleBuilder::new()
+                    .height_mode(HeightMode::Exact(VerticalOverdraw::Hidden))
+                    .alignment(self.label_properties.horizontal)
+                    .vertical_alignment(self.label_properties.vertical)
+                    .build(),
+            )
+            //.add_plugin(self.editor_input.plugin())
+            .draw(&mut canvas.target)
+            .map(|_| ())
+        } else {
+            EgTextBox::with_textbox_style(
+                self.text.as_ref(),
+                self.bounds.to_rectangle(),
+                self.label_properties.renderer.clone(),
+                TextBoxStyleBuilder::new()
+                    .height_mode(HeightMode::Exact(VerticalOverdraw::Hidden))
+                    .alignment(self.label_properties.horizontal)
+                    .vertical_alignment(self.label_properties.vertical)
+                    .build(),
+            )
+            .draw(&mut canvas.target)
+            .map(|_| ())
         }
-
-        EgTextBox::with_textbox_style(
-            self.text.as_ref(),
-            self.bounds.to_rectangle(),
-            self.label_properties.renderer.clone(),
-            TextBoxStyleBuilder::new()
-                .height_mode(HeightMode::Exact(VerticalOverdraw::Hidden))
-                .alignment(self.label_properties.horizontal)
-                .vertical_alignment(self.label_properties.vertical)
-                .build(),
-        )
-        .draw(&mut canvas.target)
-        .map(|_| ())
     }
 }
 
