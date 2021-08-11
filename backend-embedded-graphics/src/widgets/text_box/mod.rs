@@ -10,7 +10,8 @@ use embedded_graphics::{
     Drawable,
 };
 use embedded_gui::{
-    geometry::{measurement::MeasureSpec, MeasuredSize},
+    geometry::{measurement::MeasureSpec, MeasuredSize, Position},
+    input::event::{Key, Modifier, ToStr},
     state::selection::Selected,
     widgets::text_box::{TextBox, TextBoxProperties},
     WidgetRenderer,
@@ -21,9 +22,10 @@ use embedded_text::{
 };
 
 pub use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
+use heapless::String;
 use object_chain::Chain;
 
-use crate::{widgets::text_box::plugin::Cursor, EgCanvas, ToRectangle};
+use crate::{widgets::text_box::plugin::Cursor, EgCanvas, ToPoint, ToRectangle};
 
 mod plugin;
 
@@ -107,6 +109,33 @@ where
             width: bounding_box.size.width,
             height: bounding_box.size.height,
         }
+    }
+
+    fn handle_keypress<const N: usize>(
+        &mut self,
+        key: Key,
+        modifier: Modifier,
+        text: &mut String<N>,
+    ) {
+        let cursor = self.cursor.get_mut();
+
+        match key {
+            Key::ArrowUp => cursor.cursor_up(),
+            Key::ArrowDown => cursor.cursor_down(),
+            Key::ArrowLeft => cursor.cursor_left(),
+            Key::ArrowRight => cursor.cursor_right(),
+            Key::Del => cursor.delete_after(text),
+            Key::Backspace => cursor.delete_before(text),
+            _ => {
+                if let Some(str) = (key, modifier).to_str() {
+                    cursor.insert(text, str);
+                }
+            }
+        }
+    }
+
+    fn handle_cursor_down(&mut self, coordinates: Position) {
+        self.cursor.get_mut().move_cursor_to(coordinates.to_point())
     }
 }
 

@@ -1,8 +1,8 @@
 use crate::{
-    geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
+    geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
     input::{
         controller::InputContext,
-        event::{InputEvent, KeyEvent, PointerEvent},
+        event::{InputEvent, Key, KeyEvent, Modifier, PointerEvent},
     },
     state::{
         selection::{Selected, Unselected},
@@ -15,6 +15,13 @@ use heapless::String;
 
 pub trait TextBoxProperties {
     fn measure_text(&self, text: &str, spec: MeasureSpec) -> MeasuredSize;
+    fn handle_keypress<const N: usize>(
+        &mut self,
+        key: Key,
+        modifier: Modifier,
+        text: &mut String<N>,
+    );
+    fn handle_cursor_down(&mut self, coordinates: Position);
 }
 
 pub struct TextBox<P, const N: usize> {
@@ -146,7 +153,7 @@ where
                 PointerEvent::Down => {
                     if self.bounding_box().contains(pos) {
                         self.change_state(TextBox::STATE_SELECTED);
-                        // TODO send to TextBox impl
+                        self.label_properties.handle_cursor_down(pos);
                     } else {
                         self.change_state(TextBox::STATE_UNSELECTED);
                     }
@@ -156,8 +163,8 @@ where
                 _ => false,
             },
             InputEvent::KeyEvent(KeyEvent::KeyDown(keycode, modifier, _repetition_counter)) => {
-                // TODO send to TextBox impl
-                println!("{:?}", keycode);
+                self.label_properties
+                    .handle_keypress(keycode, modifier, &mut self.text);
                 true
             }
             _ => {
