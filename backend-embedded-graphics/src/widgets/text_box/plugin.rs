@@ -34,30 +34,48 @@ impl StrExt for str {
 }
 
 trait HeaplessStringExt {
-    fn insert_str(&mut self, offset: usize, s: &str) -> bool;
-    fn remove(&mut self, offset: usize) -> bool;
+    /// Inserts a string after `offset` number of characters.
+    ///
+    /// If `offset` is greater than the length of the string, the string is appended.
+    fn insert_at_char(&mut self, offset: usize, s: &str) -> bool;
+
+    /// Removes the `offset`th character.
+    fn remove_char(&mut self, offset: usize) -> bool;
 }
 
 impl<const N: usize> HeaplessStringExt for String<N> {
-    fn insert_str(&mut self, offset: usize, s: &str) -> bool {
+    fn insert_at_char(&mut self, char_offset: usize, s: &str) -> bool {
         if self.len() + s.len() > N {
             return false;
         }
 
-        // TODO: this can be done more efficiently
-        let mut new_str = String::<N>::from(&self[0..offset]);
-        let _ = new_str.push_str(s);
-        let _ = new_str.push_str(&self[offset..]);
+        if let Some((idx, _)) = self.char_indices().skip(char_offset).next() {
+            // TODO: this should be done in-place
+            let mut new_str = String::<N>::from(&self[0..idx]);
+            let _ = new_str.push_str(s);
+            let _ = new_str.push_str(&self[idx..]);
 
-        *self = new_str;
-
+            *self = new_str;
+        } else {
+            let _ = self.push_str(s);
+        }
         true
     }
 
-    fn remove(&mut self, offset: usize) -> bool {
-        if let Some(char_length) = self[offset..].char_indices().skip(1).next().map(|(i, _)| i) {
-            let mut new_str = String::<N>::from(&self[0..offset]);
-            let _ = new_str.push_str(&self[offset + char_length..]);
+    fn remove_char(&mut self, char_offset: usize) -> bool {
+        let mut indices = self.char_indices().skip(char_offset);
+        // Start of the removed character
+        if let Some((idx, _)) = indices.next() {
+            // End of the removed character
+            let new_str = if let Some((idx2, _)) = indices.next() {
+                // TODO: this should be done in-place
+                let mut new_str = String::<N>::from(&self[0..idx]);
+                let _ = new_str.push_str(&self[idx2..]);
+                new_str
+            } else {
+                // Last character is removed
+                String::<N>::from(&self[0..idx])
+            };
 
             *self = new_str;
 
@@ -78,16 +96,26 @@ mod test {
     fn string_ext() {
         let mut s = String::<50>::from("foobar");
 
-        assert!(s.insert_str(3, " and "));
+        assert!(s.insert_at_char(3, " and "));
         assert_eq!(s, "foo and bar");
 
         // Verify that we don't remove characters offset by one (i.e. " and" instead of "and ")
-        s.remove(4);
+        s.remove_char(4);
         assert_eq!(s, "foo nd bar");
 
-        s.remove(5);
-        s.remove(6);
-        s.remove(7);
+        s.remove_char(4);
+        s.remove_char(4);
+        s.remove_char(4);
+
+        assert_eq!(s, "foo bar");
+
+        // Remove character from end
+        s.remove_char(6);
+
+        assert_eq!(s, "foo ba");
+
+        // Insert character at the end
+        s.insert_at_char(6, "r");
 
         assert_eq!(s, "foo bar");
     }
@@ -121,7 +149,7 @@ impl Default for Cursor {
 
 impl Cursor {
     pub fn insert<const N: usize>(&mut self, text: &mut String<N>, s: &str) {
-        if text.insert_str(self.offset, s) {
+        if text.insert_at_char(self.offset, s) {
             self.offset += s.len();
             self.desired_position = DesiredPosition::Offset(self.offset);
         }
@@ -131,13 +159,13 @@ impl Cursor {
         if self.offset > 0 {
             self.offset -= 1;
             self.desired_position = DesiredPosition::Offset(self.offset);
-            text.remove(self.offset);
+            text.remove_char(self.offset);
         }
     }
 
     pub fn delete_after<const N: usize>(&mut self, text: &mut String<N>) {
         if self.offset < text.chars().count() {
-            text.remove(self.offset);
+            text.remove_char(self.offset);
         }
     }
 
