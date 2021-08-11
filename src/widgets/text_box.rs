@@ -112,11 +112,11 @@ where
             }
 
             InputEvent::PointerEvent(position, PointerEvent::Down) => {
-                if self.bounding_box().contains(position)
-                    || self.state.has_state(TextBox::STATE_SELECTED)
-                {
+                if self.bounding_box().contains(position) {
                     Some(0)
                 } else {
+                    // Allow a potentially clicked widget to handle the event.
+                    self.change_state(TextBox::STATE_UNSELECTED);
                     None
                 }
             }
@@ -151,12 +151,8 @@ where
             InputEvent::PointerEvent(pos, pe) => match pe {
                 // TODO: later we might want to handle drag and up to support text selection
                 PointerEvent::Down => {
-                    if self.bounding_box().contains(pos) {
-                        self.change_state(TextBox::STATE_SELECTED);
-                        self.label_properties.handle_cursor_down(pos);
-                    } else {
-                        self.change_state(TextBox::STATE_UNSELECTED);
-                    }
+                    self.change_state(TextBox::STATE_SELECTED);
+                    self.label_properties.handle_cursor_down(pos);
 
                     true
                 }
