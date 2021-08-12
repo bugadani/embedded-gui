@@ -31,12 +31,7 @@ use embedded_gui::{
             frame::Frame,
             linear::{column::Column, row::Row},
         },
-        primitives::{
-            border::Border,
-            fill::{FillParent, Top},
-            spacing::Spacing,
-            visibility::Visibility,
-        },
+        primitives::{border::Border, fill::FillParent, spacing::Spacing, visibility::Visibility},
         scroll::Scroll,
         slider::ScrollbarConnector,
         text_block::TextBlock,
@@ -258,14 +253,13 @@ fn main() {
         .spacing(1)
         .add(
             Column::new().add(Label::new("TextBlock")).add(
-            Border::new(FillParent::both(
+            Border::new(
                 TextBlock::new(
                     "Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically",
                 )
                 .horizontal_alignment(HorizontalAlignment::Center)
                 .vertical_alignment(VerticalAlignment::Middle)
             )
-            .align_vertical(Top))
             .border_color(Rgb888::CSS_LIGHT_GRAY))
         )
         .weight(1)

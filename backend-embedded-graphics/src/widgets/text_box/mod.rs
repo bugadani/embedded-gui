@@ -91,19 +91,12 @@ where
         let max_width = spec.width.largest().unwrap_or(u32::MAX);
         let max_height = spec.height.largest().unwrap_or(u32::MAX);
 
-        if spec.height.is_exact() {
-            return MeasuredSize {
-                width: max_width,
-                height: spec.height.largest().unwrap(),
-            };
-        }
-
         let bounding_box = EgTextBox::with_textbox_style(
             text,
             Rectangle::new(Point::zero(), Size::new(max_width, max_height)),
             self.renderer.clone(),
             TextBoxStyleBuilder::new()
-                .height_mode(HeightMode::ShrinkToText(VerticalOverdraw::Hidden))
+                .height_mode(HeightMode::Exact(VerticalOverdraw::Hidden))
                 .build(),
         )
         .fit_height()

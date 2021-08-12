@@ -29,12 +29,7 @@ use embedded_gui::{
             frame::Frame,
             linear::{column::Column, row::Row},
         },
-        primitives::{
-            border::Border,
-            fill::{FillParent, Top},
-            spacing::Spacing,
-            visibility::Visibility,
-        },
+        primitives::{border::Border, fill::FillParent, spacing::Spacing, visibility::Visibility},
         scroll::Scroll,
         slider::ScrollbarConnector,
         text_block::TextBlock,
@@ -255,39 +250,36 @@ fn main() {
     let text_block_page = Row::new()
         .spacing(1)
         .add(
-            Column::new().add(Label::new("TextBlock")).add(
-            Border::new(FillParent::both(
+            Column::new().add(Label::new("TextBlock")).add(Border::new(
                 TextBlock::new(
                     "Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically",
                 )
                 .horizontal_alignment(HorizontalAlignment::Center)
                 .vertical_alignment(VerticalAlignment::Middle),
-            )
-            .align_vertical(Top)))
+            )),
         )
         .weight(1)
         .add(
-            Column::new().add(Label::new("TextBox"))
-            .add(
-                Border::new(
-                    TextBox::new(
-                        String::<100>::from("A TextBox with editable content. Click me and start typing!"),
-                    )
+            Column::new()
+                .add(Label::new("TextBox"))
+                .add(Border::new(
+                    TextBox::new(String::<100>::from(
+                        "A TextBox with editable content. Click me and start typing!",
+                    ))
                     .bind(&text_reset)
                     .on_data_changed(|text_box, reset| {
                         if *reset {
                             text_box.set_text("");
                         }
                     })
-                    .on_text_changed(|reset, _text| *reset = false)
-                )
-            )
-            .weight(1)
-            .add(
-                DefaultTheme::primary_button("Clear")
-                .bind(&text_reset)
-                .on_clicked(|reset| *reset = true)
-            )
+                    .on_text_changed(|reset, _text| *reset = false),
+                ))
+                .weight(1)
+                .add(
+                    DefaultTheme::primary_button("Clear")
+                        .bind(&text_reset)
+                        .on_clicked(|reset| *reset = true),
+                ),
         )
         .weight(1);
 
