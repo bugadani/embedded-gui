@@ -31,17 +31,21 @@ where
     vertical: VerticalAlignment,
 }
 
+impl<C, T> TextBlockStyle<T>
+where
+    C: PixelColor,
+    T: TextRenderer<Color = C> + CharacterStyle<Color = C>,
+{
+    /// Customize the text color
+    pub fn text_color(&mut self, text_color: C) {
+        self.renderer.set_text_color(Some(text_color));
+    }
+}
+
 impl<'a, C> TextBlockStyle<MonoTextStyle<'a, C>>
 where
     C: PixelColor,
 {
-    /// Customize the text color
-    pub fn text_color(&mut self, text_color: C) {
-        self.renderer = MonoTextStyleBuilder::from(&self.renderer)
-            .text_color(text_color)
-            .build();
-    }
-
     /// Customize the font
     pub fn font<'a2>(self, font: &'a2 MonoFont<'a2>) -> TextBlockStyle<MonoTextStyle<'a2, C>> {
         TextBlockStyle {
@@ -83,7 +87,8 @@ where
 pub trait TextBlockStyling<'a, C, S, T>: Sized
 where
     C: PixelColor,
-    T: TextRenderer + CharacterStyle<Color = <T as TextRenderer>::Color>,
+    T: CharacterStyle<Color = C>,
+    T: TextRenderer<Color = C>,
 {
     type Color;
 

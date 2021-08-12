@@ -44,19 +44,14 @@ where
     cursor_color: Option<<T as TextRenderer>::Color>,
 }
 
-impl<'a, C> TextBoxStyle<MonoTextStyle<'a, C>>
+impl<C, T> TextBoxStyle<T>
 where
     C: PixelColor,
+    T: TextRenderer<Color = C> + CharacterStyle<Color = C>,
 {
-    pub fn get_text_color(&self) -> Option<C> {
-        self.renderer.text_color
-    }
-
     /// Customize the text color
     pub fn text_color(&mut self, text_color: C) {
-        self.renderer = MonoTextStyleBuilder::from(&self.renderer)
-            .text_color(text_color)
-            .build();
+        self.renderer.set_text_color(Some(text_color));
 
         if self.cursor_color.is_none() {
             self.cursor_color(text_color);
@@ -64,8 +59,17 @@ where
     }
 
     /// Customize the cursor color
-    pub fn cursor_color(&mut self, color: C) {
+    pub fn cursor_color(&mut self, color: <T as TextRenderer>::Color) {
         self.cursor_color = Some(color);
+    }
+}
+
+impl<'a, C> TextBoxStyle<MonoTextStyle<'a, C>>
+where
+    C: PixelColor,
+{
+    pub fn get_text_color(&self) -> Option<C> {
+        self.renderer.text_color
     }
 
     /// Customize the font
@@ -170,11 +174,12 @@ where
     fn cursor_color(self, color: Self::Color) -> Self;
 }
 
-impl<'a, C, D, const N: usize> TextBoxStyling<'a, C, D, MonoTextStyle<'a, C>, N>
-    for TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, D, N>
+impl<'a, C, D, T, const N: usize> TextBoxStyling<'a, C, D, T, N> for TextBox<TextBoxStyle<T>, D, N>
 where
     D: WidgetData,
     C: PixelColor + From<Rgb888>,
+    T: CharacterStyle<Color = C>,
+    T: TextRenderer<Color = C>,
 {
     type Color = C;
 
@@ -182,10 +187,10 @@ where
         self.fields.label_properties.text_color(color);
     }
 
-    fn text_renderer<T>(self, renderer: T) -> TextBox<TextBoxStyle<T>, D, N>
+    fn text_renderer<T2>(self, renderer: T2) -> TextBox<TextBoxStyle<T2>, D, N>
     where
-        T: TextRenderer + CharacterStyle<Color = <T as TextRenderer>::Color>,
-        <T as TextRenderer>::Color: From<Rgb888>,
+        T2: TextRenderer + CharacterStyle<Color = <T2 as TextRenderer>::Color>,
+        <T2 as TextRenderer>::Color: From<Rgb888>,
     {
         let horizontal = self.fields.label_properties.horizontal;
         let vertical = self.fields.label_properties.vertical;
@@ -218,7 +223,7 @@ where
     }
 
     fn horizontal_alignment(self, alignment: HorizontalAlignment) -> Self {
-        let renderer = self.fields.label_properties.renderer;
+        let renderer = self.fields.label_properties.renderer.clone();
         let horizontal = alignment;
         let vertical = self.fields.label_properties.vertical;
         let cursor = self.fields.label_properties.cursor.clone();
@@ -234,7 +239,7 @@ where
     }
 
     fn vertical_alignment(self, alignment: VerticalAlignment) -> Self {
-        let renderer = self.fields.label_properties.renderer;
+        let renderer = self.fields.label_properties.renderer.clone();
         let horizontal = self.fields.label_properties.horizontal;
         let vertical = alignment;
         let cursor = self.fields.label_properties.cursor.clone();
@@ -250,7 +255,7 @@ where
     }
 
     fn cursor_color(self, color: C) -> Self {
-        let renderer = self.fields.label_properties.renderer;
+        let renderer = self.fields.label_properties.renderer.clone();
         let horizontal = self.fields.label_properties.horizontal;
         let vertical = self.fields.label_properties.vertical;
         let cursor = self.fields.label_properties.cursor.clone();
