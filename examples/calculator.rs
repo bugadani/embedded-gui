@@ -212,7 +212,7 @@ fn main() {
             .add(
                 Spacing::new(
                     FillParent::horizontal(
-                        Label::new(String::<11>::from("0"))
+                        Label::new(String::<11>::new())
                             .font(&FONT_10X20)
                             .bind(&calculator)
                             .on_data_changed(|label, calc| {
