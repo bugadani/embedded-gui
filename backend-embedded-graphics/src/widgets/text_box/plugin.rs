@@ -1,5 +1,3 @@
-use core::ops::Sub;
-
 use az::SaturatingAs;
 use embedded_graphics::{
     draw_target::DrawTarget,
@@ -443,23 +441,21 @@ impl<'a, C: PixelColor> Plugin<'a, C> for EditorPlugin<C> {
                     .contains(&desired_cursor_position) =>
             {
                 let chars_before = desired_cursor_position - self.current_offset;
-                let pos = if chars_before == 0 {
-                    // we want the end of the last character
-                    bounds
-                        .top_left
-                        .sub(Point::new(1, 0))
-                        .component_max(self.top_left)
-                } else {
-                    character_style
-                        .measure_string(
-                            text.unwrap().first_n_chars(chars_before),
-                            bounds.top_left,
-                            Baseline::Top,
-                        )
-                        .bounding_box
-                        .anchor_point(AnchorPoint::TopRight)
-                };
-                self.draw_cursor(draw_target, bounds, pos)?;
+
+                let Point { x: left, y: top } = bounds.top_left;
+
+                let dx = character_style
+                    .measure_string(
+                        text.unwrap_or("").first_n_chars(chars_before),
+                        bounds.top_left,
+                        Baseline::Top,
+                    )
+                    .bounding_box
+                    .size
+                    .width
+                    .min(bounds.size.width) as i32;
+
+                self.draw_cursor(draw_target, bounds, Point::new(left + dx, top))?;
                 self.current_offset = desired_cursor_position;
             }
 
