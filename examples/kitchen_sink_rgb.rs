@@ -209,7 +209,7 @@ fn main() {
     let toggle = BoundData::new(false, |_| ());
     let checkables = BoundData::new((&radio, &checkbox, &toggle), |_| ());
 
-    let text_reset = BoundData::new(false, |_| ());
+    let text_reset = BoundData::new((false, false), |_| ());
 
     let slider1_data = BoundData::new(0, |_| ());
     let slider2_data = BoundData::new(0, |_| ());
@@ -269,14 +269,18 @@ fn main() {
             .add(
                 Border::new(
                     TextBox::new(
-                        String::<100>::from("A TextBox with editable content. Click me and start typing!"))
+                        String::<100>::from("A TextBox with editable content. Click me and start typing!")
+                    )
                     .bind(&text_reset)
-                    .on_data_changed(|text_box, reset| {
+                    .on_data_changed(|text_box, (reset, _empty)| {
                         if *reset {
-                            text_box.set_text("");
+                            text_box.text.clear();
                         }
                     })
-                    .on_text_changed(|reset, _text| *reset = false)
+                    .on_text_changed(|(reset, empty), text| {
+                        *reset = false;
+                        *empty = text == "";
+                    })
                 )
                 .border_color(Rgb888::CSS_LIGHT_GRAY)
             )
@@ -284,7 +288,14 @@ fn main() {
             .add(
                 DefaultTheme::primary_button("Clear")
                 .bind(&text_reset)
-                .on_clicked(|reset| *reset = true)
+                .on_clicked(|(reset, empty)| {
+                    *reset = true;
+                    // Resetting means the text box will be empty
+                    *empty = true;
+                })
+                .on_data_changed(|button, (_, empty)| {
+                    button.set_active(!*empty);
+                })
             )
         )
         .weight(1);
