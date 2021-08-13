@@ -4,11 +4,11 @@ use crate::{
     widgets::{wrapper::WrapperBindable, Widget},
 };
 
-pub trait TextBoxProperties {
+pub trait TextBlockProperties {
     fn measure_text(&self, text: &str, spec: MeasureSpec) -> MeasuredSize;
 }
 
-pub struct TextBox<S, P> {
+pub struct TextBlock<S, P> {
     pub text: S,
     pub label_properties: P,
     pub bounds: BoundingBox,
@@ -16,10 +16,10 @@ pub struct TextBox<S, P> {
     pub on_state_changed: fn(&mut Self, WidgetState),
 }
 
-impl<S, P> TextBox<S, P>
+impl<S, P> TextBlock<S, P>
 where
     S: AsRef<str>,
-    P: TextBoxProperties,
+    P: TextBlockProperties,
 {
     pub fn on_state_changed(mut self, callback: fn(&mut Self, WidgetState)) -> Self {
         self.on_state_changed = callback;
@@ -27,10 +27,10 @@ where
     }
 }
 
-impl<S, P> Widget for TextBox<S, P>
+impl<S, P> Widget for TextBlock<S, P>
 where
     S: AsRef<str>,
-    P: TextBoxProperties,
+    P: TextBlockProperties,
 {
     fn bounding_box(&self) -> BoundingBox {
         self.bounds
@@ -68,9 +68,9 @@ where
     }
 }
 
-impl<S, P> WrapperBindable for TextBox<S, P>
+impl<S, P> WrapperBindable for TextBlock<S, P>
 where
     S: AsRef<str>,
-    P: TextBoxProperties,
+    P: TextBlockProperties,
 {
 }

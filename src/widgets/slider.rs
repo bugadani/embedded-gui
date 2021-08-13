@@ -14,7 +14,7 @@ use crate::{
         controller::InputContext,
         event::{InputEvent, PointerEvent, ScrollEvent},
     },
-    state::{State, StateGroup, WidgetState},
+    state::{State, WidgetState},
     state_group,
     widgets::{
         scroll::{ScrollData, ScrollDirection, ScrollFields},

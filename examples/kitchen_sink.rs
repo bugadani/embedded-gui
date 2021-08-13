@@ -2,10 +2,12 @@ use std::{fmt::Write, thread, time::Duration};
 
 use backend_embedded_graphics::{
     themes::{default::DefaultTheme, Theme},
-    widgets::textbox::{ascii::TextBoxConstructor, TextBoxStyling},
     widgets::{
         label::ascii::LabelConstructor,
-        textbox::{HorizontalAlignment, VerticalAlignment},
+        text_block::{
+            ascii::TextBlockConstructor, HorizontalAlignment, TextBlockStyling, VerticalAlignment,
+        },
+        text_box::ascii::TextBoxConstructor,
     },
     EgCanvas,
 };
@@ -13,13 +15,13 @@ use embedded_graphics::{
     draw_target::DrawTarget, pixelcolor::BinaryColor, prelude::Size as EgSize,
 };
 use embedded_graphics_simulator::{
-    sdl2::MouseButton, BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent,
-    Window as SimWindow,
+    sdl2::{Keycode, Mod, MouseButton},
+    BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window as SimWindow,
 };
 use embedded_gui::{
     data::BoundData,
     geometry::Position,
-    input::event::{InputEvent, PointerEvent, ScrollEvent},
+    input::event::{InputEvent, Key, KeyEvent, Modifier, PointerEvent, ScrollEvent},
     prelude::*,
     widgets::{
         label::Label,
@@ -30,10 +32,91 @@ use embedded_gui::{
         primitives::{border::Border, fill::FillParent, spacing::Spacing, visibility::Visibility},
         scroll::Scroll,
         slider::ScrollbarConnector,
-        textbox::TextBox,
+        text_block::TextBlock,
+        text_box::TextBox,
     },
 };
 use heapless::String;
+
+trait Convert {
+    type Output;
+
+    fn convert(self) -> Self::Output;
+}
+
+impl Convert for Keycode {
+    type Output = Option<Key>;
+
+    fn convert(self) -> Self::Output {
+        match self {
+            Keycode::Backspace => Some(Key::Backspace),
+            Keycode::Tab => Some(Key::Tab),
+            Keycode::Return => Some(Key::Enter),
+            Keycode::Space => Some(Key::Space),
+            Keycode::KpComma | Keycode::Comma => Some(Key::Comma),
+            Keycode::KpMinus | Keycode::Minus => Some(Key::Minus),
+            Keycode::KpPeriod | Keycode::Period => Some(Key::Period),
+            Keycode::Kp1 | Keycode::Num0 => Some(Key::N0),
+            Keycode::Kp2 | Keycode::Num1 => Some(Key::N1),
+            Keycode::Kp3 | Keycode::Num2 => Some(Key::N2),
+            Keycode::Kp4 | Keycode::Num3 => Some(Key::N3),
+            Keycode::Kp5 | Keycode::Num4 => Some(Key::N4),
+            Keycode::Kp6 | Keycode::Num5 => Some(Key::N5),
+            Keycode::Kp7 | Keycode::Num6 => Some(Key::N6),
+            Keycode::Kp8 | Keycode::Num7 => Some(Key::N7),
+            Keycode::Kp9 | Keycode::Num8 => Some(Key::N8),
+            Keycode::Kp0 | Keycode::Num9 => Some(Key::N9),
+            Keycode::A => Some(Key::A),
+            Keycode::B => Some(Key::B),
+            Keycode::C => Some(Key::C),
+            Keycode::D => Some(Key::D),
+            Keycode::E => Some(Key::E),
+            Keycode::F => Some(Key::F),
+            Keycode::G => Some(Key::G),
+            Keycode::H => Some(Key::H),
+            Keycode::I => Some(Key::I),
+            Keycode::J => Some(Key::J),
+            Keycode::K => Some(Key::K),
+            Keycode::L => Some(Key::L),
+            Keycode::M => Some(Key::M),
+            Keycode::N => Some(Key::N),
+            Keycode::O => Some(Key::O),
+            Keycode::P => Some(Key::P),
+            Keycode::Q => Some(Key::Q),
+            Keycode::R => Some(Key::R),
+            Keycode::S => Some(Key::S),
+            Keycode::T => Some(Key::T),
+            Keycode::U => Some(Key::U),
+            Keycode::V => Some(Key::V),
+            Keycode::W => Some(Key::W),
+            Keycode::X => Some(Key::X),
+            Keycode::Y => Some(Key::Y),
+            Keycode::Z => Some(Key::Z),
+            Keycode::Delete => Some(Key::Del),
+            Keycode::Right => Some(Key::ArrowRight),
+            Keycode::Left => Some(Key::ArrowLeft),
+            Keycode::Down => Some(Key::ArrowDown),
+            Keycode::Up => Some(Key::ArrowUp),
+            _ => None,
+        }
+    }
+}
+
+impl Convert for Mod {
+    type Output = Modifier;
+
+    fn convert(self) -> Self::Output {
+        if self.contains(Mod::RALTMOD) {
+            Modifier::Alt
+        } else if self.intersects(Mod::LSHIFTMOD | Mod::RSHIFTMOD) {
+            Modifier::Shift
+        } else if self.contains(Mod::CAPSMOD) {
+            Modifier::Shift
+        } else {
+            Modifier::None
+        }
+    }
+}
 
 fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
     unsafe {
@@ -85,6 +168,21 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
                     ScrollEvent::HorizontalScroll(scroll_delta.x * 4)
                 }))
             }
+            SimulatorEvent::KeyDown {
+                keycode, keymod, ..
+            } => Ok(InputEvent::KeyEvent(KeyEvent::KeyDown(
+                keycode.convert().ok_or(false)?,
+                keymod.convert(),
+                0,
+            ))),
+
+            SimulatorEvent::KeyUp {
+                keycode, keymod, ..
+            } => Ok(InputEvent::KeyEvent(KeyEvent::KeyUp(
+                keycode.convert().ok_or(false)?,
+                keymod.convert(),
+            ))),
+
             SimulatorEvent::Quit => Err(true),
             _ => Err(false),
         }
@@ -93,21 +191,23 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
 
 #[derive(PartialEq)]
 enum Page {
-    Textbox,
+    TextBlock,
     Check,
     Slider,
     Scroll,
 }
 
 fn main() {
-    let display = SimulatorDisplay::new(EgSize::new(240, 180));
+    let display = SimulatorDisplay::new(EgSize::new(300, 180));
 
-    let page = BoundData::new(Page::Textbox, |_| ());
+    let page = BoundData::new(Page::TextBlock, |_| ());
 
     let radio = BoundData::new(0, |_| ());
     let checkbox = BoundData::new(false, |_| ());
     let toggle = BoundData::new(false, |_| ());
     let checkables = BoundData::new((&radio, &checkbox, &toggle), |_| ());
+
+    let text_reset = BoundData::new(false, |_| ());
 
     let slider1_data = BoundData::new(0, |_| ());
     let slider2_data = BoundData::new(0, |_| ());
@@ -119,11 +219,11 @@ fn main() {
     let tabs = Row::new()
         .spacing(1)
         .add(
-            DefaultTheme::toggle_button("Textbox")
+            DefaultTheme::toggle_button("Multiline text")
                 .disallow_manual_uncheck()
                 .bind(&page)
-                .on_selected_changed(|_, page| *page = Page::Textbox)
-                .on_data_changed(|toggle, data| toggle.set_checked(*data == Page::Textbox)),
+                .on_selected_changed(|_, page| *page = Page::TextBlock)
+                .on_data_changed(|toggle, data| toggle.set_checked(*data == Page::TextBlock)),
         )
         .add(
             DefaultTheme::toggle_button("Checkables")
@@ -147,13 +247,41 @@ fn main() {
                 .on_data_changed(|toggle, data| toggle.set_checked(*data == Page::Scroll)),
         );
 
-    let textbox_page = Border::new(FillParent::both(
-        TextBox::new(
-            "Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically",
+    let text_block_page = Row::new()
+        .spacing(1)
+        .add(
+            Column::new().add(Label::new("TextBlock")).add(Border::new(
+                TextBlock::new(
+                    "Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically",
+                )
+                .horizontal_alignment(HorizontalAlignment::Center)
+                .vertical_alignment(VerticalAlignment::Middle),
+            )),
         )
-        .horizontal_alignment(HorizontalAlignment::Center)
-        .vertical_alignment(VerticalAlignment::Middle),
-    ));
+        .weight(1)
+        .add(
+            Column::new()
+                .add(Label::new("TextBox"))
+                .add(Border::new(
+                    TextBox::new(String::<100>::from(
+                        "A TextBox with editable content. Click me and start typing!",
+                    ))
+                    .bind(&text_reset)
+                    .on_data_changed(|text_box, reset| {
+                        if *reset {
+                            text_box.set_text("");
+                        }
+                    })
+                    .on_text_changed(|reset, _text| *reset = false),
+                ))
+                .weight(1)
+                .add(
+                    DefaultTheme::primary_button("Clear")
+                        .bind(&text_reset)
+                        .on_clicked(|reset| *reset = true),
+                ),
+        )
+        .weight(1);
 
     let checkables_page = Column::new()
         .spacing(1)
@@ -369,9 +497,13 @@ fn main() {
             Spacing::new(
                 Column::new().add(tabs).add(
                     Frame::new()
-                        .add_layer(Visibility::new(textbox_page).bind(&page).on_data_changed(
-                            |widget, page| widget.set_visible(*page == Page::Textbox),
-                        ))
+                        .add_layer(
+                            Visibility::new(text_block_page)
+                                .bind(&page)
+                                .on_data_changed(|widget, page| {
+                                    widget.set_visible(*page == Page::TextBlock)
+                                }),
+                        )
                         .add_layer(
                             Visibility::new(checkables_page)
                                 .bind(&page)
@@ -400,6 +532,7 @@ fn main() {
 
     let output_settings = OutputSettingsBuilder::new()
         .theme(BinaryColorTheme::OledBlue)
+        .scale(2)
         .build();
     let mut window = SimWindow::new("Everything but the kitchen sink", &output_settings);
 
