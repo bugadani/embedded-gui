@@ -1,4 +1,4 @@
-use core::cell::Cell;
+use core::{borrow::BorrowMut, cell::Cell};
 
 use embedded_graphics::{
     draw_target::DrawTarget,
@@ -146,8 +146,9 @@ where
     }
 }
 
-pub trait TextBoxStyling<'a, C, D, T, const N: usize>: Sized
+pub trait TextBoxStyling<'a, B, C, D, T, const N: usize>: Sized
 where
+    B: BorrowMut<String<N>>,
     C: PixelColor,
     D: WidgetData,
     T: TextRenderer + CharacterStyle<Color = <T as TextRenderer>::Color>,
@@ -161,12 +162,12 @@ where
 
     fn set_text_color(&mut self, color: Self::Color);
 
-    fn text_renderer<T2>(self, renderer: T2) -> TextBox<TextBoxStyle<T2>, D, N>
+    fn text_renderer<T2>(self, renderer: T2) -> TextBox<B, TextBoxStyle<T2>, D, N>
     where
         T2: TextRenderer + CharacterStyle<Color = <T2 as TextRenderer>::Color>,
         <T2 as TextRenderer>::Color: From<Rgb888>;
 
-    fn style<P>(self, props: P) -> TextBox<P, D, N>
+    fn style<P>(self, props: P) -> TextBox<B, P, D, N>
     where
         P: TextBoxProperties;
 
@@ -177,8 +178,10 @@ where
     fn cursor_color(self, color: Self::Color) -> Self;
 }
 
-impl<'a, C, D, T, const N: usize> TextBoxStyling<'a, C, D, T, N> for TextBox<TextBoxStyle<T>, D, N>
+impl<'a, B, C, D, T, const N: usize> TextBoxStyling<'a, B, C, D, T, N>
+    for TextBox<B, TextBoxStyle<T>, D, N>
 where
+    B: BorrowMut<String<N>>,
     D: WidgetData,
     C: PixelColor + From<Rgb888>,
     T: CharacterStyle<Color = C>,
@@ -190,7 +193,7 @@ where
         self.fields.label_properties.text_color(color);
     }
 
-    fn text_renderer<T2>(self, renderer: T2) -> TextBox<TextBoxStyle<T2>, D, N>
+    fn text_renderer<T2>(self, renderer: T2) -> TextBox<B, TextBoxStyle<T2>, D, N>
     where
         T2: TextRenderer + CharacterStyle<Color = <T2 as TextRenderer>::Color>,
         <T2 as TextRenderer>::Color: From<Rgb888>,
@@ -208,7 +211,7 @@ where
         })
     }
 
-    fn style<P>(self, props: P) -> TextBox<P, D, N>
+    fn style<P>(self, props: P) -> TextBox<B, P, D, N>
     where
         P: TextBoxProperties,
     {
@@ -275,24 +278,29 @@ where
 }
 
 /// Font settings specific to `MonoFont`'s renderer.
-pub trait MonoFontTextBoxStyling<C, D, const N: usize>: Sized
+pub trait MonoFontTextBoxStyling<B, C, D, const N: usize>: Sized
 where
+    B: BorrowMut<String<N>>,
     D: WidgetData,
     C: PixelColor,
 {
-    fn font<'a>(self, font: &'a MonoFont<'a>) -> TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, D, N>;
+    fn font<'a>(
+        self,
+        font: &'a MonoFont<'a>,
+    ) -> TextBox<B, TextBoxStyle<MonoTextStyle<'a, C>>, D, N>;
 }
 
-impl<'a, C, D, const N: usize> MonoFontTextBoxStyling<C, D, N>
-    for TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, D, N>
+impl<'a, B, C, D, const N: usize> MonoFontTextBoxStyling<B, C, D, N>
+    for TextBox<B, TextBoxStyle<MonoTextStyle<'a, C>>, D, N>
 where
+    B: BorrowMut<String<N>>,
     D: WidgetData,
     C: PixelColor + From<Rgb888>,
 {
     fn font<'a2>(
         self,
         font: &'a2 MonoFont<'a2>,
-    ) -> TextBox<TextBoxStyle<MonoTextStyle<'a2, C>>, D, N> {
+    ) -> TextBox<B, TextBoxStyle<MonoTextStyle<'a2, C>>, D, N> {
         let renderer = MonoTextStyleBuilder::from(&self.fields.label_properties.renderer)
             .font(font)
             .build();
@@ -311,8 +319,10 @@ where
     }
 }
 
-impl<F, C, DT, D, const N: usize> WidgetRenderer<EgCanvas<DT>> for TextBox<TextBoxStyle<F>, D, N>
+impl<B, F, C, DT, D, const N: usize> WidgetRenderer<EgCanvas<DT>>
+    for TextBox<B, TextBoxStyle<F>, D, N>
 where
+    B: BorrowMut<String<N>>,
     F: TextRenderer<Color = C> + CharacterStyle<Color = C>,
     C: PixelColor + From<Rgb888>,
     DT: DrawTarget<Color = C>,
@@ -322,7 +332,7 @@ where
         let cursor_color = self.fields.label_properties.cursor_color;
 
         let textbox = EgTextBox::with_textbox_style(
-            self.fields.text.as_ref(),
+            self.fields.text.borrow(),
             self.fields.bounds.to_rectangle(),
             self.fields.label_properties.renderer.clone(),
             TextBoxStyleBuilder::new()
@@ -358,7 +368,7 @@ where
 macro_rules! textbox_for_charset {
     ($charset:ident, $font:ident) => {
         pub mod $charset {
-            use core::cell::Cell;
+            use core::{borrow::BorrowMut, cell::Cell};
             use embedded_graphics::{
                 mono_font::{$charset, MonoTextStyle},
                 pixelcolor::PixelColor,
@@ -372,6 +382,7 @@ macro_rules! textbox_for_charset {
                     WidgetDataHolder,
                 },
             };
+            use heapless::String;
             // use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
 
             use crate::{
@@ -379,22 +390,22 @@ macro_rules! textbox_for_charset {
                 widgets::text_box::{plugin::Cursor, TextBoxStyle},
             };
 
-            pub trait TextBoxConstructor<'a, C, D, const N: usize>
+            pub trait TextBoxConstructor<'a, B, C, D, const N: usize>
             where
+                B: BorrowMut<String<N>>,
                 D: WidgetData,
                 C: PixelColor,
             {
-                fn new(
-                    text: heapless::String<N>,
-                ) -> TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, D, N>;
+                fn new(text: B) -> TextBox<B, TextBoxStyle<MonoTextStyle<'a, C>>, D, N>;
             }
 
-            impl<'a, 'b, 'c, C, const N: usize> TextBoxConstructor<'a, C, (), N>
-                for TextBox<TextBoxStyle<MonoTextStyle<'a, C>>, (), N>
+            impl<'a, 'b, 'c, B, C, const N: usize> TextBoxConstructor<'a, B, C, (), N>
+                for TextBox<B, TextBoxStyle<MonoTextStyle<'a, C>>, (), N>
             where
                 C: PixelColor + Theme,
+                B: BorrowMut<heapless::String<N>>,
             {
-                fn new(text: heapless::String<N>) -> Self {
+                fn new(text: B) -> Self {
                     TextBox {
                         fields: TextBoxFields {
                             state: WidgetState::default(),

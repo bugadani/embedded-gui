@@ -12,6 +12,7 @@ use crate::{
     state_group,
     widgets::{Widget, WidgetDataHolder},
 };
+use core::borrow::BorrowMut;
 use heapless::String;
 
 pub trait TextBoxProperties {
@@ -25,8 +26,11 @@ pub trait TextBoxProperties {
     fn handle_cursor_down(&mut self, coordinates: Position);
 }
 
-pub struct TextBoxFields<P, D, const N: usize> {
-    pub text: String<N>,
+pub struct TextBoxFields<B, P, D, const N: usize>
+where
+    B: BorrowMut<String<N>>,
+{
+    pub text: B,
     pub label_properties: P,
     pub bounds: BoundingBox,
     pub parent_index: usize,
@@ -34,29 +38,34 @@ pub struct TextBoxFields<P, D, const N: usize> {
     pub on_text_changed: fn(&mut D, &str),
 }
 
-impl<P, D, const N: usize> TextBoxFields<P, D, N> {
+impl<B, P, D, const N: usize> TextBoxFields<B, P, D, N>
+where
+    B: BorrowMut<String<N>>,
+{
     pub fn set_text(&mut self, text: &str) -> bool {
-        if self.text == text {
+        if self.text.borrow() == text {
             return false;
         }
-        self.text = String::from(text);
+        *self.text.borrow_mut() = String::from(text);
         true
     }
 }
 
-pub struct TextBox<P, D, const N: usize>
+pub struct TextBox<B, P, D, const N: usize>
 where
+    B: BorrowMut<String<N>>,
     D: WidgetData,
 {
-    pub fields: TextBoxFields<P, D::Data, N>,
-    pub data_holder: WidgetDataHolder<TextBoxFields<P, D::Data, N>, D>,
+    pub fields: TextBoxFields<B, P, D::Data, N>,
+    pub data_holder: WidgetDataHolder<TextBoxFields<B, P, D::Data, N>, D>,
 }
 
-impl<P, const N: usize> TextBox<P, (), N>
+impl<B, P, const N: usize> TextBox<B, P, (), N>
 where
+    B: BorrowMut<String<N>>,
     P: TextBoxProperties,
 {
-    pub fn bind<D>(self, data: D) -> TextBox<P, D, N>
+    pub fn bind<D>(self, data: D) -> TextBox<B, P, D, N>
     where
         D: WidgetData,
     {
@@ -74,8 +83,9 @@ where
     }
 }
 
-impl<P, D, const N: usize> TextBox<P, D, N>
+impl<B, P, D, const N: usize> TextBox<B, P, D, N>
 where
+    B: BorrowMut<String<N>>,
     D: WidgetData,
     P: TextBoxProperties,
 {
@@ -103,7 +113,7 @@ where
 
     pub fn on_data_changed(
         mut self,
-        callback: fn(&mut TextBoxFields<P, D::Data, N>, &D::Data),
+        callback: fn(&mut TextBoxFields<B, P, D::Data, N>, &D::Data),
     ) -> Self
     where
         D: WidgetData,
@@ -116,7 +126,7 @@ where
         let callback = self.fields.on_text_changed;
         self.data_holder
             .data
-            .update(|data| callback(data, &self.fields.text));
+            .update(|data| callback(data, self.fields.text.borrow()));
     }
 
     pub fn set_text(&mut self, text: &str) {
@@ -133,15 +143,16 @@ state_group! {
     }
 }
 
-impl TextBox<(), (), 0> {
+impl TextBox<String<0>, (), (), 0> {
     pub const STATE_INACTIVE: Inactive = Inactive;
     pub const STATE_ACTIVE: Active = Active;
     pub const STATE_SELECTED: Selected = Selected;
     pub const STATE_UNSELECTED: Unselected = Unselected;
 }
 
-impl<P, D, const N: usize> Widget for TextBox<P, D, N>
+impl<B, P, D, const N: usize> Widget for TextBox<B, P, D, N>
 where
+    B: BorrowMut<String<N>>,
     D: WidgetData,
     P: TextBoxProperties,
 {
@@ -165,7 +176,7 @@ where
         let size = self
             .fields
             .label_properties
-            .measure_text(self.fields.text.as_ref(), measure_spec);
+            .measure_text(self.fields.text.borrow(), measure_spec);
 
         let width = measure_spec.width.apply_to_measured(size.width);
         let height = measure_spec.height.apply_to_measured(size.height);
@@ -243,7 +254,7 @@ where
                 if self.fields.label_properties.handle_keypress(
                     keycode,
                     modifier,
-                    &mut self.fields.text,
+                    self.fields.text.borrow_mut(),
                 ) {
                     self.fire_text_changed();
                 }

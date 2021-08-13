@@ -268,7 +268,8 @@ fn main() {
             .add(Label::new("TextBox"))
             .add(
                 Border::new(
-                    TextBox::new(String::<100>::from("A TextBox with editable content. Click me and start typing!"))
+                    TextBox::new(
+                        String::<100>::from("A TextBox with editable content. Click me and start typing!"))
                     .bind(&text_reset)
                     .on_data_changed(|text_box, reset| {
                         if *reset {
