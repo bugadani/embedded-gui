@@ -102,6 +102,8 @@ where
             self.renderer.clone(),
             TextBoxStyleBuilder::new()
                 .height_mode(HeightMode::Exact(VerticalOverdraw::Hidden))
+                .leading_spaces(true)
+                .trailing_spaces(true)
                 .build(),
         )
         .fit_height()
@@ -325,6 +327,8 @@ where
             self.fields.label_properties.renderer.clone(),
             TextBoxStyleBuilder::new()
                 .height_mode(HeightMode::Exact(VerticalOverdraw::Hidden))
+                .leading_spaces(true)
+                .trailing_spaces(true)
                 // .alignment(self.fields.label_properties.horizontal)
                 // .vertical_alignment(self.fields.label_properties.vertical)
                 .build(),
