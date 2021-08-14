@@ -1,3 +1,5 @@
+//! A scrollable area
+
 use crate::{
     data::WidgetData,
     geometry::{

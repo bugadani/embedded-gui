@@ -1,11 +1,15 @@
+//! Set the visibility of the contained widget
+
 use crate::{
     data::WidgetData,
     geometry::{BoundingBox, MeasuredSize},
     input::event::InputEvent,
     state::WidgetState,
     widgets::{
-        utils::decorator::WidgetDecorator,
-        wrapper::{Wrapper, WrapperBindable},
+        utils::{
+            decorator::WidgetDecorator,
+            wrapper::{Wrapper, WrapperBindable},
+        },
         Widget,
     },
     Canvas, WidgetRenderer,

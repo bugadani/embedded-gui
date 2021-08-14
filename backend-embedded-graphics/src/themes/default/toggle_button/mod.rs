@@ -5,13 +5,11 @@ use embedded_graphics::{
 use embedded_gui::{
     state::WidgetState,
     widgets::{
+        background::{Background, BackgroundProperties},
+        border::{Border, BorderProperties},
+        fill::{Center, FillParent, HorizontalAndVertical},
         label::Label,
-        primitives::{
-            background::{Background, BackgroundProperties},
-            border::{Border, BorderProperties},
-            fill::{Center, FillParent, HorizontalAndVertical},
-            spacing::Spacing,
-        },
+        spacing::Spacing,
         toggle::Toggle,
     },
 };
@@ -19,8 +17,9 @@ use embedded_gui::{
 use crate::{
     themes::default::{button::ButtonStateColors, DefaultTheme},
     widgets::{
+        background::BackgroundStyle,
+        border::BorderStyle,
         label::{ascii::LabelConstructor, LabelStyle, LabelStyling, MonoFontLabelStyling},
-        primitives::{background::BackgroundStyle, border::BorderStyle},
     },
 };
 

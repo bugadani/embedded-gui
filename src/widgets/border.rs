@@ -1,10 +1,14 @@
+//! Border thickness and color
+
 use crate::{
     data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
     state::WidgetState,
     widgets::{
-        utils::decorator::WidgetDecorator,
-        wrapper::{Wrapper, WrapperBindable},
+        utils::{
+            decorator::WidgetDecorator,
+            wrapper::{Wrapper, WrapperBindable},
+        },
         Widget,
     },
 };

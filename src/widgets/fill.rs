@@ -1,3 +1,5 @@
+//! Stretch the contained widget
+
 use crate::{
     geometry::{
         axis_order::{AxisOrder, Horizontal as HorizontalHelper, Vertical as VerticalHelper},

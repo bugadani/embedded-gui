@@ -40,7 +40,7 @@ impl MeasureConstraint {
         }
     }
 
-    /// Returns `true` if the measure_constraint is [`Exactly`].
+    /// Returns `true` if the measure_constraint is [`MeasureConstraint::Exactly`].
     pub fn is_exact(&self) -> bool {
         matches!(self, Self::Exactly(..))
     }

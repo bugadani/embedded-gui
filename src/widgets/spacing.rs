@@ -1,10 +1,14 @@
+//! Add space around the contained widget
+
 use crate::{
     data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
     state::WidgetState,
     widgets::{
-        utils::decorator::WidgetDecorator,
-        wrapper::{Wrapper, WrapperBindable},
+        utils::{
+            decorator::WidgetDecorator,
+            wrapper::{Wrapper, WrapperBindable},
+        },
         Widget,
     },
     Canvas, WidgetRenderer,

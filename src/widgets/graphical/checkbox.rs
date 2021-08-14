@@ -5,7 +5,7 @@ use crate::{
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
     state::WidgetState,
     widgets::{
-        wrapper::{Wrapper, WrapperBindable},
+        utils::wrapper::{Wrapper, WrapperBindable},
         Widget,
     },
 };

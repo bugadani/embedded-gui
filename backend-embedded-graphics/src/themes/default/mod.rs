@@ -1,3 +1,10 @@
+//! The "default" theme.
+//!
+//! This module describes two themes:
+//!  - a `BinaryColor` theme with `Off` background color and `On` foreground color
+//!  - an `Rgb555`, `Rgb565` and `Rgb888` version with a light color scheme with a blue-ish primary accent color.
+//!
+
 use core::ops::RangeInclusive;
 
 use crate::themes::{

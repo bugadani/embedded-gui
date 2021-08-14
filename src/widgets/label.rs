@@ -1,7 +1,9 @@
+//! Label widget to display a small amount of text
+
 use crate::{
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
     state::WidgetState,
-    widgets::{wrapper::WrapperBindable, Widget},
+    widgets::{utils::wrapper::WrapperBindable, Widget},
 };
 
 pub trait LabelProperties {

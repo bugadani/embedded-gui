@@ -1,7 +1,9 @@
+//! Text block widget to display text
+
 use crate::{
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
     state::WidgetState,
-    widgets::{wrapper::WrapperBindable, Widget},
+    widgets::{utils::wrapper::WrapperBindable, Widget},
 };
 
 pub trait TextBlockProperties {
