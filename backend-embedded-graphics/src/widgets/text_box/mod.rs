@@ -146,10 +146,9 @@ where
     }
 }
 
-pub trait TextBoxStyling<'a, B, C, D, T, const N: usize>: Sized
+pub trait TextBoxStyling<B, D, T, const N: usize>: Sized
 where
     B: BorrowMut<String<N>>,
-    C: PixelColor,
     D: WidgetData,
     T: TextRenderer + CharacterStyle<Color = <T as TextRenderer>::Color>,
 {
@@ -178,7 +177,7 @@ where
     fn cursor_color(self, color: Self::Color) -> Self;
 }
 
-impl<'a, B, C, D, T, const N: usize> TextBoxStyling<'a, B, C, D, T, N>
+impl<'a, B, C, D, T, const N: usize> TextBoxStyling<B, D, T, N>
     for TextBox<B, TextBoxStyle<T>, D, N>
 where
     B: BorrowMut<String<N>>,
@@ -399,7 +398,7 @@ macro_rules! textbox_for_charset {
                 fn new(text: B) -> TextBox<B, TextBoxStyle<MonoTextStyle<'a, C>>, D, N>;
             }
 
-            impl<'a, 'b, 'c, B, C, const N: usize> TextBoxConstructor<'a, B, C, (), N>
+            impl<'a, B, C, const N: usize> TextBoxConstructor<'a, B, C, (), N>
                 for TextBox<B, TextBoxStyle<MonoTextStyle<'a, C>>, (), N>
             where
                 C: PixelColor + Theme,

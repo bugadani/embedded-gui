@@ -84,11 +84,10 @@ where
     }
 }
 
-pub trait TextBlockStyling<'a, C, S, T>: Sized
+pub trait TextBlockStyling<S, T>: Sized
 where
-    C: PixelColor,
-    T: CharacterStyle<Color = C>,
-    T: TextRenderer<Color = C>,
+    T: CharacterStyle<Color = Self::Color>,
+    T: TextRenderer<Color = Self::Color>,
 {
     type Color;
 
@@ -113,7 +112,7 @@ where
     fn vertical_alignment(self, alignment: VerticalAlignment) -> Self;
 }
 
-impl<'a, C, S> TextBlockStyling<'a, C, S, MonoTextStyle<'a, C>>
+impl<'a, C, S> TextBlockStyling<S, MonoTextStyle<'a, C>>
     for TextBlock<S, TextBlockStyle<MonoTextStyle<'a, C>>>
 where
     S: AsRef<str>,
@@ -255,7 +254,7 @@ macro_rules! textbox_for_charset {
                 fn new(text: S) -> TextBlock<S, TextBlockStyle<MonoTextStyle<'a, C>>>;
             }
 
-            impl<'a, 'b, 'c, C, S> TextBlockConstructor<'a, S, C>
+            impl<'a, C, S> TextBlockConstructor<'a, S, C>
                 for TextBlock<S, TextBlockStyle<MonoTextStyle<'a, C>>>
             where
                 S: AsRef<str>,
