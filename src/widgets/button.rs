@@ -1,3 +1,8 @@
+//! Button widget
+//!
+//! The `Button` widget makes the wrapped widget clickable.
+//!
+
 use crate::{
     data::WidgetData,
     input::{

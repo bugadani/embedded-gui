@@ -1,3 +1,5 @@
+//! Text block widget to display text
+
 use crate::{
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
     state::WidgetState,

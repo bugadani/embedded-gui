@@ -1,3 +1,7 @@
+//! Base widgets
+//!
+//! *Note*: this list is not exhaustive as backend crates may also define custom widgets.
+
 use crate::{
     data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, Position},

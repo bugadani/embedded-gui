@@ -1,3 +1,5 @@
+//! A toggle button with distinct checked and unchecked states.
+
 use crate::{
     data::WidgetData,
     input::{

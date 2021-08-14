@@ -1,3 +1,39 @@
+//! backend-embedded-graphics
+//! =========================
+//!
+//! `backend-embedded-graphics` is a platform specific backend crate for [`embedded-gui`]. It enables
+//! using `embedded-gui` on platforms that support [`embedded-graphics`].
+//!
+//! [`embedded-gui`]: https://github.com/bugadani/embedded-gui/backend-embedded-graphics
+//! [`embedded-graphics`]: https://github.com/embedded-graphics/embedded-graphics
+//!
+//! Backend features
+//! ----------------
+//!
+//! The crate implements all generic widget primitives defined in `embedded-gui`. On top of that,
+//! this backend contains custom constructors and styling options for the following widgets:
+//!
+//!  - [`Label`]
+//!  - [`TextBlock`]
+//!  - [`TextBox`]
+//!
+//! Custom constructors allow you to specify through the imported constructor the character set used
+//! in these widgets. For example, a `Label` constructed by importing the
+//! [widgets::label::iso_8859_2::LabelConstructor] trait will support the `iso_8859_2` character set.
+//!
+//! Themes
+//! ------
+//!
+//! This crate provides collections of commonly used widget compositions, called themes.
+//!
+//!  - [`DefaultTheme`]: supports both `BinaryColor`, `Rgb555`, `Rgb565`, `Rgb888` draw targets.
+//!
+//! [`Label`]: widgets::label::Label
+//! [`TextBlock`]: widgets::text_block::TextBlock
+//! [`TextBox`]: widgets::text_box::TextBox
+//! [`DefaultTheme`]: themes::default::DefaultTheme
+//!
+
 #![no_std]
 
 pub mod themes;

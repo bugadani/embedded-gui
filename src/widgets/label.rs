@@ -1,3 +1,5 @@
+//! Label widget to display a small amount of text
+
 use crate::{
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
     state::WidgetState,

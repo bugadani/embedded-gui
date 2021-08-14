@@ -1,3 +1,5 @@
+//! Text box widget to display editable text
+
 use crate::{
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
     input::{

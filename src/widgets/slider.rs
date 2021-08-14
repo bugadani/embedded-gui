@@ -1,3 +1,5 @@
+//! Numeric slider
+
 use core::{
     marker::PhantomData,
     ops::{Deref, RangeInclusive},
