@@ -3,7 +3,7 @@
 //! Arrange widgets in a Row or a Column.
 //!
 
-pub use object_chain::{Chain, Link};
+pub use object_chain;
 
 use crate::{widgets::Widget, Canvas, WidgetRenderer};
 
@@ -17,11 +17,15 @@ pub use row::Row;
 
 mod private;
 
+#[doc(hidden)]
 #[derive(Copy, Clone)]
 pub struct NoSpacing;
+
+#[doc(hidden)]
 #[derive(Copy, Clone)]
 pub struct WithSpacing(u32);
 
+#[doc(hidden)]
 pub trait ElementSpacing: Copy {
     fn spacing(&self) -> u32;
 }
@@ -38,10 +42,12 @@ impl ElementSpacing for WithSpacing {
     }
 }
 
+#[doc(hidden)]
 pub trait CellWeight {
     fn weight(&self) -> u32;
 }
 
+#[doc(hidden)]
 pub struct NoWeight;
 
 impl CellWeight for NoWeight {
@@ -50,6 +56,7 @@ impl CellWeight for NoWeight {
     }
 }
 
+#[doc(hidden)]
 pub struct Weight(u32);
 
 impl Weight {
@@ -64,7 +71,9 @@ impl CellWeight for Weight {
     }
 }
 
-// Cell is a container struct used by the Row/Column layouts.
+/// A single cell in a linear layout.
+///
+/// Cells wrap widgets and provide a method to specify cell weight.
 pub struct Cell<W, CW = NoWeight>
 where
     W: Widget,
@@ -77,13 +86,17 @@ impl<W> Cell<W, NoWeight>
 where
     W: Widget,
 {
-    pub fn new(inner: W) -> Self {
+    fn new(inner: W) -> Self {
         Self {
             inner,
             weight: NoWeight,
         }
     }
 
+    /// Sets the weight of the cell.
+    ///
+    /// Weight specifies the relative size of the cell in the second phase of the layout process.
+    /// See [`LinearLayout`] for more information.
     pub fn weight(self, weight: u32) -> Cell<W, Weight> {
         Cell {
             inner: self.inner,

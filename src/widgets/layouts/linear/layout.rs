@@ -10,72 +10,63 @@ use crate::{
     widgets::{
         layouts::linear::{
             private::{LayoutDirection, LinearLayoutChainElement},
-            Cell, CellWeight, NoWeight, Weight,
+            Cell, NoWeight, Weight,
         },
         Widget,
     },
     Canvas, WidgetRenderer,
 };
 
+/// Common implementation of linear layouts.
+///
+/// ## Cell measurement
+///
+/// The measurement process consists of two phases. At first, cells without weight are measured.
+/// Then, the rest of the available space is partitioned according to the weights of the remaining
+/// cells. The more weight a cell has, the more space it will take up.
+///
+/// ### Example:
+///
+/// We have a layout with three cells:
+///  - A cell with weight 1.
+///  - A cell without weight, which contains a widget that is 40 px high.
+///  - A cell with weight 2.
+///
+/// The layout has 160 px height.
+///
+/// 1. At first, the second cell is measured. It needs 40 px for its widget, which leaves 120 px of
+/// unused space.
+/// 2. Next, the remaining space is divided into 3 (the sum of weights), and assigned to the rest of
+/// the cells. Each cell receives space according to its weight.
+///
+/// The final layout will look like this:
+///  - The first cell will take up 40 px because of weight 1.
+///  - The second cell will take up 40 px because it has a fixed height of 40.
+///  - The third cell will take up 80 px because of weight 2.
+///
 pub struct LinearLayout<CE, L> {
     pub bounds: BoundingBox,
     pub widgets: CE,
     pub direction: L,
 }
 
-impl<W, CE, L> LinearLayout<Link<Cell<W, NoWeight>, CE>, L>
-where
-    W: Widget,
-    CE: LinearLayoutChainElement + ChainElement,
-{
-    pub fn weight(self, weight: u32) -> LinearLayout<Link<Cell<W, Weight>, CE>, L> {
-        LinearLayout {
-            bounds: self.bounds,
-            widgets: Link {
-                object: self.widgets.object.weight(weight),
-                parent: self.widgets.parent,
-            },
-            direction: self.direction,
-        }
-    }
-}
-
-impl<W, L> LinearLayout<Chain<Cell<W, NoWeight>>, L>
-where
-    W: Widget,
-{
-    pub fn weight(self, weight: u32) -> LinearLayout<Chain<Cell<W, Weight>>, L> {
-        LinearLayout {
-            bounds: self.bounds,
-            widgets: Chain {
-                object: self.widgets.object.weight(weight),
-            },
-            direction: self.direction,
-        }
-    }
-}
-
 impl<CE, L> LinearLayout<CE, L>
 where
     CE: LinearLayoutChainElement + ChainElement,
 {
-    pub fn add_cell<W, CW>(self, widget: Cell<W, CW>) -> LinearLayout<Link<Cell<W, CW>, CE>, L>
-    where
-        W: Widget,
-        CW: CellWeight,
-    {
-        LinearLayout {
-            bounds: self.bounds,
-            widgets: self.widgets.append(widget),
-            direction: self.direction,
-        }
-    }
-
+    /// Appends a cell to the end of the layout.
+    ///
+    /// Initially, a cell has no weight. Call `weight` to specify the weight of the most recently
+    /// added cell.
     pub fn add<W>(self, widget: W) -> LinearLayout<Link<Cell<W, NoWeight>, CE>, L>
     where
         W: Widget,
     {
-        self.add_cell(Cell::new(widget))
+        LinearLayout {
+            bounds: self.bounds,
+            widgets: self.widgets.append(Cell::new(widget)),
+            direction: self.direction,
+        }
     }
 
     fn locate(&self, mut idx: usize) -> Option<(usize, usize)> {
@@ -92,6 +83,46 @@ where
         }
 
         None
+    }
+}
+
+impl<W, CE, L> LinearLayout<Link<Cell<W, NoWeight>, CE>, L>
+where
+    W: Widget,
+    CE: LinearLayoutChainElement + ChainElement,
+{
+    /// Sets the weight of the most recently appended cell.
+    ///
+    /// Weight specifies the relative size of the cell in the second phase of the layout process.
+    /// See [`LinearLayout#cell-measurement`] for more information.
+    pub fn weight(self, weight: u32) -> LinearLayout<Link<Cell<W, Weight>, CE>, L> {
+        LinearLayout {
+            bounds: self.bounds,
+            widgets: Link {
+                object: self.widgets.object.weight(weight),
+                parent: self.widgets.parent,
+            },
+            direction: self.direction,
+        }
+    }
+}
+
+impl<W, L> LinearLayout<Chain<Cell<W, NoWeight>>, L>
+where
+    W: Widget,
+{
+    /// Sets the weight of the most recently appended cell.
+    ///
+    /// Weight specifies the relative size of the cell in the second phase of the layout process.
+    /// See [`LinearLayout#cell-measurement`] for more information.
+    pub fn weight(self, weight: u32) -> LinearLayout<Chain<Cell<W, Weight>>, L> {
+        LinearLayout {
+            bounds: self.bounds,
+            widgets: Chain {
+                object: self.widgets.object.weight(weight),
+            },
+            direction: self.direction,
+        }
     }
 }
 

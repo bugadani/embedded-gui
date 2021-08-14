@@ -14,7 +14,10 @@ use embedded_gui::{
     widgets::{
         graphical::checkbox::{CheckBox, CheckBoxProperties},
         label::Label,
-        layouts::linear::{Cell, Chain, LinearLayout, Link, Row, WithSpacing},
+        layouts::linear::{
+            object_chain::{Chain, Link},
+            Cell, LinearLayout, Row, WithSpacing,
+        },
         toggle::Toggle,
     },
 };

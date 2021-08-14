@@ -8,6 +8,11 @@ use crate::{geometry::BoundingBox, widgets::layouts::frame::layout::FrameLayout}
 
 mod layout;
 
+/// Frame layout.
+///
+/// This layout contains multiple widgets that are placed at the same area of the display.
+/// The layout will take up as much space as the largest widget inside it. Widgets are placed
+/// at the top left corner of the layout.
 pub struct Frame;
 impl Frame {
     /// Creates a new, empty frame layout.

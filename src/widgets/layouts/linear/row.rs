@@ -11,6 +11,7 @@ use crate::{
     },
 };
 
+/// Constructor for a row layout.
 #[derive(Copy, Clone)]
 pub struct Row<ES = NoSpacing>(ES)
 where

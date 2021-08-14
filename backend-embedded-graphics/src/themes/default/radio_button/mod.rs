@@ -14,7 +14,10 @@ use embedded_gui::{
     widgets::{
         graphical::radio::{RadioButton, RadioButtonProperties},
         label::{Label, LabelProperties},
-        layouts::linear::{Cell, Chain, LinearLayout, Link, Row, WithSpacing},
+        layouts::linear::{
+            object_chain::{Chain, Link},
+            Cell, LinearLayout, Row, WithSpacing,
+        },
         toggle::Toggle,
     },
 };
