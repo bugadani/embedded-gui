@@ -3,7 +3,10 @@ use embedded_graphics::{
     mono_font::{MonoFont, MonoTextStyle, MonoTextStyleBuilder},
     pixelcolor::PixelColor,
     prelude::Point,
-    text::{renderer::TextRenderer, Baseline},
+    text::{
+        renderer::{CharacterStyle, TextRenderer},
+        Baseline,
+    },
 };
 use embedded_gui::{
     geometry::MeasuredSize,
@@ -20,17 +23,21 @@ where
     renderer: T,
 }
 
+impl<'a, C, T> LabelStyle<T>
+where
+    C: PixelColor,
+    T: TextRenderer<Color = C> + CharacterStyle<Color = C>,
+{
+    /// Customize the text color
+    pub fn text_color(&mut self, text_color: C) {
+        self.renderer.set_text_color(Some(text_color));
+    }
+}
+
 impl<'a, C> LabelStyle<MonoTextStyle<'a, C>>
 where
     C: PixelColor,
 {
-    /// Customize the text color
-    pub fn text_color(&mut self, text_color: C) {
-        self.renderer = MonoTextStyleBuilder::from(&self.renderer)
-            .text_color(text_color)
-            .build();
-    }
-
     /// Customize the font
     pub fn font<'a2>(self, font: &'a2 MonoFont<'a2>) -> LabelStyle<MonoTextStyle<'a2, C>> {
         LabelStyle {
