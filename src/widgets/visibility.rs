@@ -1,3 +1,5 @@
+//! Set the visibility of the contained widget
+
 use crate::{
     data::WidgetData,
     geometry::{BoundingBox, MeasuredSize},

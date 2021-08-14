@@ -1,3 +1,5 @@
+//! Add space around the contained widget
+
 use crate::{
     data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},

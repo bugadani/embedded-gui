@@ -26,16 +26,19 @@ use embedded_gui::{
     input::event::{InputEvent, Key, KeyEvent, Modifier, PointerEvent, ScrollEvent},
     prelude::*,
     widgets::{
+        border::Border,
+        fill::FillParent,
         label::Label,
         layouts::{
             frame::Frame,
             linear::{column::Column, row::Row},
         },
-        primitives::{border::Border, fill::FillParent, spacing::Spacing, visibility::Visibility},
         scroll::Scroll,
         slider::ScrollbarConnector,
+        spacing::Spacing,
         text_block::TextBlock,
         text_box::TextBox,
+        visibility::Visibility,
     },
 };
 use heapless::String;

@@ -2,10 +2,7 @@ use std::{thread, time::Duration};
 
 use backend_embedded_graphics::{
     themes::Theme,
-    widgets::{
-        label::ascii::LabelConstructor,
-        primitives::{background::BackgroundStyle, border::BorderStyle},
-    },
+    widgets::{background::BackgroundStyle, border::BorderStyle, label::ascii::LabelConstructor},
     EgCanvas,
 };
 use embedded_graphics::{
@@ -22,15 +19,13 @@ use embedded_gui::{
     prelude::*,
     state::WidgetState,
     widgets::{
+        background::Background,
+        border::Border,
         button::Button,
+        fill::{Center, FillParent, HorizontalAndVertical},
         label::Label,
         layouts::linear::{column::Column, row::Row},
-        primitives::{
-            background::Background,
-            border::Border,
-            fill::{Center, FillParent, HorizontalAndVertical},
-            spacing::Spacing,
-        },
+        spacing::Spacing,
     },
 };
 

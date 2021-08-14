@@ -20,13 +20,11 @@ use embedded_gui::{
     input::event::{InputEvent, PointerEvent},
     prelude::*,
     widgets::{
+        background::Background,
+        fill::{FillParent, Right},
         label::Label,
         layouts::linear::{column::Column, row::Row},
-        primitives::{
-            background::Background,
-            fill::{FillParent, Right},
-            spacing::Spacing,
-        },
+        spacing::Spacing,
     },
 };
 use heapless::String;

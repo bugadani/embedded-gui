@@ -9,17 +9,21 @@ use crate::{
     state::WidgetState,
 };
 
+pub mod background;
+pub mod border;
 pub mod button;
+pub mod fill;
 pub mod graphical;
 pub mod label;
 pub mod layouts;
-pub mod primitives;
 pub mod scroll;
 pub mod slider;
+pub mod spacing;
 pub mod text_block;
 pub mod text_box;
 pub mod toggle;
 pub mod utils;
+pub mod visibility;
 
 pub trait Widget {
     fn attach(&mut self, parent: usize, index: usize) {

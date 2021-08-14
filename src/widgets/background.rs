@@ -1,3 +1,5 @@
+//! Background color
+
 use crate::{
     data::WidgetData,
     state::WidgetState,

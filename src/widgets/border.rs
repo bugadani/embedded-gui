@@ -1,3 +1,5 @@
+//! Border thickness and color
+
 use crate::{
     data::WidgetData,
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
