@@ -222,6 +222,7 @@ where
                 bounds: self.fields.bounds,
                 label_properties: props,
                 on_text_changed: self.fields.on_text_changed,
+                on_parent_state_changed: |_, _| (),
             },
             data_holder: WidgetDataHolder::new(self.data_holder.data),
         }
@@ -422,6 +423,7 @@ macro_rules! textbox_for_charset {
                             },
                             bounds: BoundingBox::default(),
                             on_text_changed: |_, _| (),
+                            on_parent_state_changed: |_, _| (),
                         },
                         data_holder: WidgetDataHolder::default(),
                     }

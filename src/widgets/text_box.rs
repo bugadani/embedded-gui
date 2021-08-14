@@ -38,6 +38,7 @@ where
     pub parent_index: usize,
     pub state: WidgetState,
     pub on_text_changed: fn(&mut D, &str),
+    pub on_parent_state_changed: fn(&mut Self, WidgetState),
 }
 
 impl<B, P, D, const N: usize> TextBoxFields<B, P, D, N>
@@ -79,6 +80,7 @@ where
                 label_properties: self.fields.label_properties,
                 state: self.fields.state,
                 on_text_changed: |_, _| (),
+                on_parent_state_changed: |_, _| (),
             },
             data_holder: WidgetDataHolder::new(data),
         }
@@ -91,6 +93,14 @@ where
     D: WidgetData,
     P: TextBoxProperties,
 {
+    pub fn on_state_changed(
+        mut self,
+        callback: fn(&mut TextBoxFields<B, P, D::Data, N>, WidgetState),
+    ) -> Self {
+        self.fields.on_parent_state_changed = callback;
+        self
+    }
+
     fn change_state(&mut self, state: impl State) -> &mut Self {
         self.fields.state.set_state(state);
 
@@ -186,8 +196,8 @@ where
         self.fields.bounds.size = MeasuredSize { width, height };
     }
 
-    fn on_state_changed(&mut self, _state: WidgetState) {
-        // don't react to parent's state change
+    fn on_state_changed(&mut self, state: WidgetState) {
+        (self.fields.on_parent_state_changed)(&mut self.fields, state);
     }
 
     fn update(&mut self) {
