@@ -50,7 +50,7 @@ impl SliderDirection for Vertical {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 enum OffsetSource {
     ScrollWidget,
     Scrollbar,
@@ -129,7 +129,7 @@ where
         let scrollview_height = data.data.viewport_size as u32;
         let scrollview_data_height = (data.data.maximum_offset + data.data.viewport_size) as u32;
 
-        if scrollview_data_height > 0 {
+        if scrollview_data_height > 0 && data.offset_source == OffsetSource::ScrollWidget {
             scrollbar
                 .properties
                 .set_length((scrollbar_height * scrollview_height) / scrollview_data_height);

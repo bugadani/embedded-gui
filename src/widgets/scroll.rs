@@ -184,6 +184,8 @@ where
 
     pub fn set_position(&mut self, offset: i32) {
         let (x, y) = SD::AxisOrder::merge(offset, 0);
+        // Cancel animated scroll
+        self.offset_target = None;
         self.direction.override_offset(PositionDelta { x, y });
     }
 
