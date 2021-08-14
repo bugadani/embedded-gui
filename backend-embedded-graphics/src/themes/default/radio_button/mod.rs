@@ -88,7 +88,7 @@ pub trait RadioButtonVisualStyle<C: PixelColor> {
     }
 }
 
-pub type StyledRadioButton<'a, 'b, 'c, C> = Toggle<
+pub type StyledRadioButton<'a, C> = Toggle<
     LinearLayout<
         Link<
             Cell<Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>,

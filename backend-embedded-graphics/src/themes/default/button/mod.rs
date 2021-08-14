@@ -107,7 +107,7 @@ pub trait ButtonStyle<C: PixelColor> {
     }
 }
 
-pub type StyledButton<'a, 'b, 'c, C> = Button<
+pub type StyledButton<'a, C> = Button<
     Background<
         Border<Spacing<Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>, BorderStyle<C>>,
         BackgroundStyle<C>,
@@ -137,7 +137,7 @@ where
     )
 }
 
-pub type StyledButtonStretched<'a, 'b, 'c, C> = Button<
+pub type StyledButtonStretched<'a, C> = Button<
     Background<
         Border<
             FillParent<

@@ -85,7 +85,7 @@ pub trait CheckBoxVisualStyle<C: PixelColor> {
     }
 }
 
-pub type StyledCheckBox<'a, 'b, 'c, C> = Toggle<
+pub type StyledCheckBox<'a, C> = Toggle<
     LinearLayout<
         Link<
             Cell<Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>,
