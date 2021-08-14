@@ -24,7 +24,7 @@ use embedded_gui::{
         button::Button,
         fill::{Center, FillParent, HorizontalAndVertical},
         label::Label,
-        layouts::linear::{column::Column, row::Row},
+        layouts::linear::{Column, Row},
         spacing::Spacing,
     },
 };

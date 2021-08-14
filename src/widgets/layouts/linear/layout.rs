@@ -2,68 +2,20 @@ use object_chain::{Chain, ChainElement, Link};
 
 use crate::{
     geometry::{
-        axis_order::AxisOrder,
         measurement::{MeasureConstraint, MeasureSpec},
-        BoundingBox, MeasuredSize, Position,
+        BoundingBox, Position,
     },
     input::event::InputEvent,
     state::WidgetState,
     widgets::{
-        layouts::linear::{Cell, CellWeight, LinearLayoutChainElement, NoWeight, Weight},
+        layouts::linear::{
+            private::{LayoutDirection, LinearLayoutChainElement},
+            Cell, CellWeight, NoWeight, Weight,
+        },
         Widget,
     },
     Canvas, WidgetRenderer,
 };
-
-pub trait LayoutDirection: Copy {
-    type AxisOrder: AxisOrder;
-
-    fn main_axis_size(bounds: BoundingBox) -> u32 {
-        <Self::AxisOrder as AxisOrder>::main_axis(bounds.size.width, bounds.size.height)
-    }
-
-    fn cross_axis_size(bounds: BoundingBox) -> u32 {
-        <Self::AxisOrder as AxisOrder>::cross_axis(bounds.size.width, bounds.size.height)
-    }
-
-    fn create_measured_size(main: u32, cross: u32) -> MeasuredSize {
-        let (x, y) = <Self::AxisOrder as AxisOrder>::merge(main, cross);
-
-        MeasuredSize {
-            width: x,
-            height: y,
-        }
-    }
-
-    fn main_axis_measure_spec(spec: MeasureSpec) -> MeasureConstraint {
-        <Self::AxisOrder as AxisOrder>::main_axis(spec.width, spec.height)
-    }
-
-    fn cross_axis_measure_spec(spec: MeasureSpec) -> MeasureConstraint {
-        <Self::AxisOrder as AxisOrder>::cross_axis(spec.width, spec.height)
-    }
-
-    fn create_measure_spec(main: MeasureConstraint, cross: MeasureConstraint) -> MeasureSpec {
-        let (x, y) = <Self::AxisOrder as AxisOrder>::merge(main, cross);
-
-        MeasureSpec {
-            width: x,
-            height: y,
-        }
-    }
-
-    fn arrange(pos: Position, bb: BoundingBox, spacing: u32) -> Position {
-        let increment = Self::main_axis_size(bb) + spacing;
-        let (x, y) = <Self::AxisOrder as AxisOrder>::merge(increment as i32, 0);
-
-        Position {
-            x: pos.x + x,
-            y: pos.y + y,
-        }
-    }
-
-    fn element_spacing(&self) -> u32;
-}
 
 pub struct LinearLayout<CE, L> {
     pub bounds: BoundingBox,

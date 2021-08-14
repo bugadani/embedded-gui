@@ -21,7 +21,7 @@ use embedded_gui::{
     widgets::{
         fill::{FillParent, Right},
         label::Label,
-        layouts::linear::{column::Column, row::Row},
+        layouts::linear::{Column, Row},
         spacing::Spacing,
     },
 };

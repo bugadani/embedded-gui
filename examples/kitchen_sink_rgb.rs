@@ -31,7 +31,7 @@ use embedded_gui::{
         label::Label,
         layouts::{
             frame::Frame,
-            linear::{column::Column, row::Row},
+            linear::{Column, Row},
         },
         scroll::Scroll,
         slider::ScrollbarConnector,

@@ -23,7 +23,7 @@ use embedded_gui::{
         background::Background,
         fill::{FillParent, Right},
         label::Label,
-        layouts::linear::{column::Column, row::Row},
+        layouts::linear::{Column, Row},
         spacing::Spacing,
     },
 };

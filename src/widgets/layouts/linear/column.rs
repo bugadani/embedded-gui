@@ -4,8 +4,8 @@ use crate::{
     geometry::{axis_order::Vertical, BoundingBox},
     widgets::{
         layouts::linear::{
-            layout::{LayoutDirection, LinearLayout},
-            Cell, CellWeight, ElementSpacing, NoSpacing, NoWeight, WithSpacing,
+            layout::LinearLayout, private::LayoutDirection, Cell, CellWeight, ElementSpacing,
+            NoSpacing, NoWeight, WithSpacing,
         },
         Widget,
     },
