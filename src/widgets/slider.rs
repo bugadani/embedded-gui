@@ -20,7 +20,8 @@ use crate::{
     state_group,
     widgets::{
         scroll::{ScrollData, ScrollDirection, ScrollFields},
-        Widget, WidgetDataHolder,
+        utils::WidgetDataHolder,
+        Widget,
     },
 };
 
@@ -341,18 +342,15 @@ where
         self
     }
 
-    pub fn on_data_changed(mut self, callback: fn(&mut SliderFields<SP, D::Data>, &D::Data)) -> Self
-    where
-        D: WidgetData,
-    {
+    pub fn on_data_changed(
+        mut self,
+        callback: fn(&mut SliderFields<SP, D::Data>, &D::Data),
+    ) -> Self {
         self.data_holder.on_data_changed = callback;
         self
     }
 
-    pub fn on_value_changed(mut self, callback: fn(&mut D::Data, i32)) -> Self
-    where
-        D: WidgetData,
-    {
+    pub fn on_value_changed(mut self, callback: fn(&mut D::Data, i32)) -> Self {
         self.fields.on_value_changed = callback;
         self
     }

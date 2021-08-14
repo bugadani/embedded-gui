@@ -11,7 +11,10 @@ use crate::{
     },
     state::{State, WidgetState},
     state_group,
-    widgets::{utils::decorator::WidgetDecorator, Widget, WidgetDataHolder},
+    widgets::{
+        utils::{decorator::WidgetDecorator, WidgetDataHolder},
+        Widget,
+    },
     Canvas, WidgetRenderer,
 };
 
@@ -122,18 +125,15 @@ where
         self.fields.set_active(active);
     }
 
-    pub fn on_data_changed(mut self, callback: fn(&mut ButtonFields<W, D::Data>, &D::Data)) -> Self
-    where
-        D: WidgetData,
-    {
+    pub fn on_data_changed(
+        mut self,
+        callback: fn(&mut ButtonFields<W, D::Data>, &D::Data),
+    ) -> Self {
         self.data_holder.on_data_changed = callback;
         self
     }
 
-    pub fn on_clicked(mut self, callback: fn(&mut D::Data)) -> Self
-    where
-        D: WidgetData,
-    {
+    pub fn on_clicked(mut self, callback: fn(&mut D::Data)) -> Self {
         self.fields.on_clicked = callback;
         self
     }

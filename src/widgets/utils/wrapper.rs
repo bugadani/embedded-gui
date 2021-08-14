@@ -1,6 +1,6 @@
 use crate::{
     data::WidgetData,
-    widgets::{utils::decorator::WidgetDecorator, Widget, WidgetDataHolder},
+    widgets::{utils::decorator::WidgetDecorator, utils::WidgetDataHolder, Widget},
     Canvas, WidgetRenderer,
 };
 

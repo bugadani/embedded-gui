@@ -13,7 +13,7 @@ use crate::{
     },
     state::{State, WidgetState},
     state_group,
-    widgets::{Widget, WidgetDataHolder},
+    widgets::{utils::WidgetDataHolder, Widget},
 };
 
 #[derive(Debug)]
@@ -369,18 +369,12 @@ where
     pub fn on_data_changed(
         mut self,
         callback: fn(&mut ScrollFields<W, SD, D::Data>, &D::Data),
-    ) -> Self
-    where
-        D: WidgetData,
-    {
+    ) -> Self {
         self.data_holder.on_data_changed = callback;
         self
     }
 
-    pub fn on_scroll_changed(mut self, callback: fn(&mut D::Data, ScrollData)) -> Self
-    where
-        D: WidgetData,
-    {
+    pub fn on_scroll_changed(mut self, callback: fn(&mut D::Data, ScrollData)) -> Self {
         self.fields.on_scroll_changed = callback;
         self
     }

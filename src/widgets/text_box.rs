@@ -12,7 +12,7 @@ use crate::{
         State, WidgetState,
     },
     state_group,
-    widgets::{Widget, WidgetDataHolder},
+    widgets::{utils::WidgetDataHolder, Widget},
 };
 use core::borrow::BorrowMut;
 use heapless::String;
@@ -115,10 +115,7 @@ where
         }
     }
 
-    pub fn on_text_changed(mut self, callback: fn(&mut D::Data, &str)) -> Self
-    where
-        D: WidgetData,
-    {
+    pub fn on_text_changed(mut self, callback: fn(&mut D::Data, &str)) -> Self {
         self.fields.on_text_changed = callback;
         self
     }
@@ -126,10 +123,7 @@ where
     pub fn on_data_changed(
         mut self,
         callback: fn(&mut TextBoxFields<B, P, D::Data, N>, &D::Data),
-    ) -> Self
-    where
-        D: WidgetData,
-    {
+    ) -> Self {
         self.data_holder.on_data_changed = callback;
         self
     }

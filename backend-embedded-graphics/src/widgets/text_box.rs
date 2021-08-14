@@ -16,7 +16,7 @@ use embedded_gui::{
     state::selection::Selected,
     widgets::{
         text_box::{TextBox, TextBoxFields, TextBoxProperties},
-        WidgetDataHolder,
+        utils::WidgetDataHolder,
     },
     WidgetRenderer,
 };
@@ -379,7 +379,7 @@ macro_rules! textbox_for_charset {
                 state::WidgetState,
                 widgets::{
                     text_box::{TextBox, TextBoxFields},
-                    WidgetDataHolder,
+                    utils::WidgetDataHolder,
                 },
             };
             use heapless::String;
