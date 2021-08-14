@@ -43,7 +43,7 @@
 //! [embedded-graphics]: https://github.com/embedded-graphics/embedded-graphics
 //! [backend-embedded-graphics]: https://github.com/bugadani/embedded-gui/backend-embedded-graphics
 
-//#![no_std]
+#![no_std]
 
 pub mod data;
 pub mod geometry;
