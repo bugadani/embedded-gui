@@ -602,7 +602,8 @@ where
             }
 
             // We only get Up if we handled Down
-            InputEvent::PointerEvent(_, PointerEvent::Drag | PointerEvent::Up) => {
+            InputEvent::PointerEvent(_, PointerEvent::Drag)
+            | InputEvent::PointerEvent(_, PointerEvent::Up) => {
                 if self.fields.state.has_state(Scroll::STATE_HOVERED) {
                     Some(0)
                 } else {
