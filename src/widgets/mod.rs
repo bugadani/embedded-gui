@@ -16,7 +16,6 @@ pub mod text_block;
 pub mod text_box;
 pub mod toggle;
 pub mod utils;
-pub mod wrapper;
 
 pub trait Widget {
     fn attach(&mut self, parent: usize, index: usize) {

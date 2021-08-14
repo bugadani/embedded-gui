@@ -3,8 +3,10 @@ use crate::{
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
     state::WidgetState,
     widgets::{
-        utils::decorator::WidgetDecorator,
-        wrapper::{Wrapper, WrapperBindable},
+        utils::{
+            decorator::WidgetDecorator,
+            wrapper::{Wrapper, WrapperBindable},
+        },
         Widget,
     },
 };

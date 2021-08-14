@@ -2,8 +2,10 @@ use crate::{
     data::WidgetData,
     state::WidgetState,
     widgets::{
-        utils::decorator::WidgetDecorator,
-        wrapper::{Wrapper, WrapperBindable},
+        utils::{
+            decorator::WidgetDecorator,
+            wrapper::{Wrapper, WrapperBindable},
+        },
         Widget,
     },
 };

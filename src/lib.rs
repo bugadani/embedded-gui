@@ -18,7 +18,7 @@ use crate::{
 pub mod prelude {
     pub use crate::{
         data::WidgetData,
-        widgets::{wrapper::WrapperBindable, Widget},
+        widgets::{utils::wrapper::WrapperBindable, Widget},
         WidgetRenderer, Window,
     };
 }
