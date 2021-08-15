@@ -27,7 +27,7 @@ use embedded_text::{
 
 pub use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
 use heapless::String;
-use object_chain::Chain;
+use object_chain::ChainElement;
 
 use crate::{widgets::text_box::plugin::Cursor, EgCanvas, ToPoint, ToRectangle};
 
@@ -355,7 +355,8 @@ where
 
             let result = textbox.draw(&mut canvas.target).map(|_| ());
 
-            let Chain { object: plugin } = textbox.take_plugins();
+            let plugins = textbox.take_plugins();
+            let (plugin, _plugins) = plugins.pop();
             self.fields.label_properties.cursor.set(plugin.get_cursor());
 
             result
