@@ -7,7 +7,7 @@ use backend_embedded_graphics::{
         text_block::{
             ascii::TextBlockConstructor, HorizontalAlignment, TextBlockStyling, VerticalAlignment,
         },
-        text_box::ascii::TextBoxConstructor,
+        text_box::{ascii::TextBoxConstructor, TextBoxStyling},
     },
     EgCanvas,
 };
@@ -274,6 +274,8 @@ fn main() {
                     TextBox::new(
                         String::<100>::from("A TextBox with editable content. Click me and start typing!")
                     )
+                    .horizontal_alignment(HorizontalAlignment::Center)
+                    .vertical_alignment(VerticalAlignment::Middle)
                     .bind(&text_reset)
                     .on_data_changed(|text_box, (reset, _empty)| {
                         if *reset {

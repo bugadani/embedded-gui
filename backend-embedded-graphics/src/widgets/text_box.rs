@@ -27,7 +27,7 @@ use embedded_text::{
 
 pub use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
 use heapless::String;
-use object_chain::Chain;
+use object_chain::ChainElement;
 
 use crate::{widgets::text_box::plugin::Cursor, EgCanvas, ToPoint, ToRectangle};
 
@@ -39,8 +39,8 @@ where
 {
     renderer: T,
     // Temporarily removed as alignments and editor together are a bit buggy
-    // horizontal: HorizontalAlignment,
-    // vertical: VerticalAlignment,
+    horizontal: HorizontalAlignment,
+    vertical: VerticalAlignment,
     cursor: Cell<Cursor>,
     cursor_color: Option<<T as TextRenderer>::Color>,
 }
@@ -79,8 +79,8 @@ where
             renderer: MonoTextStyleBuilder::from(&self.renderer)
                 .font(font)
                 .build(),
-            // horizontal: self.horizontal,
-            // vertical: self.vertical,
+            horizontal: self.horizontal,
+            vertical: self.vertical,
             cursor: Cell::new(Cursor::default()),
             cursor_color: None,
         }
@@ -170,9 +170,9 @@ where
     where
         P: TextBoxProperties;
 
-    // fn horizontal_alignment(self, alignment: HorizontalAlignment) -> Self;
+    fn horizontal_alignment(self, alignment: HorizontalAlignment) -> Self;
 
-    // fn vertical_alignment(self, alignment: VerticalAlignment) -> Self;
+    fn vertical_alignment(self, alignment: VerticalAlignment) -> Self;
 
     fn cursor_color(self, color: Self::Color) -> Self;
 }
@@ -197,14 +197,14 @@ where
         T2: TextRenderer + CharacterStyle<Color = <T2 as TextRenderer>::Color>,
         <T2 as TextRenderer>::Color: From<Rgb888>,
     {
-        // let horizontal = self.fields.label_properties.horizontal;
-        // let vertical = self.fields.label_properties.vertical;
+        let horizontal = self.fields.label_properties.horizontal;
+        let vertical = self.fields.label_properties.vertical;
         let cursor = self.fields.label_properties.cursor.clone();
 
         self.style(TextBoxStyle {
             renderer,
-            // horizontal,
-            // vertical,
+            horizontal,
+            vertical,
             cursor,
             cursor_color: None, // TODO: convert
         })
@@ -228,49 +228,49 @@ where
         }
     }
 
-    // fn horizontal_alignment(self, alignment: HorizontalAlignment) -> Self {
-    //     let renderer = self.fields.label_properties.renderer.clone();
-    //     let horizontal = alignment;
-    //     let vertical = self.fields.label_properties.vertical;
-    //     let cursor = self.fields.label_properties.cursor.clone();
-    //     let cursor_color = self.fields.label_properties.cursor_color;
-    //
-    //     self.style(TextBoxStyle {
-    //         renderer,
-    //         horizontal,
-    //         vertical,
-    //         cursor,
-    //         cursor_color,
-    //     })
-    // }
-    //
-    // fn vertical_alignment(self, alignment: VerticalAlignment) -> Self {
-    //     let renderer = self.fields.label_properties.renderer.clone();
-    //     let horizontal = self.fields.label_properties.horizontal;
-    //     let vertical = alignment;
-    //     let cursor = self.fields.label_properties.cursor.clone();
-    //     let cursor_color = self.fields.label_properties.cursor_color;
-    //
-    //     self.style(TextBoxStyle {
-    //         renderer,
-    //         horizontal,
-    //         vertical,
-    //         cursor,
-    //         cursor_color,
-    //     })
-    // }
+    fn horizontal_alignment(self, alignment: HorizontalAlignment) -> Self {
+        let renderer = self.fields.label_properties.renderer.clone();
+        let horizontal = alignment;
+        let vertical = self.fields.label_properties.vertical;
+        let cursor = self.fields.label_properties.cursor.clone();
+        let cursor_color = self.fields.label_properties.cursor_color;
+
+        self.style(TextBoxStyle {
+            renderer,
+            horizontal,
+            vertical,
+            cursor,
+            cursor_color,
+        })
+    }
+
+    fn vertical_alignment(self, alignment: VerticalAlignment) -> Self {
+        let renderer = self.fields.label_properties.renderer.clone();
+        let horizontal = self.fields.label_properties.horizontal;
+        let vertical = alignment;
+        let cursor = self.fields.label_properties.cursor.clone();
+        let cursor_color = self.fields.label_properties.cursor_color;
+
+        self.style(TextBoxStyle {
+            renderer,
+            horizontal,
+            vertical,
+            cursor,
+            cursor_color,
+        })
+    }
 
     fn cursor_color(self, color: C) -> Self {
         let renderer = self.fields.label_properties.renderer.clone();
-        // let horizontal = self.fields.label_properties.horizontal;
-        // let vertical = self.fields.label_properties.vertical;
+        let horizontal = self.fields.label_properties.horizontal;
+        let vertical = self.fields.label_properties.vertical;
         let cursor = self.fields.label_properties.cursor.clone();
         let cursor_color = Some(color);
 
         self.style(TextBoxStyle {
             renderer,
-            // horizontal,
-            // vertical,
+            horizontal,
+            vertical,
             cursor,
             cursor_color,
         })
@@ -304,15 +304,15 @@ where
         let renderer = MonoTextStyleBuilder::from(&self.fields.label_properties.renderer)
             .font(font)
             .build();
-        // let horizontal = self.fields.label_properties.horizontal;
-        // let vertical = self.fields.label_properties.vertical;
+        let horizontal = self.fields.label_properties.horizontal;
+        let vertical = self.fields.label_properties.vertical;
         let cursor = self.fields.label_properties.cursor.clone();
         let cursor_color = self.fields.label_properties.cursor_color;
 
         self.style(TextBoxStyle {
             renderer,
-            // horizontal,
-            // vertical,
+            horizontal,
+            vertical,
             cursor,
             cursor_color,
         })
@@ -339,8 +339,8 @@ where
                 .height_mode(HeightMode::Exact(VerticalOverdraw::Hidden))
                 .leading_spaces(true)
                 .trailing_spaces(true)
-                // .alignment(self.fields.label_properties.horizontal)
-                // .vertical_alignment(self.fields.label_properties.vertical)
+                .alignment(self.fields.label_properties.horizontal)
+                .vertical_alignment(self.fields.label_properties.vertical)
                 .build(),
         );
 
@@ -355,7 +355,8 @@ where
 
             let result = textbox.draw(&mut canvas.target).map(|_| ());
 
-            let Chain { object: plugin } = textbox.take_plugins();
+            let plugins = textbox.take_plugins();
+            let (plugin, _plugins) = plugins.pop();
             self.fields.label_properties.cursor.set(plugin.get_cursor());
 
             result
@@ -382,8 +383,8 @@ macro_rules! textbox_for_charset {
                     utils::WidgetDataHolder,
                 },
             };
+            use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
             use heapless::String;
-            // use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
 
             use crate::{
                 themes::Theme,
@@ -416,8 +417,8 @@ macro_rules! textbox_for_charset {
                                     &$charset::$font,
                                     <C as Theme>::TEXT_COLOR,
                                 ),
-                                // horizontal: HorizontalAlignment::Left,
-                                // vertical: VerticalAlignment::Top,
+                                horizontal: HorizontalAlignment::Left,
+                                vertical: VerticalAlignment::Top,
                                 cursor: Cell::new(Cursor::default()),
                                 cursor_color: Some(<C as Theme>::TEXT_COLOR),
                             },

@@ -154,10 +154,10 @@ impl Cursor {
     }
 
     pub fn delete_before<const N: usize>(&mut self, text: &mut String<N>) {
-        if self.offset > 0 {
-            self.offset -= 1;
-            self.desired_position = DesiredPosition::Offset(self.offset);
-            text.remove_char(self.offset);
+        if let Some(offset) = self.offset.checked_sub(1) {
+            self.offset = offset;
+            self.desired_position = DesiredPosition::Offset(offset);
+            text.remove_char(offset);
         }
     }
 
@@ -168,13 +168,11 @@ impl Cursor {
     }
 
     pub fn cursor_left(&mut self) {
-        if self.offset > 0 {
-            self.desired_position = DesiredPosition::Offset(self.offset - 1);
-        }
+        self.desired_position = DesiredPosition::Offset(self.offset.saturating_sub(1));
     }
 
     pub fn cursor_right(&mut self) {
-        self.desired_position = DesiredPosition::Offset(self.offset + 1);
+        self.desired_position = DesiredPosition::Offset(self.offset.saturating_add(1));
     }
 
     pub fn cursor_up(&mut self) {
@@ -191,8 +189,8 @@ impl Cursor {
         self.desired_position = DesiredPosition::ScreenCoordinates(point);
     }
 
-    pub fn plugin<C: PixelColor>(&self, color: C) -> EditorPlugin<C> {
-        EditorPlugin {
+    pub fn plugin<C: PixelColor>(&self, color: C) -> CursorPlugin<C> {
+        CursorPlugin {
             cursor_position: self.pos,
             current_offset: 0,
             desired_cursor_position: self.desired_position,
@@ -226,7 +224,7 @@ impl DesiredPosition {
 }
 
 #[derive(Clone)]
-pub(super) struct EditorPlugin<C> {
+pub(super) struct CursorPlugin<C> {
     desired_cursor_position: DesiredPosition,
     cursor_position: Point,
     current_offset: usize,
@@ -238,7 +236,7 @@ pub(super) struct EditorPlugin<C> {
     top_left: Point,
 }
 
-impl<C: PixelColor> EditorPlugin<C> {
+impl<C: PixelColor> CursorPlugin<C> {
     #[track_caller]
     fn draw_cursor<D>(
         &mut self,
@@ -249,7 +247,7 @@ impl<C: PixelColor> EditorPlugin<C> {
     where
         D: DrawTarget<Color = C>,
     {
-        let pos = Point::new(pos.x.max(self.top_left.x), pos.y);
+        let pos = Point::new((pos.x.saturating_sub(1)).max(self.top_left.x), pos.y);
         self.cursor_position = self.to_text_space(pos);
         self.cursor_drawn = true;
 
@@ -280,14 +278,14 @@ impl<C: PixelColor> EditorPlugin<C> {
     }
 }
 
-impl<'a, C: PixelColor> Plugin<'a, C> for EditorPlugin<C> {
+impl<'a, C: PixelColor> Plugin<'a, C> for CursorPlugin<C> {
     fn on_start_render<S: CharacterStyle + TextRenderer>(
         &mut self,
         cursor: &mut RenderingCursor,
         props: &TextBoxProperties<'_, S>,
     ) {
         let line_height = props.char_style.line_height() as i32;
-        self.top_left = props.bounding_box.top_left;
+        self.top_left = Point::new(props.bounding_box.top_left.x, cursor.y);
 
         self.desired_cursor_position = match self.desired_cursor_position {
             DesiredPosition::OneLineUp(old) => {
