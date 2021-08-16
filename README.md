@@ -11,10 +11,10 @@ backend-specific extensions to the base widgets.
 Supported platforms
 -------------------
 
- * [`embedded-graphics`]: [`backend-embedded-graphics`]
+ * `embedded-graphics`: [platform][embedded-graphics] - [backend][backend-embedded-graphics]
 
-[`embedded-graphics`]: https://github.com/embedded-graphics/embedded-graphics
-[`backend-embedded-graphics`]: https://github.com/bugadani/embedded-gui/backend-embedded-graphics
+[embedded-graphics]: https://github.com/embedded-graphics/embedded-graphics
+[backend-embedded-graphics]: https://github.com/bugadani/embedded-gui/backend-embedded-graphics
 
 Development setup
 -----------------
