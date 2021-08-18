@@ -143,7 +143,7 @@ where
     C: PixelColor,
     DT: DrawTarget<Color = C>,
 {
-    fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
+    fn draw(&mut self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
         self.label_properties
             .renderer
             .draw_string(

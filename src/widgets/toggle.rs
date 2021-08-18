@@ -337,7 +337,7 @@ where
     C: Canvas,
     D: WidgetData,
 {
-    fn draw(&self, canvas: &mut C) -> Result<(), C::Error> {
+    fn draw(&mut self, canvas: &mut C) -> Result<(), C::Error> {
         self.fields.inner.draw(canvas)
     }
 }

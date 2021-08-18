@@ -136,7 +136,7 @@ where
     D: WidgetData,
     VS: ScrollbarVisualStyle<C>,
 {
-    fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
+    fn draw(&mut self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
         self.fields.properties.visual.draw(canvas, &self.fields)
     }
 }

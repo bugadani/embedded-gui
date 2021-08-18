@@ -100,7 +100,7 @@ where
     DT: DrawTarget<Color = C>,
     RadioButtonStyle<C>: RadioButtonProperties,
 {
-    fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
+    fn draw(&mut self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
         // TODO: this overdraws. Instead, draw inside first and border last with transparent fill.
         Circle::new(
             self.bounding_box().position.to_point(),

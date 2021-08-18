@@ -61,7 +61,7 @@ where
     DT: DrawTarget<Color = C>,
     BackgroundStyle<C>: BackgroundProperties,
 {
-    fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
+    fn draw(&mut self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
         let style = self.background_properties.build_style();
 
         self.bounding_box()

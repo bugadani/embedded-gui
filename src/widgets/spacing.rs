@@ -160,7 +160,7 @@ where
     W: Widget + WidgetRenderer<C>,
     C: Canvas,
 {
-    fn draw(&self, canvas: &mut C) -> Result<(), C::Error> {
+    fn draw(&mut self, canvas: &mut C) -> Result<(), C::Error> {
         self.inner.draw(canvas)
     }
 }

@@ -308,7 +308,7 @@ where
     CE: LinearLayoutChainElement + ChainElement + WidgetRenderer<C>,
     C: Canvas,
 {
-    fn draw(&self, canvas: &mut C) -> Result<(), C::Error> {
+    fn draw(&mut self, canvas: &mut C) -> Result<(), C::Error> {
         self.widgets.draw(canvas)
     }
 }

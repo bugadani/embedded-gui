@@ -215,7 +215,7 @@ where
     Cell<W, CW>: WidgetRenderer<C>,
     C: Canvas,
 {
-    fn draw(&self, canvas: &mut C) -> Result<(), C::Error> {
+    fn draw(&mut self, canvas: &mut C) -> Result<(), C::Error> {
         self.object.draw(canvas)
     }
 }
@@ -227,7 +227,7 @@ where
     Cell<W, CW>: WidgetRenderer<C>,
     C: Canvas,
 {
-    fn draw(&self, canvas: &mut C) -> Result<(), C::Error> {
+    fn draw(&mut self, canvas: &mut C) -> Result<(), C::Error> {
         self.parent.draw(canvas)?;
         self.object.draw(canvas)
     }

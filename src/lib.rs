@@ -69,7 +69,7 @@ pub mod prelude {
 }
 
 pub trait WidgetRenderer<C: Canvas> {
-    fn draw(&self, canvas: &mut C) -> Result<(), C::Error>;
+    fn draw(&mut self, canvas: &mut C) -> Result<(), C::Error>;
 }
 
 pub trait Canvas {

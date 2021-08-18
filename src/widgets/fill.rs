@@ -237,7 +237,7 @@ where
     H: HorizontalAlignment,
     V: VerticalAlignment,
 {
-    fn draw(&self, canvas: &mut C) -> Result<(), C::Error> {
+    fn draw(&mut self, canvas: &mut C) -> Result<(), C::Error> {
         self.inner.draw(canvas)
     }
 }

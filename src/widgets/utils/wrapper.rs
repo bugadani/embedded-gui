@@ -65,7 +65,7 @@ where
     D: WidgetData,
     C: Canvas,
 {
-    fn draw(&self, canvas: &mut C) -> Result<(), C::Error> {
+    fn draw(&mut self, canvas: &mut C) -> Result<(), C::Error> {
         self.widget.draw(canvas)
     }
 }

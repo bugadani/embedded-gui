@@ -71,7 +71,7 @@ where
     DT: DrawTarget<Color = C>,
     BorderStyle<C>: BorderProperties,
 {
-    fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
+    fn draw(&mut self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
         let style = self.border_properties.build_style();
 
         self.bounding_box()

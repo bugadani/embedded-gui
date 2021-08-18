@@ -100,7 +100,7 @@ where
     DT: DrawTarget<Color = C>,
     CheckBoxStyle<C>: CheckBoxProperties,
 {
-    fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
+    fn draw(&mut self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
         // TODO: this overdraws. Instead, draw different backgrounds,
         // and draw border without background.
         self.bounding_box()

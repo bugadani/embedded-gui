@@ -140,7 +140,7 @@ where
     D: WidgetData,
     VS: SliderVisualStyle<C>,
 {
-    fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
+    fn draw(&mut self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
         self.fields.properties.visual.draw(canvas, &self.fields)
     }
 }

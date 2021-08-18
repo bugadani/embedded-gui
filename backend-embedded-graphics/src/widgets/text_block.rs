@@ -217,7 +217,7 @@ where
     C: PixelColor + From<Rgb888>,
     DT: DrawTarget<Color = C>,
 {
-    fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
+    fn draw(&mut self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
         EgTextBox::with_textbox_style(
             self.text.as_ref(),
             self.bounds.to_rectangle(),

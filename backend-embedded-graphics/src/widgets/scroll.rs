@@ -13,7 +13,7 @@ where
     D: WidgetData,
     DT: DrawTarget,
 {
-    fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
+    fn draw(&mut self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
         let bounds = self.fields.bounds.to_rectangle();
         let mut clipped = EgCanvas::new(canvas.target.clipped(&bounds));
 

@@ -1,4 +1,4 @@
-use core::{borrow::BorrowMut, cell::Cell};
+use core::borrow::BorrowMut;
 
 use embedded_graphics::{
     draw_target::DrawTarget,
@@ -41,7 +41,7 @@ where
     // Temporarily removed as alignments and editor together are a bit buggy
     horizontal: HorizontalAlignment,
     vertical: VerticalAlignment,
-    cursor: Cell<Cursor>,
+    cursor: Cursor,
     cursor_color: Option<<T as TextRenderer>::Color>,
 }
 
@@ -81,7 +81,7 @@ where
                 .build(),
             horizontal: self.horizontal,
             vertical: self.vertical,
-            cursor: Cell::new(Cursor::default()),
+            cursor: Cursor::default(),
             cursor_color: None,
         }
     }
@@ -121,18 +121,16 @@ where
         modifier: Modifier,
         text: &mut String<N>,
     ) -> bool {
-        let cursor = self.cursor.get_mut();
-
         match key {
-            Key::ArrowUp => cursor.cursor_up(),
-            Key::ArrowDown => cursor.cursor_down(),
-            Key::ArrowLeft => cursor.cursor_left(),
-            Key::ArrowRight => cursor.cursor_right(),
-            Key::Del => cursor.delete_after(text),
-            Key::Backspace => cursor.delete_before(text),
+            Key::ArrowUp => self.cursor.cursor_up(),
+            Key::ArrowDown => self.cursor.cursor_down(),
+            Key::ArrowLeft => self.cursor.cursor_left(),
+            Key::ArrowRight => self.cursor.cursor_right(),
+            Key::Del => self.cursor.delete_after(text),
+            Key::Backspace => self.cursor.delete_before(text),
             _ => {
                 if let Some(str) = (key, modifier).to_str() {
-                    cursor.insert(text, str);
+                    self.cursor.insert(text, str);
                 } else {
                     return false;
                 }
@@ -142,7 +140,7 @@ where
     }
 
     fn handle_cursor_down(&mut self, coordinates: Position) {
-        self.cursor.get_mut().move_cursor_to(coordinates.to_point())
+        self.cursor.move_cursor_to(coordinates.to_point())
     }
 }
 
@@ -328,7 +326,7 @@ where
     DT: DrawTarget<Color = C>,
     D: WidgetData,
 {
-    fn draw(&self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
+    fn draw(&mut self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
         let cursor_color = self.fields.label_properties.cursor_color;
 
         let textbox = EgTextBox::with_textbox_style(
@@ -349,7 +347,6 @@ where
                 self.fields
                     .label_properties
                     .cursor
-                    .get()
                     .plugin(cursor_color.unwrap()),
             );
 
@@ -357,7 +354,7 @@ where
 
             let plugins = textbox.take_plugins();
             let (plugin, _plugins) = plugins.pop();
-            self.fields.label_properties.cursor.set(plugin.get_cursor());
+            self.fields.label_properties.cursor = plugin.get_cursor();
 
             result
         } else {
@@ -369,7 +366,7 @@ where
 macro_rules! textbox_for_charset {
     ($charset:ident, $font:ident) => {
         pub mod $charset {
-            use core::{borrow::BorrowMut, cell::Cell};
+            use core::borrow::BorrowMut;
             use embedded_graphics::{
                 mono_font::{$charset, MonoTextStyle},
                 pixelcolor::PixelColor,
@@ -419,7 +416,7 @@ macro_rules! textbox_for_charset {
                                 ),
                                 horizontal: HorizontalAlignment::Left,
                                 vertical: VerticalAlignment::Top,
-                                cursor: Cell::new(Cursor::default()),
+                                cursor: Cursor::default(),
                                 cursor_color: Some(<C as Theme>::TEXT_COLOR),
                             },
                             bounds: BoundingBox::default(),
