@@ -1,6 +1,6 @@
 use crate::button_style_rgb;
 
-mod binary_color {
+pub mod binary_color {
     use crate::button_style;
     use embedded_graphics::{
         mono_font::{ascii::FONT_6X10, MonoFont},

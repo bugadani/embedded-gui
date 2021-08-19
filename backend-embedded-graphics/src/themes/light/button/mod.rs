@@ -53,7 +53,7 @@ macro_rules! button_style {
 #[macro_export]
 macro_rules! button_style_rgb {
     (@color $mod:ident::$style:ident<$color_t:tt, $font:tt> $descriptor:tt) => {
-        mod $mod {
+        pub mod $mod {
             use embedded_graphics::{
                 mono_font::{ascii::FONT_6X10, MonoFont},
                 pixelcolor::$color_t,
@@ -150,3 +150,27 @@ pub trait ButtonStyle<C: PixelColor> {
         };
     }
 }
+
+use embedded_graphics::mono_font::MonoTextStyle;
+
+use crate::{
+    themes::light::BasicTheme,
+    widgets::label::{ascii::LabelConstructor, LabelStyle, MonoFontLabelStyling},
+};
+
+pub type StyledButton<'a, C> = Button<Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>;
+
+pub fn styled_button<C, S>(label: &'static str) -> StyledButton<C::PixelColor>
+where
+    C: BasicTheme,
+    S: ButtonStyle<C::PixelColor>,
+{
+    // TODO add border, background and spacing
+    Button::new(
+        C::label(label)
+            .font(&S::FONT)
+            .on_state_changed(S::apply_label),
+    )
+}
+
+// TODO: add stretched button once the basics are in place

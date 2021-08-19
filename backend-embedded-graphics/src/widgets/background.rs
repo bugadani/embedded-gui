@@ -31,6 +31,7 @@ where
     }
 }
 
+// TODO this is Theme dependent
 impl<C> Default for BackgroundStyle<C>
 where
     C: Theme,

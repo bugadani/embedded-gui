@@ -36,6 +36,7 @@ where
     }
 }
 
+// TODO this is Theme dependent
 impl<C> Default for BorderStyle<C>
 where
     C: Theme,
