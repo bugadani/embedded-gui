@@ -28,6 +28,10 @@ where
     C: PixelColor,
     T: TextRenderer<Color = C> + CharacterStyle<Color = C>,
 {
+    pub fn new(renderer: T) -> LabelStyle<T> {
+        Self { renderer }
+    }
+
     /// Customize the text color
     pub fn text_color(&mut self, text_color: C) {
         self.renderer.set_text_color(Some(text_color));

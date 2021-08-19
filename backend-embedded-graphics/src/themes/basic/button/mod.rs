@@ -26,7 +26,7 @@ macro_rules! button_style {
     }) => {
         pub struct $state;
 
-        impl $crate::themes::light::button::ButtonStateColors<$color_t> for $state {
+        impl $crate::themes::basic::button::ButtonStateColors<$color_t> for $state {
             const LABEL_COLOR: $color_t = <$color_t>::$label;
             const BORDER_COLOR: $color_t = <$color_t>::$border;
             const BACKGROUND_COLOR: $color_t = <$color_t>::$background;
@@ -37,7 +37,7 @@ macro_rules! button_style {
         $($state:ident $state_desc:tt),+
     }) => {
         pub struct $style;
-        impl $crate::themes::light::button::ButtonStyle<$color_t> for $style {
+        impl $crate::themes::basic::button::ButtonStyle<$color_t> for $style {
             $(type $state = $state;)+
 
             const FONT: MonoFont<'static> = $font;
@@ -53,6 +53,7 @@ macro_rules! button_style {
 #[macro_export]
 macro_rules! button_style_rgb {
     (@color $mod:ident::$style:ident<$color_t:tt, $font:tt> $descriptor:tt) => {
+        #[allow(unused)]
         pub mod $mod {
             use embedded_graphics::{
                 mono_font::{ascii::FONT_6X10, MonoFont},
@@ -154,8 +155,8 @@ pub trait ButtonStyle<C: PixelColor> {
 use embedded_graphics::mono_font::MonoTextStyle;
 
 use crate::{
-    themes::light::BasicTheme,
-    widgets::label::{ascii::LabelConstructor, LabelStyle, MonoFontLabelStyling},
+    themes::basic::BasicTheme,
+    widgets::label::{LabelStyle, MonoFontLabelStyling},
 };
 
 pub type StyledButton<'a, C> = Button<Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>;
