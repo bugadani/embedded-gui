@@ -58,7 +58,6 @@ where
     }
 }
 
-// TODO: draw target should be clipped to widget's bounds, so this can be restored to Background
 impl<W, C, DT> WidgetRenderer<EgCanvas<DT>> for Background<W, BackgroundStyle<C>>
 where
     W: Widget + WidgetRenderer<EgCanvas<DT>>,
