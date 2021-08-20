@@ -67,6 +67,7 @@ pub trait LabelStyle<C: PixelColor> {
     fn new<S: AsRef<str>>(text: S) -> Label<S, LabelStyleStruct<MonoTextStyle<'static, C>>> {
         let mut renderer = MonoTextStyleBuilder::new().font(&Self::FONT).build();
         renderer.text_color = Self::TEXT_COLOR;
+        renderer.background_color = Self::BACKGROUND_COLOR;
 
         Label {
             parent_index: 0,
