@@ -64,7 +64,7 @@ pub trait LabelStyle<C: PixelColor> {
 
     const FONT: MonoFont<'static>;
 
-    fn new(text: &'static str) -> Label<&'static str, LabelStyleStruct<MonoTextStyle<'static, C>>> {
+    fn new<S: AsRef<str>>(text: S) -> Label<S, LabelStyleStruct<MonoTextStyle<'static, C>>> {
         let mut renderer = MonoTextStyleBuilder::new().font(&Self::FONT).build();
         renderer.text_color = Self::TEXT_COLOR;
 
@@ -78,12 +78,13 @@ pub trait LabelStyle<C: PixelColor> {
     }
 }
 
-pub type StyledLabel<'a, C> = Label<&'static str, LabelStyleStruct<MonoTextStyle<'a, C>>>;
+pub type StyledLabel<S, C> = Label<S, LabelStyleStruct<MonoTextStyle<'static, C>>>;
 
-pub fn styled_label<C, S>(label: &'static str) -> StyledLabel<C::PixelColor>
+pub fn styled_label<C, S, T>(label: T) -> StyledLabel<T, C::PixelColor>
 where
     C: BasicTheme,
     S: LabelStyle<C::PixelColor>,
+    T: AsRef<str>,
 {
     S::new(label)
 }

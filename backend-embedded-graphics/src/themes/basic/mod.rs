@@ -16,8 +16,8 @@ pub trait BasicTheme: Sized {
     type PrimaryButton: ButtonStyle<Self::PixelColor>;
     type SecondaryButton: ButtonStyle<Self::PixelColor>;
 
-    fn label(label: &'static str) -> StyledLabel<Self::PixelColor> {
-        styled_label::<Self, Self::LabelStyle>(label)
+    fn label<S: AsRef<str>>(label: S) -> StyledLabel<S, Self::PixelColor> {
+        styled_label::<Self, Self::LabelStyle, _>(label)
     }
 
     fn primary_button(label: &'static str) -> StyledButton<Self::PixelColor> {
