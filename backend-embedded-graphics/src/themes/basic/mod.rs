@@ -1,10 +1,13 @@
-use embedded_graphics::prelude::PixelColor;
-
-use crate::themes::basic::button::{styled_button, ButtonStyle, StyledButton};
-use crate::themes::basic::label::{styled_label, LabelStyle, StyledLabel};
+//! Basic theme implementation.
 
 pub mod button;
 pub mod label;
+
+use crate::themes::basic::{
+    button::{styled_button, ButtonStyle, StyledButton},
+    label::{styled_label, LabelStyle, StyledLabel},
+};
+use embedded_graphics::prelude::PixelColor;
 
 pub trait BasicTheme: Sized {
     type PixelColor: PixelColor;
@@ -26,47 +29,39 @@ pub trait BasicTheme: Sized {
     }
 }
 
-pub struct DarkTheme;
+/// This macro is used to define the theme structure.
+macro_rules! impl_theme {
+    (@impl $theme_module:ident, $theme:ident, $color_mod:ident, $color_t:ident) => {
+        pub mod $color_mod {
+            use embedded_graphics::pixelcolor::$color_t;
 
-// TODO simplify this mess - conventions and macros?
-pub mod binary_color {
-    use embedded_graphics::pixelcolor::BinaryColor;
+            use $crate::themes::basic::{
+                button::{
+                    $theme_module::$color_mod::PrimaryButton,
+                    $theme_module::$color_mod::SecondaryButton,
+                },
+                label::$theme_module::$color_mod::Label,
+                BasicTheme,
+            };
 
-    use crate::themes::basic::{
-        button::{
-            primary_button::binary_color::PrimaryButton,
-            secondary_button::binary_color::SecondaryButton,
-        },
-        label::binary_color::Label,
-        BasicTheme,
+            pub struct $theme;
+            impl BasicTheme for LightTheme {
+                type PixelColor = $color_t;
+
+                type LabelStyle = Label;
+                type PrimaryButton = PrimaryButton;
+                type SecondaryButton = SecondaryButton;
+            }
+        }
     };
-    pub struct LightTheme;
-    impl BasicTheme for LightTheme {
-        type PixelColor = BinaryColor;
 
-        type LabelStyle = Label;
-        type PrimaryButton = PrimaryButton;
-        type SecondaryButton = SecondaryButton;
-    }
+    ($theme_module:ident, $theme:ident) => {
+        impl_theme!(@impl $theme_module, $theme, binary_color, BinaryColor);
+        impl_theme!(@impl $theme_module, $theme, rgb555, Rgb555);
+        impl_theme!(@impl $theme_module, $theme, rgb565, Rgb565);
+        impl_theme!(@impl $theme_module, $theme, rgb888, Rgb888);
+    };
 }
 
-// TODO: so far only rgb888 to reduce clutter
-pub mod rgb888 {
-    use embedded_graphics::pixelcolor::Rgb888;
-
-    use crate::themes::basic::{
-        button::{
-            primary_button::rgb888::PrimaryButton, secondary_button::rgb888::SecondaryButton,
-        },
-        label::rgb888::Label,
-        BasicTheme,
-    };
-    pub struct LightTheme;
-    impl BasicTheme for LightTheme {
-        type PixelColor = Rgb888;
-
-        type LabelStyle = Label;
-        type PrimaryButton = PrimaryButton;
-        type SecondaryButton = SecondaryButton;
-    }
-}
+// Theme definitions
+impl_theme!(light, LightTheme);

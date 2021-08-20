@@ -1,3 +1,5 @@
+//! Helper macros and types to build BaseTheme labels
+
 use embedded_graphics::{
     mono_font::{MonoFont, MonoTextStyle, MonoTextStyleBuilder},
     prelude::PixelColor,
@@ -5,6 +7,9 @@ use embedded_graphics::{
 use embedded_gui::{geometry::BoundingBox, widgets::label::Label};
 
 use crate::{themes::basic::BasicTheme, widgets::label::LabelStyle as LabelStyleStruct};
+
+// Themes supported
+pub mod light;
 
 /// BaseTheme specific binary color label style helper
 #[macro_export]
@@ -31,21 +36,6 @@ macro_rules! label_style {
     };
 }
 
-// TODO this is light theme only
-pub mod binary_color {
-    use crate::label_style;
-    use embedded_graphics::{
-        mono_font::{ascii::FONT_6X10, MonoFont},
-        pixelcolor::BinaryColor,
-    };
-
-    label_style!(Label<BinaryColor> {
-        text: On,
-        background: None,
-        font: FONT_6X10,
-    });
-}
-
 /// BaseTheme specific RGB color label style helper
 #[macro_export]
 macro_rules! label_style_rgb {
@@ -67,13 +57,6 @@ macro_rules! label_style_rgb {
         $crate::label_style_rgb!(@color rgb888::$style<Rgb888> $descriptor);
     };
 }
-
-// TODO this is light theme only
-label_style_rgb!(Label {
-    text: BLACK,
-    background: None,
-    font: FONT_6X10,
-});
 
 pub trait LabelStyle<C: PixelColor> {
     const TEXT_COLOR: Option<C>;
