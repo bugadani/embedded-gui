@@ -192,6 +192,7 @@ where
                 Spacing::new(
                     C::label(label)
                         .font(&S::FONT)
+                        .text_color(S::Idle::LABEL_COLOR)
                         .on_state_changed(S::apply_label),
                 )
                 .all(1),
