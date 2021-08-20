@@ -3,7 +3,18 @@
 // Themes supported
 pub mod light;
 
-use embedded_graphics::{mono_font::MonoFont, prelude::PixelColor};
+use crate::{
+    themes::basic::BasicTheme,
+    widgets::{
+        background::BackgroundStyle,
+        border::BorderStyle,
+        label::{LabelStyle, LabelStyling, MonoFontLabelStyling},
+    },
+};
+use embedded_graphics::{
+    mono_font::{MonoFont, MonoTextStyle},
+    prelude::PixelColor,
+};
 use embedded_gui::{
     state::WidgetState,
     widgets::{
@@ -11,10 +22,9 @@ use embedded_gui::{
         border::{Border, BorderProperties},
         button::Button,
         label::Label,
+        spacing::Spacing,
     },
 };
-
-use crate::widgets::label::LabelStyling;
 
 /// BaseTheme specific binary color button style helper
 #[macro_export]
@@ -160,25 +170,37 @@ pub trait ButtonStyle<C: PixelColor> {
     }
 }
 
-use embedded_graphics::mono_font::MonoTextStyle;
-
-use crate::{
-    themes::basic::BasicTheme,
-    widgets::label::{LabelStyle, MonoFontLabelStyling},
-};
-
-pub type StyledButton<'a, C> = Button<Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>;
+// Type alias to decouple button definition from theme
+pub type StyledButton<'a, C> = Button<
+    Border<
+        Background<
+            Spacing<Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>,
+            BackgroundStyle<C>,
+        >,
+        BorderStyle<C>,
+    >,
+>;
 
 pub fn styled_button<C, S>(label: &'static str) -> StyledButton<C::PixelColor>
 where
     C: BasicTheme,
     S: ButtonStyle<C::PixelColor>,
 {
-    // TODO add border, background and spacing
     Button::new(
-        C::label(label)
-            .font(&S::FONT)
-            .on_state_changed(S::apply_label),
+        Border::with_style(
+            Background::with_style(
+                Spacing::new(
+                    C::label(label)
+                        .font(&S::FONT)
+                        .on_state_changed(S::apply_label),
+                )
+                .all(1),
+                BackgroundStyle::new(S::Idle::BACKGROUND_COLOR),
+            )
+            .on_state_changed(S::apply_background),
+            BorderStyle::new(S::Idle::BORDER_COLOR, 1),
+        )
+        .on_state_changed(S::apply_border),
     )
 }
 

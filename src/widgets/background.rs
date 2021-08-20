@@ -30,14 +30,24 @@ where
 impl<W, P> Background<W, P>
 where
     W: Widget,
-    P: BackgroundProperties,
+    P: BackgroundProperties + Default,
 {
     pub fn new(inner: W) -> Self
     where
         P: Default,
     {
+        Background::with_style(inner, P::default())
+    }
+}
+
+impl<W, P> Background<W, P>
+where
+    W: Widget,
+    P: BackgroundProperties,
+{
+    pub fn with_style(inner: W, style: P) -> Background<W, P> {
         Background {
-            background_properties: P::default(),
+            background_properties: style,
             inner,
             on_state_changed: |_, _| (),
         }

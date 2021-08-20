@@ -26,6 +26,10 @@ impl<C> BackgroundStyle<C>
 where
     C: PixelColor,
 {
+    pub fn new(color: C) -> Self {
+        Self { color }
+    }
+
     fn build_style(&self) -> PrimitiveStyle<C> {
         PrimitiveStyleBuilder::new().fill_color(self.color).build()
     }

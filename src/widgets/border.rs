@@ -33,14 +33,24 @@ where
 impl<W, P> Border<W, P>
 where
     W: Widget,
-    P: BorderProperties,
+    P: BorderProperties + Default,
 {
     pub fn new(inner: W) -> Border<W, P>
     where
         P: Default,
     {
+        Self::with_style(inner, P::default())
+    }
+}
+
+impl<W, P> Border<W, P>
+where
+    W: Widget,
+    P: BorderProperties,
+{
+    pub fn with_style(inner: W, style: P) -> Border<W, P> {
         Border {
-            border_properties: P::default(),
+            border_properties: style,
             inner,
             on_state_changed: |_, _| (),
         }

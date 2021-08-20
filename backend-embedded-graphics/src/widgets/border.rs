@@ -19,14 +19,18 @@ pub struct BorderStyle<C>
 where
     C: PixelColor,
 {
-    color: C,
-    width: u32,
+    pub color: C,
+    pub width: u32,
 }
 
 impl<C> BorderStyle<C>
 where
     C: PixelColor,
 {
+    pub fn new(color: C, width: u32) -> Self {
+        Self { color, width }
+    }
+
     fn build_style(&self) -> PrimitiveStyle<C> {
         PrimitiveStyleBuilder::new()
             .stroke_alignment(StrokeAlignment::Inside)
