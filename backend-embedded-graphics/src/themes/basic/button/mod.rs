@@ -24,6 +24,7 @@ use embedded_gui::{
         fill::{Center, FillParent, HorizontalAndVertical},
         label::Label,
         spacing::Spacing,
+        Widget,
     },
 };
 
@@ -171,53 +172,52 @@ pub trait ButtonStyle<C: PixelColor> {
     }
 }
 
-// Type alias to decouple button definition from theme
-pub type StyledButton<'a, C> = Button<
-    Border<
-        Background<
-            Spacing<Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>,
-            BackgroundStyle<C>,
-        >,
-        BorderStyle<C>,
-    >,
->;
+pub type StyledButtonDecorator<C, W> =
+    Button<Border<Background<W, BackgroundStyle<C>>, BorderStyle<C>>>;
 
-pub fn styled_button<C, S>(label: &'static str) -> StyledButton<C::PixelColor>
+fn button<C, S, W>(inner: W) -> StyledButtonDecorator<C::PixelColor, W>
 where
     C: BasicTheme,
     S: ButtonStyle<C::PixelColor>,
+    W: Widget,
 {
     Button::new(
         Border::with_style(
-            Background::with_style(
-                Spacing::new(
-                    C::label(label)
-                        .font(&S::FONT)
-                        .text_color(S::Idle::LABEL_COLOR)
-                        .on_state_changed(S::apply_label),
-                )
-                .all(1),
-                BackgroundStyle::new(S::Idle::BACKGROUND_COLOR),
-            )
-            .on_state_changed(S::apply_background),
+            Background::with_style(inner, BackgroundStyle::new(S::Idle::BACKGROUND_COLOR))
+                .on_state_changed(S::apply_background),
             BorderStyle::new(S::Idle::BORDER_COLOR, 1),
         )
         .on_state_changed(S::apply_border),
     )
 }
 
-pub type StyledButtonStretched<'a, C> = Button<
-    Border<
-        Background<
-            FillParent<
-                Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>,
-                HorizontalAndVertical,
-                Center,
-                Center,
-            >,
-            BackgroundStyle<C>,
-        >,
-        BorderStyle<C>,
+// Type alias to decouple button definition from theme
+pub type StyledButton<'a, C> =
+    StyledButtonDecorator<C, Spacing<Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>>;
+
+pub fn styled_button<C, S>(label: &'static str) -> StyledButton<C::PixelColor>
+where
+    C: BasicTheme,
+    S: ButtonStyle<C::PixelColor>,
+{
+    button::<C, S, _>(
+        Spacing::new(
+            C::label(label)
+                .font(&S::FONT)
+                .text_color(S::Idle::LABEL_COLOR)
+                .on_state_changed(S::apply_label),
+        )
+        .all(1),
+    )
+}
+
+pub type StyledButtonStretched<'a, C> = StyledButtonDecorator<
+    C,
+    FillParent<
+        Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>,
+        HorizontalAndVertical,
+        Center,
+        Center,
     >,
 >;
 
@@ -226,22 +226,14 @@ where
     C: BasicTheme,
     S: ButtonStyle<C::PixelColor>,
 {
-    Button::new(
-        Border::with_style(
-            Background::with_style(
-                FillParent::both(
-                    C::label(label)
-                        .font(&S::FONT)
-                        .text_color(S::Idle::LABEL_COLOR)
-                        .on_state_changed(S::apply_label),
-                )
-                .align_horizontal(Center)
-                .align_vertical(Center),
-                BackgroundStyle::new(S::Idle::BACKGROUND_COLOR),
-            )
-            .on_state_changed(S::apply_background),
-            BorderStyle::new(S::Idle::BORDER_COLOR, 1),
+    button::<C, S, _>(
+        FillParent::both(
+            C::label(label)
+                .font(&S::FONT)
+                .text_color(S::Idle::LABEL_COLOR)
+                .on_state_changed(S::apply_label),
         )
-        .on_state_changed(S::apply_border),
+        .align_horizontal(Center)
+        .align_vertical(Center),
     )
 }
