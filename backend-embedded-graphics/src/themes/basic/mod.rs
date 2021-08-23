@@ -4,7 +4,9 @@ pub mod button;
 pub mod label;
 
 use crate::themes::basic::{
-    button::{styled_button, ButtonStyle, StyledButton},
+    button::{
+        styled_button, styled_button_stretched, ButtonStyle, StyledButton, StyledButtonStretched,
+    },
     label::{styled_label, LabelStyle, StyledLabel},
 };
 use embedded_graphics::prelude::PixelColor;
@@ -26,6 +28,14 @@ pub trait BasicTheme: Sized {
 
     fn secondary_button(label: &'static str) -> StyledButton<Self::PixelColor> {
         styled_button::<Self, Self::SecondaryButton>(label)
+    }
+
+    fn primary_button_stretched(label: &'static str) -> StyledButtonStretched<Self::PixelColor> {
+        styled_button_stretched::<Self, Self::PrimaryButton>(label)
+    }
+
+    fn secondary_button_stretched(label: &'static str) -> StyledButtonStretched<Self::PixelColor> {
+        styled_button_stretched::<Self, Self::SecondaryButton>(label)
     }
 }
 

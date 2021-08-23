@@ -21,6 +21,7 @@ use embedded_gui::{
         background::{Background, BackgroundProperties},
         border::{Border, BorderProperties},
         button::Button,
+        fill::{Center, FillParent, HorizontalAndVertical},
         label::Label,
         spacing::Spacing,
     },
@@ -205,4 +206,42 @@ where
     )
 }
 
-// TODO: add stretched button once the basics are in place
+pub type StyledButtonStretched<'a, C> = Button<
+    Border<
+        Background<
+            FillParent<
+                Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>,
+                HorizontalAndVertical,
+                Center,
+                Center,
+            >,
+            BackgroundStyle<C>,
+        >,
+        BorderStyle<C>,
+    >,
+>;
+
+pub fn styled_button_stretched<C, S>(label: &'static str) -> StyledButtonStretched<C::PixelColor>
+where
+    C: BasicTheme,
+    S: ButtonStyle<C::PixelColor>,
+{
+    Button::new(
+        Border::with_style(
+            Background::with_style(
+                FillParent::both(
+                    C::label(label)
+                        .font(&S::FONT)
+                        .text_color(S::Idle::LABEL_COLOR)
+                        .on_state_changed(S::apply_label),
+                )
+                .align_horizontal(Center)
+                .align_vertical(Center),
+                BackgroundStyle::new(S::Idle::BACKGROUND_COLOR),
+            )
+            .on_state_changed(S::apply_background),
+            BorderStyle::new(S::Idle::BORDER_COLOR, 1),
+        )
+        .on_state_changed(S::apply_border),
+    )
+}
