@@ -106,6 +106,7 @@ pub trait ButtonStateColors<C: PixelColor> {
     fn apply_background<W, T>(background: &mut Background<W, T>)
     where
         T: BackgroundProperties<Color = C>,
+        W: Widget,
     {
         background.set_background_color(Self::BACKGROUND_COLOR);
     }
@@ -113,6 +114,7 @@ pub trait ButtonStateColors<C: PixelColor> {
     fn apply_border<W, T>(border: &mut Border<W, T>)
     where
         T: BorderProperties<Color = C>,
+        W: Widget,
     {
         border.set_border_color(Self::BORDER_COLOR);
     }
@@ -144,6 +146,7 @@ pub trait ButtonStyle<C: PixelColor> {
     fn apply_border<W, T>(border: &mut Border<W, T>, state: WidgetState)
     where
         T: BorderProperties<Color = C>,
+        W: Widget,
     {
         if state.has_state(Button::STATE_INACTIVE) {
             Self::Inactive::apply_border(border);
@@ -159,6 +162,7 @@ pub trait ButtonStyle<C: PixelColor> {
     fn apply_background<W, T>(background: &mut Background<W, T>, state: WidgetState)
     where
         T: BackgroundProperties<Color = C>,
+        W: Widget,
     {
         if state.has_state(Button::STATE_INACTIVE) {
             Self::Inactive::apply_background(background);

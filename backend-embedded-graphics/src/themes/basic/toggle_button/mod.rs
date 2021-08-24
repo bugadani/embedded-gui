@@ -132,6 +132,7 @@ pub trait ToggleButtonStateStyle<C: PixelColor> {
     fn apply_border<W, T>(border: &mut Border<W, T>, state: WidgetState)
     where
         T: BorderProperties<Color = C>,
+        W: Widget,
     {
         if state.has_state(Button::STATE_INACTIVE) {
             Self::Inactive::apply_border(border);
@@ -147,6 +148,7 @@ pub trait ToggleButtonStateStyle<C: PixelColor> {
     fn apply_background<W, T>(background: &mut Background<W, T>, state: WidgetState)
     where
         T: BackgroundProperties<Color = C>,
+        W: Widget,
     {
         if state.has_state(Button::STATE_INACTIVE) {
             Self::Inactive::apply_background(background);
@@ -180,6 +182,7 @@ pub trait ToggleButtonStyle<C: PixelColor> {
     fn apply_border<W, T>(border: &mut Border<W, T>, state: WidgetState)
     where
         T: BorderProperties<Color = C>,
+        W: Widget,
     {
         if state.has_state(Toggle::STATE_CHECKED) {
             Self::Checked::apply_border(border, state);
@@ -191,6 +194,7 @@ pub trait ToggleButtonStyle<C: PixelColor> {
     fn apply_background<W, T>(background: &mut Background<W, T>, state: WidgetState)
     where
         T: BackgroundProperties<Color = C>,
+        W: Widget,
     {
         if state.has_state(Toggle::STATE_CHECKED) {
             Self::Checked::apply_background(background, state);

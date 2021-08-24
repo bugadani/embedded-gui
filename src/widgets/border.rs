@@ -33,7 +33,7 @@ where
 impl<W, P> Border<W, P>
 where
     W: Widget,
-    P: BorderProperties + Default,
+    P: BorderProperties,
 {
     pub fn new(inner: W) -> Border<W, P>
     where
@@ -41,13 +41,7 @@ where
     {
         Self::with_style(inner, P::default())
     }
-}
 
-impl<W, P> Border<W, P>
-where
-    W: Widget,
-    P: BorderProperties,
-{
     pub fn with_style(inner: W, style: P) -> Border<W, P> {
         Border {
             border_properties: style,
@@ -55,19 +49,7 @@ where
             on_state_changed: |_, _| (),
         }
     }
-}
 
-impl<W, P> WrapperBindable for Border<W, P>
-where
-    W: Widget,
-    P: BorderProperties,
-{
-}
-
-impl<W, P> Border<W, P>
-where
-    P: BorderProperties,
-{
     pub fn border_color(mut self, color: P::Color) -> Self {
         self.set_border_color(color);
         self
@@ -81,6 +63,13 @@ where
         self.on_state_changed = callback;
         self
     }
+}
+
+impl<W, P> WrapperBindable for Border<W, P>
+where
+    W: Widget,
+    P: BorderProperties,
+{
 }
 
 impl<W, P, D> Wrapper<Border<W, P>, D>

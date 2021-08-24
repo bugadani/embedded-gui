@@ -30,7 +30,7 @@ where
 impl<W, P> Background<W, P>
 where
     W: Widget,
-    P: BackgroundProperties + Default,
+    P: BackgroundProperties,
 {
     pub fn new(inner: W) -> Self
     where
@@ -38,13 +38,7 @@ where
     {
         Background::with_style(inner, P::default())
     }
-}
 
-impl<W, P> Background<W, P>
-where
-    W: Widget,
-    P: BackgroundProperties,
-{
     pub fn with_style(inner: W, style: P) -> Background<W, P> {
         Background {
             background_properties: style,
@@ -52,19 +46,7 @@ where
             on_state_changed: |_, _| (),
         }
     }
-}
 
-impl<W, P> WrapperBindable for Background<W, P>
-where
-    W: Widget,
-    P: BackgroundProperties,
-{
-}
-
-impl<W, P> Background<W, P>
-where
-    P: BackgroundProperties,
-{
     pub fn background_color(mut self, color: P::Color) -> Self {
         self.set_background_color(color);
         self
@@ -78,6 +60,13 @@ where
         self.on_state_changed = callback;
         self
     }
+}
+
+impl<W, P> WrapperBindable for Background<W, P>
+where
+    W: Widget,
+    P: BackgroundProperties,
+{
 }
 
 impl<W, P, D> Wrapper<Background<W, P>, D>

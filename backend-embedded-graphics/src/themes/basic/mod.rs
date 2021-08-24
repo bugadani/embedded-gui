@@ -1,14 +1,18 @@
 //! Basic theme implementation.
 
 pub mod button;
+pub mod check_box;
 pub mod label;
+pub mod radio_button;
 pub mod toggle_button;
 
 use crate::themes::basic::{
     button::{
         styled_button, styled_button_stretched, ButtonStyle, StyledButton, StyledButtonStretched,
     },
+    check_box::{styled_check_box, CheckBoxVisualStyle, StyledCheckBox},
     label::{styled_label, LabelStyle, StyledLabel},
+    radio_button::{styled_radio_button, RadioButtonVisualStyle, StyledRadioButton},
     toggle_button::{
         styled_toggle_button, styled_toggle_button_stretched, StyledToggleButton,
         StyledToggleButtonStretched, ToggleButtonStyle,
@@ -23,6 +27,8 @@ pub trait BasicTheme: Sized {
     type PrimaryButton: ButtonStyle<Self::PixelColor>;
     type SecondaryButton: ButtonStyle<Self::PixelColor>;
     type ToggleButton: ToggleButtonStyle<Self::PixelColor>;
+    type CheckBox: CheckBoxVisualStyle<Self::PixelColor>;
+    type RadioButton: RadioButtonVisualStyle<Self::PixelColor>;
 
     fn label<S: AsRef<str>>(label: S) -> StyledLabel<S, Self::PixelColor> {
         styled_label::<Self, Self::LabelStyle, _>(label)
@@ -53,6 +59,14 @@ pub trait BasicTheme: Sized {
     ) -> StyledToggleButtonStretched<Self::PixelColor> {
         styled_toggle_button_stretched::<Self, Self::ToggleButton>(label)
     }
+
+    fn check_box(label: &'static str) -> StyledCheckBox<Self::PixelColor> {
+        styled_check_box::<Self, Self::CheckBox>(label)
+    }
+
+    fn radio_button(label: &'static str) -> StyledRadioButton<Self::PixelColor> {
+        styled_radio_button::<Self, Self::RadioButton>(label)
+    }
 }
 
 /// This macro is used to define the theme structure.
@@ -66,7 +80,9 @@ macro_rules! impl_theme {
                     $theme_module::$color_mod::PrimaryButton,
                     $theme_module::$color_mod::SecondaryButton,
                 },
+                check_box::$theme_module::$color_mod::CheckBox,
                 label::$theme_module::$color_mod::Label,
+                radio_button::$theme_module::$color_mod::RadioButton,
                 toggle_button::$theme_module::$color_mod::ToggleButton,
                 BasicTheme,
             };
@@ -79,6 +95,8 @@ macro_rules! impl_theme {
                 type PrimaryButton = PrimaryButton;
                 type SecondaryButton = SecondaryButton;
                 type ToggleButton = ToggleButton;
+                type CheckBox = CheckBox;
+                type RadioButton = RadioButton;
             }
         }
     };

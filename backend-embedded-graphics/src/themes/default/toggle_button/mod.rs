@@ -11,6 +11,7 @@ use embedded_gui::{
         label::Label,
         spacing::Spacing,
         toggle::Toggle,
+        Widget,
     },
 };
 
@@ -73,6 +74,7 @@ pub trait ToggleButtonStyle<C: PixelColor> {
     fn apply_border<W, T>(border: &mut Border<W, T>, state: WidgetState)
     where
         T: BorderProperties<Color = C>,
+        W: Widget,
     {
         if state.has_state(Toggle::STATE_INACTIVE) {
             if state.has_state(Toggle::STATE_CHECKED) {
@@ -104,6 +106,7 @@ pub trait ToggleButtonStyle<C: PixelColor> {
     fn apply_background<W, T>(background: &mut Background<W, T>, state: WidgetState)
     where
         T: BackgroundProperties<Color = C>,
+        W: Widget,
     {
         if state.has_state(Toggle::STATE_INACTIVE) {
             if state.has_state(Toggle::STATE_CHECKED) {
