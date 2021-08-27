@@ -28,7 +28,8 @@ use embedded_gui::{
     },
 };
 
-/// BaseTheme specific binary color button style helper
+/// Implementation details
+// TODO: this should be merged with other widgets
 #[macro_export]
 macro_rules! button_style {
     (@state $state:ident<$color_t:ty> {
@@ -45,7 +46,7 @@ macro_rules! button_style {
         }
     };
 
-    ($($style:ident<$color_t:ty, $font:tt> {
+    (@impl $($style:ident<$color_t:ty, $font_mod:tt::$font:tt> {
         $($state:ident $state_desc:tt),+
     }),+) => {
         $(
@@ -55,7 +56,7 @@ macro_rules! button_style {
                     $(type $state = [<$style $state>];)+
                 }
 
-                const FONT: MonoFont<'static> = $font;
+                const FONT: MonoFont<'static> = mono_font::$font_mod::$font;
             }
 
             $(
@@ -67,27 +68,45 @@ macro_rules! button_style {
     };
 }
 
+/// BaseTheme specific binary color button style helper
+#[macro_export]
+macro_rules! button_style_binary_color {
+    ($($style:ident<$font_mod:tt::$font:tt> $descriptor:tt),+) => {
+        #[allow(unused)]
+        pub mod binary_color {
+            use embedded_graphics::{
+                mono_font::{self, MonoFont},
+                pixelcolor::BinaryColor,
+            };
+
+            $(
+                $crate::button_style!(@impl $style<BinaryColor, $font_mod::$font> $descriptor);
+            )+
+        }
+    };
+}
+
 /// BaseTheme specific RGB color button style helper
 #[macro_export]
 macro_rules! button_style_rgb {
-    (@color $mod:ident, $color_t:tt, $($style:ident<$font:tt> $descriptor:tt)+) => {
+    (@color $mod:ident, $color_t:tt, $($style:ident<$font_mod:tt::$font:tt> $descriptor:tt)+) => {
         #[allow(unused)]
         pub mod $mod {
             use embedded_graphics::{
-                mono_font::{ascii::FONT_6X10, MonoFont},
+                mono_font::{self, MonoFont},
                 pixelcolor::$color_t,
                 prelude::{RgbColor, WebColors},
             };
             $(
-                $crate::button_style!($style<$color_t, $font> $descriptor);
+                $crate::button_style!(@impl $style<$color_t, $font_mod::$font> $descriptor);
             )+
         }
     };
 
-    ($($style:ident<$font:tt> $descriptor:tt),+) => {
-        $crate::button_style_rgb!(@color rgb555, Rgb555, $($style<$font> $descriptor)+);
-        $crate::button_style_rgb!(@color rgb565, Rgb565, $($style<$font> $descriptor)+);
-        $crate::button_style_rgb!(@color rgb888, Rgb888, $($style<$font> $descriptor)+);
+    ($($style:ident<$font_mod:tt::$font:tt> $descriptor:tt),+) => {
+        $crate::button_style_rgb!(@color rgb555, Rgb555, $($style<$font_mod::$font> $descriptor)+);
+        $crate::button_style_rgb!(@color rgb565, Rgb565, $($style<$font_mod::$font> $descriptor)+);
+        $crate::button_style_rgb!(@color rgb888, Rgb888, $($style<$font_mod::$font> $descriptor)+);
     };
 }
 

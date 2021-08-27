@@ -1,64 +1,56 @@
 //! Light theme for buttons.
 
-use crate::button_style_rgb;
+use crate::{button_style_binary_color, button_style_rgb};
 
-pub mod binary_color {
-    use crate::button_style;
-    use embedded_graphics::{
-        mono_font::{ascii::FONT_6X10, MonoFont},
-        pixelcolor::BinaryColor,
-    };
-
-    button_style!(
-        PrimaryButton<BinaryColor, FONT_6X10> {
-            Inactive {
-                label: Off,
-                border: On,
-                background: On,
-            },
-            Idle {
-                label: Off,
-                border: On,
-                background: On,
-            },
-            Hovered {
-                label: On,
-                border: On,
-                background: Off,
-            },
-            Pressed {
-                label: Off,
-                border: On,
-                background: On,
-            }
+button_style_binary_color!(
+    PrimaryButton<ascii::FONT_6X10> {
+        Inactive {
+            label: Off,
+            border: On,
+            background: On,
         },
-        SecondaryButton<BinaryColor, FONT_6X10> {
-            Inactive {
-                label: On,
-                border: Off,
-                background: Off,
-            },
-            Idle {
-                label: On,
-                border: Off,
-                background: Off,
-            },
-            Hovered {
-                label: On,
-                border: On,
-                background: Off,
-            },
-            Pressed {
-                label: Off,
-                border: Off,
-                background: On,
-            }
+        Idle {
+            label: Off,
+            border: On,
+            background: On,
+        },
+        Hovered {
+            label: On,
+            border: On,
+            background: Off,
+        },
+        Pressed {
+            label: Off,
+            border: On,
+            background: On,
         }
-    );
-}
+    },
+    SecondaryButton<ascii::FONT_6X10> {
+        Inactive {
+            label: On,
+            border: Off,
+            background: Off,
+        },
+        Idle {
+            label: On,
+            border: Off,
+            background: Off,
+        },
+        Hovered {
+            label: On,
+            border: On,
+            background: Off,
+        },
+        Pressed {
+            label: Off,
+            border: Off,
+            background: On,
+        }
+    }
+);
 
 button_style_rgb!(
-    PrimaryButton<FONT_6X10> {
+    PrimaryButton<ascii::FONT_6X10> {
         Inactive {
             label: CSS_LIGHT_GRAY,
             border: CSS_DIM_GRAY,
@@ -80,7 +72,7 @@ button_style_rgb!(
             background: CSS_LIGHT_STEEL_BLUE,
         }
     },
-    SecondaryButton<FONT_6X10> {
+    SecondaryButton<ascii::FONT_6X10> {
         Inactive {
             label: CSS_LIGHT_GRAY,
             border: CSS_DIM_GRAY,
