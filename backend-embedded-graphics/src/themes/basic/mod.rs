@@ -7,9 +7,10 @@ pub mod radio_button;
 pub mod scrollbar;
 pub mod slider;
 pub mod text_block;
+pub mod text_box;
 pub mod toggle_button;
 
-use core::ops::RangeInclusive;
+use core::{borrow::BorrowMut, ops::RangeInclusive};
 
 use crate::themes::basic::{
     button::{
@@ -24,12 +25,14 @@ use crate::themes::basic::{
     },
     slider::{slider, SliderVisualStyle, StyledSlider},
     text_block::{styled_text_block, StyledTextBlock, TextBlockStyle},
+    text_box::{styled_text_box, StyledTextBox, TextBoxStyle},
     toggle_button::{
         styled_toggle_button, styled_toggle_button_stretched, StyledToggleButton,
         StyledToggleButtonStretched, ToggleButtonStyle,
     },
 };
 use embedded_graphics::prelude::PixelColor;
+use heapless::String;
 
 pub trait BasicTheme: Sized {
     type PixelColor: PixelColor;
@@ -37,6 +40,7 @@ pub trait BasicTheme: Sized {
     type LabelStyle: LabelStyle<Self::PixelColor>;
     type TitleStyle: LabelStyle<Self::PixelColor>;
     type TextBlockStyle: TextBlockStyle<Self::PixelColor>;
+    type TextBoxStyle: TextBoxStyle<Self::PixelColor>;
     type PrimaryButton: ButtonStyle<Self::PixelColor>;
     type SecondaryButton: ButtonStyle<Self::PixelColor>;
     type ToggleButton: ToggleButtonStyle<Self::PixelColor>;
@@ -56,6 +60,12 @@ pub trait BasicTheme: Sized {
 
     fn text_block<S: AsRef<str>>(label: S) -> StyledTextBlock<S, Self::PixelColor> {
         styled_text_block::<_, Self, Self::TextBlockStyle>(label)
+    }
+
+    fn text_box<S: BorrowMut<String<N>>, const N: usize>(
+        label: S,
+    ) -> StyledTextBox<S, Self::PixelColor, N> {
+        styled_text_box::<_, Self, Self::TextBoxStyle, N>(label)
     }
 
     fn primary_button<S: AsRef<str>>(label: S) -> StyledButton<S, Self::PixelColor> {
@@ -127,6 +137,7 @@ macro_rules! impl_theme {
                 scrollbar::$theme_module::$color_mod::{HorizontalScrollbar, VerticalScrollbar},
                 slider::$theme_module::$color_mod::Slider,
                 text_block::$theme_module::$color_mod::TextBlock,
+                text_box::$theme_module::$color_mod::TextBox,
                 toggle_button::$theme_module::$color_mod::ToggleButton,
                 BasicTheme,
             };
@@ -138,6 +149,7 @@ macro_rules! impl_theme {
                 type LabelStyle = Label;
                 type TitleStyle = Title;
                 type TextBlockStyle = TextBlock;
+                type TextBoxStyle = TextBox;
                 type PrimaryButton = PrimaryButton;
                 type SecondaryButton = SecondaryButton;
                 type ToggleButton = ToggleButton;
