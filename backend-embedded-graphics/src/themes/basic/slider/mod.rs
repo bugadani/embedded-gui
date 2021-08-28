@@ -51,13 +51,11 @@ macro_rules! slider_style {
     };
 
     (@impl $($style:ident<$color_t:ty> {
-        properties: {
-            direction: $direction:tt,
-            thickness: $thickness:tt,
-            width: $width:tt$(,)?
-        },
+        direction: $direction:tt,
+        thickness: $thickness:tt,
+        width: $width:tt,
         states: {
-            $($state:ident $state_desc:tt),+
+            $($($state:ident),+: $state_desc:tt),+
         }
     }),+) => {
         $(
@@ -70,15 +68,17 @@ macro_rules! slider_style {
                 const WIDTH: u32 = $width;
 
                 paste::paste! {
-                    $(type $state = [<$style $state>];)+
+                    $($(type $state = [<$style $state>];)+)+
                 }
             }
 
-            $(
-                paste::paste! {
-                    $crate::slider_style!(@state [<$style $state>]<$color_t> $state_desc);
-                }
-            )+
+            paste::paste! {
+                $(
+                    $(
+                        $crate::slider_style!(@state [<$style $state>]<$color_t> $state_desc);
+                   )+
+                )+
+            }
         )+
     };
 }

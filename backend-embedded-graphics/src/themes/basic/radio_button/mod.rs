@@ -46,49 +46,72 @@ macro_rules! radio_button_style {
         }
     };
 
-    ($($style:ident<$color_t:ty, $font:tt> {
-        $($state:ident $state_desc:tt),+
+    (@impl $($style:ident<$color_t:ty> {
+        font: $font_mod:tt::$font:tt,
+        states: {
+            $($($state:ident),+: $state_desc:tt),+
+        }
     }),+) => {
         $(
             pub struct $style;
             impl $crate::themes::basic::radio_button::RadioButtonVisualStyle<$color_t> for $style {
                 paste::paste! {
-                    $(type $state = [<$style $state>];)+
+                    $($(type $state = [<$style $state>];)+)+
                 }
 
-                const FONT: MonoFont<'static> = $font;
+                const FONT: MonoFont<'static> = mono_font::$font_mod::$font;
             }
 
             $(
-                paste::paste! {
-                    $crate::radio_button_style!(@state [<$style $state>]<$color_t> $state_desc);
-                }
+                $(
+                    paste::paste! {
+                        $crate::radio_button_style!(@state [<$style $state>]<$color_t> $state_desc);
+                    }
+                )+
             )+
         )+
+    };
+}
+
+/// BaseTheme specific binary color toggle button style helper
+#[macro_export]
+macro_rules! radio_button_style_binary_color {
+    ($($style:ident $descriptor:tt),+) => {
+        #[allow(unused)]
+        pub mod binary_color {
+            use embedded_graphics::{
+                mono_font::{self, MonoFont},
+                pixelcolor::BinaryColor,
+            };
+
+            $(
+                $crate::radio_button_style!(@impl $style<BinaryColor> $descriptor);
+            )+
+        }
     };
 }
 
 /// BaseTheme specific RGB color toggle button style helper
 #[macro_export]
 macro_rules! radio_button_style_rgb {
-    (@color $mod:ident, $color_t:tt, $($style:ident<$font:tt> $descriptor:tt)+) => {
+    (@color $mod:ident, $color_t:tt, $($style:ident $descriptor:tt)+) => {
         #[allow(unused)]
         pub mod $mod {
             use embedded_graphics::{
-                mono_font::{ascii::FONT_6X10, MonoFont},
+                mono_font::{self, MonoFont},
                 pixelcolor::$color_t,
                 prelude::{RgbColor, WebColors},
             };
             $(
-                $crate::radio_button_style!($style<$color_t, $font> $descriptor);
+                $crate::radio_button_style!(@impl $style<$color_t> $descriptor);
             )+
         }
     };
 
-    ($($style:ident<$font:tt> $descriptor:tt),+) => {
-        $crate::radio_button_style_rgb!(@color rgb555, Rgb555, $($style<$font> $descriptor)+);
-        $crate::radio_button_style_rgb!(@color rgb565, Rgb565, $($style<$font> $descriptor)+);
-        $crate::radio_button_style_rgb!(@color rgb888, Rgb888, $($style<$font> $descriptor)+);
+    ($($style:ident $descriptor:tt),+) => {
+        $crate::radio_button_style_rgb!(@color rgb555, Rgb555, $($style $descriptor)+);
+        $crate::radio_button_style_rgb!(@color rgb565, Rgb565, $($style $descriptor)+);
+        $crate::radio_button_style_rgb!(@color rgb888, Rgb888, $($style $descriptor)+);
     };
 }
 

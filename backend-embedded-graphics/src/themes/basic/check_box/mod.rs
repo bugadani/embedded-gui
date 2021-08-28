@@ -46,49 +46,72 @@ macro_rules! check_box_style {
         }
     };
 
-    ($($style:ident<$color_t:ty, $font:tt> {
-        $($state:ident $state_desc:tt),+
+    (@impl $($style:ident<$color_t:ty> {
+        font: $font_mod:tt::$font:tt,
+        states: {
+            $($($state:ident),+: $state_desc:tt),+
+        }
     }),+) => {
         $(
             pub struct $style;
             impl $crate::themes::basic::check_box::CheckBoxVisualStyle<$color_t> for $style {
                 paste::paste! {
-                    $(type $state = [<$style $state>];)+
+                    $($(type $state = [<$style $state>];)+)+
                 }
 
-                const FONT: MonoFont<'static> = $font;
+                const FONT: MonoFont<'static> = mono_font::$font_mod::$font;
             }
 
             $(
-                paste::paste! {
-                    $crate::check_box_style!(@state [<$style $state>]<$color_t> $state_desc);
-                }
+                $(
+                    paste::paste! {
+                        $crate::check_box_style!(@state [<$style $state>]<$color_t> $state_desc);
+                    }
+                )+
             )+
         )+
+    };
+}
+
+/// BaseTheme specific binary color toggle button style helper
+#[macro_export]
+macro_rules! check_box_style_binary_color {
+    ($($style:ident $descriptor:tt),+) => {
+        #[allow(unused)]
+        pub mod binary_color {
+            use embedded_graphics::{
+                mono_font::{self, MonoFont},
+                pixelcolor::BinaryColor,
+            };
+
+            $(
+                $crate::check_box_style!(@impl $style<BinaryColor> $descriptor);
+            )+
+        }
     };
 }
 
 /// BaseTheme specific RGB color toggle button style helper
 #[macro_export]
 macro_rules! check_box_style_rgb {
-    (@color $mod:ident, $color_t:tt, $($style:ident<$font:tt> $descriptor:tt)+) => {
+    (@color $mod:ident, $color_t:tt, $($style:ident $descriptor:tt)+) => {
         #[allow(unused)]
         pub mod $mod {
             use embedded_graphics::{
-                mono_font::{ascii::FONT_6X10, MonoFont},
+                mono_font::{self, MonoFont},
                 pixelcolor::$color_t,
                 prelude::{RgbColor, WebColors},
             };
             $(
-                $crate::check_box_style!($style<$color_t, $font> $descriptor);
+                $crate::check_box_style!(@impl $style<$color_t> $descriptor);
             )+
         }
     };
 
-    ($($style:ident<$font:tt> $descriptor:tt),+) => {
-        $crate::check_box_style_rgb!(@color rgb555, Rgb555, $($style<$font> $descriptor)+);
-        $crate::check_box_style_rgb!(@color rgb565, Rgb565, $($style<$font> $descriptor)+);
-        $crate::check_box_style_rgb!(@color rgb888, Rgb888, $($style<$font> $descriptor)+);
+    ($($style:ident $descriptor:tt),+) => {
+        $crate::check_box_style_rgb!(@color rgb555, Rgb555, $($style $descriptor)+);
+        $crate::check_box_style_rgb!(@color rgb565, Rgb565, $($style $descriptor)+);
+        $crate::check_box_style_rgb!(@color rgb888, Rgb888, $($style $descriptor)+);
     };
 }
 

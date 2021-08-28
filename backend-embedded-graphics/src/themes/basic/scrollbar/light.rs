@@ -7,7 +7,7 @@ scrollbar_style_binary_color!(
     Scrollbar {
         thickness: 6,
         states: {
-            Inactive {
+            Inactive, Idle: {
                 background_fill: None,
                 background_border: None,
                 background_border_thickness: 0,
@@ -15,23 +15,7 @@ scrollbar_style_binary_color!(
                 border: On,
                 border_thickness: 1,
             },
-            Idle {
-                background_fill: None,
-                background_border: None,
-                background_border_thickness: 0,
-                fill: Off,
-                border: On,
-                border_thickness: 1,
-            },
-            Hovered {
-                background_fill: None,
-                background_border: None,
-                background_border_thickness: 0,
-                fill: On,
-                border: Off,
-                border_thickness: 1,
-            },
-            Dragged {
+            Hovered, Dragged: {
                 background_fill: None,
                 background_border: None,
                 background_border_thickness: 0,
@@ -47,7 +31,7 @@ scrollbar_style_rgb!(
     Scrollbar {
         thickness: 6,
         states: {
-            Inactive {
+            Inactive, Idle: {
                 background_fill: None,
                 background_border: None,
                 background_border_thickness: 0,
@@ -55,15 +39,7 @@ scrollbar_style_rgb!(
                 border: None,
                 border_thickness: 0,
             },
-            Idle {
-                background_fill: None,
-                background_border: None,
-                background_border_thickness: 0,
-                fill: CSS_SLATE_GRAY,
-                border: None,
-                border_thickness: 0,
-            },
-            Hovered {
+            Hovered: {
                 background_fill: None,
                 background_border: None,
                 background_border_thickness: 0,
@@ -71,7 +47,7 @@ scrollbar_style_rgb!(
                 border: None,
                 border_thickness: 0,
             },
-            Dragged {
+            Dragged: {
                 background_fill: None,
                 background_border: None,
                 background_border_thickness: 0,

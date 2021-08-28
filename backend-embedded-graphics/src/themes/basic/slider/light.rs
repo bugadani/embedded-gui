@@ -4,34 +4,18 @@ use crate::{slider_style_binary_color, slider_style_rgb};
 
 slider_style_binary_color!(
     Slider {
-        properties: {
-            direction: Horizontal,
-            thickness: 7,
-            width: 5,
-        },
+        direction: Horizontal,
+        thickness: 7,
+        width: 5,
         states: {
-            Inactive {
+            Inactive, Idle: {
                 fill: Off,
                 border: On,
                 background: On,
                 border_thickness: 1,
                 background_thickness: 1,
             },
-            Idle {
-                fill: Off,
-                border: On,
-                background: On,
-                border_thickness: 1,
-                background_thickness: 1,
-            },
-            Hovered {
-                fill: On,
-                border: Off,
-                background: On,
-                border_thickness: 1,
-                background_thickness: 1,
-            },
-            Dragged {
+            Hovered, Dragged: {
                 fill: On,
                 border: Off,
                 background: On,
@@ -44,34 +28,25 @@ slider_style_binary_color!(
 
 slider_style_rgb!(
     Slider {
-        properties: {
-            direction: Horizontal,
-            thickness: 7,
-            width: 5,
-        },
+        direction: Horizontal,
+        thickness: 7,
+        width: 5,
         states: {
-            Inactive {
+            Inactive, Idle: {
                 fill: CSS_SLATE_GRAY,
                 border: None,
                 background: CSS_GRAY,
                 border_thickness: 0,
                 background_thickness: 1,
             },
-            Idle {
-                fill: CSS_SLATE_GRAY,
-                border: None,
-                background: CSS_GRAY,
-                border_thickness: 0,
-                background_thickness: 1,
-            },
-            Hovered {
+            Hovered: {
                 fill: CSS_LIGHT_SLATE_GRAY,
                 border: None,
                 background: CSS_GRAY,
                 border_thickness: 0,
                 background_thickness: 1,
             },
-            Dragged {
+            Dragged: {
                 fill: CSS_STEEL_BLUE,
                 border: None,
                 background: CSS_GRAY,

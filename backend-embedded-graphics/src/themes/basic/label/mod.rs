@@ -21,17 +21,32 @@ macro_rules! label_style {
         Some(<$color_t>::$color)
     };
 
-    ($style:ident<$color_t:ty> {
+    (@impl $style:ident<$color_t:ty> {
         text: $text:tt,
         background: $background:tt,
-        font: $font:expr,
+        font: $font_mod:tt::$font:tt,
     }) => {
         pub struct $style;
         impl $crate::themes::basic::label::LabelStyle<$color_t> for $style {
             const TEXT_COLOR: Option<$color_t> = $crate::label_style!(@option $color_t, $text);
             const BACKGROUND_COLOR: Option<$color_t> =
                 $crate::label_style!(@option $color_t, $background);
-            const FONT: MonoFont<'static> = $font;
+            const FONT: MonoFont<'static> = mono_font::$font_mod::$font;
+        }
+    };
+}
+
+/// BaseTheme specific BinaryColor color label style helper
+#[macro_export]
+macro_rules! label_style_binary_color {
+    ($style:ident $descriptor:tt) => {
+        #[allow(unused)]
+        pub mod binary_color {
+            use embedded_graphics::{
+                mono_font::{self, MonoFont},
+                pixelcolor::BinaryColor,
+            };
+            $crate::label_style!(@impl $style<BinaryColor> $descriptor);
         }
     };
 }
@@ -43,11 +58,11 @@ macro_rules! label_style_rgb {
         #[allow(unused)]
         pub mod $mod {
             use embedded_graphics::{
-                mono_font::{ascii::FONT_6X10, MonoFont},
+                mono_font::{self, MonoFont},
                 pixelcolor::$color_t,
                 prelude::{RgbColor, WebColors},
             };
-            $crate::label_style!($style<$color_t> $descriptor);
+            $crate::label_style!(@impl $style<$color_t> $descriptor);
         }
     };
 

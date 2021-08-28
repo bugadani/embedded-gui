@@ -47,64 +47,86 @@ macro_rules! toggle_button_style {
     };
 
     (@selection_state $selection_state:ident<$color_t:ty> {
-        $($state:ident $state_desc:tt),+
+        $($($state:ident),+: $state_desc:tt),+
     }) => {
 
         paste::paste! {
-            $($crate::toggle_button_style!(@state [<$selection_state $state>]<$color_t> $state_desc);)+
+            $($($crate::toggle_button_style!(@state [<$selection_state $state>]<$color_t> $state_desc);)+)+
         }
 
         pub struct $selection_state;
         impl $crate::themes::basic::toggle_button::ToggleButtonStateStyle<$color_t> for $selection_state {
             paste::paste! {
-                $(type $state = [<$selection_state $state>];)+
+                $($(type $state = [<$selection_state $state>];)+)+
             }
         }
     };
 
-    ($($style:ident<$color_t:ty, $font:tt> {
-        $($selection_state:ident $selection_state_desc:tt),+
+    (@impl $($style:ident<$color_t:ty> {
+        font: $font_mod:tt::$font:tt,
+        states: {
+            $($($selection_state:ident),+: $selection_state_desc:tt),+
+        }
     }),+) => {
         $(
             pub struct $style;
             impl $crate::themes::basic::toggle_button::ToggleButtonStyle<$color_t> for $style {
                 paste::paste! {
-                    $(type $selection_state = [<$style $selection_state>];)+
+                    $($(type $selection_state = [<$style $selection_state>];)+)+
                 }
 
-                const FONT: MonoFont<'static> = $font;
+                const FONT: MonoFont<'static> = mono_font::$font_mod::$font;
             }
 
-            $(
-                paste::paste! {
-                    $crate::toggle_button_style!(@selection_state [<$style $selection_state>]<$color_t> $selection_state_desc);
-                }
-            )+
+            paste::paste! {
+                $(
+                    $(
+                        $crate::toggle_button_style!(@selection_state [<$style $selection_state>]<$color_t> $selection_state_desc);
+                    )+
+                )+
+            }
         )+
+    };
+}
+
+/// BaseTheme specific BinaryColor toggle button style helper
+#[macro_export]
+macro_rules! toggle_button_style_binary_color {
+    ($($style:ident $descriptor:tt)+) => {
+        #[allow(unused)]
+        pub mod binary_color {
+            use embedded_graphics::{
+                mono_font::{self, MonoFont},
+                pixelcolor::BinaryColor,
+            };
+            $(
+                $crate::toggle_button_style!(@impl $style<BinaryColor> $descriptor);
+            )+
+        }
     };
 }
 
 /// BaseTheme specific RGB color toggle button style helper
 #[macro_export]
 macro_rules! toggle_button_style_rgb {
-    (@color $mod:ident, $color_t:tt, $($style:ident<$font:tt> $descriptor:tt)+) => {
+    (@color $mod:ident, $color_t:tt, $($style:ident $descriptor:tt)+) => {
         #[allow(unused)]
         pub mod $mod {
             use embedded_graphics::{
-                mono_font::{ascii::FONT_6X10, MonoFont},
+                mono_font::{self, MonoFont},
                 pixelcolor::$color_t,
                 prelude::{RgbColor, WebColors},
             };
             $(
-                $crate::toggle_button_style!($style<$color_t, $font> $descriptor);
+                $crate::toggle_button_style!(@impl $style<$color_t> $descriptor);
             )+
         }
     };
 
-    ($($style:ident<$font:tt> $descriptor:tt),+) => {
-        $crate::toggle_button_style_rgb!(@color rgb555, Rgb555, $($style<$font> $descriptor)+);
-        $crate::toggle_button_style_rgb!(@color rgb565, Rgb565, $($style<$font> $descriptor)+);
-        $crate::toggle_button_style_rgb!(@color rgb888, Rgb888, $($style<$font> $descriptor)+);
+    ($($style:ident $descriptor:tt),+) => {
+        $crate::toggle_button_style_rgb!(@color rgb555, Rgb555, $($style $descriptor)+);
+        $crate::toggle_button_style_rgb!(@color rgb565, Rgb565, $($style $descriptor)+);
+        $crate::toggle_button_style_rgb!(@color rgb888, Rgb888, $($style $descriptor)+);
     };
 }
 
