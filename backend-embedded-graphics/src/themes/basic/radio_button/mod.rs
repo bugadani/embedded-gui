@@ -206,11 +206,12 @@ where
 }
 
 // Type alias to decouple toggle button definition from theme
-pub type StyledRadioButton<'a, C> =
-    StyledRadioButtonDecorator<C, Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>;
+pub type StyledRadioButton<S, C> =
+    StyledRadioButtonDecorator<C, Label<S, LabelStyle<MonoTextStyle<'static, C>>>>;
 
-pub fn styled_radio_button<C, S>(label: &'static str) -> StyledRadioButton<C::PixelColor>
+pub fn styled_radio_button<ST, C, S>(label: ST) -> StyledRadioButton<ST, C::PixelColor>
 where
+    ST: AsRef<str>,
     C: BasicTheme,
     S: RadioButtonVisualStyle<C::PixelColor>,
 {

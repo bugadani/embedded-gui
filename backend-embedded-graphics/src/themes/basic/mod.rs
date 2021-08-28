@@ -43,41 +43,45 @@ pub trait BasicTheme: Sized {
     type HorizontalScrollbar: ScrollbarVisualStyle<Self::PixelColor>;
 
     fn label<S: AsRef<str>>(label: S) -> StyledLabel<S, Self::PixelColor> {
-        styled_label::<Self, Self::LabelStyle, _>(label)
+        styled_label::<_, Self, Self::LabelStyle>(label)
     }
 
-    fn primary_button(label: &'static str) -> StyledButton<Self::PixelColor> {
-        styled_button::<Self, Self::PrimaryButton>(label)
+    fn primary_button<S: AsRef<str>>(label: S) -> StyledButton<S, Self::PixelColor> {
+        styled_button::<_, Self, Self::PrimaryButton>(label)
     }
 
-    fn secondary_button(label: &'static str) -> StyledButton<Self::PixelColor> {
-        styled_button::<Self, Self::SecondaryButton>(label)
+    fn secondary_button<S: AsRef<str>>(label: S) -> StyledButton<S, Self::PixelColor> {
+        styled_button::<_, Self, Self::SecondaryButton>(label)
     }
 
-    fn primary_button_stretched(label: &'static str) -> StyledButtonStretched<Self::PixelColor> {
-        styled_button_stretched::<Self, Self::PrimaryButton>(label)
+    fn primary_button_stretched<S: AsRef<str>>(
+        label: S,
+    ) -> StyledButtonStretched<S, Self::PixelColor> {
+        styled_button_stretched::<_, Self, Self::PrimaryButton>(label)
     }
 
-    fn secondary_button_stretched(label: &'static str) -> StyledButtonStretched<Self::PixelColor> {
-        styled_button_stretched::<Self, Self::SecondaryButton>(label)
+    fn secondary_button_stretched<S: AsRef<str>>(
+        label: S,
+    ) -> StyledButtonStretched<S, Self::PixelColor> {
+        styled_button_stretched::<_, Self, Self::SecondaryButton>(label)
     }
 
-    fn toggle_button(label: &'static str) -> StyledToggleButton<Self::PixelColor> {
-        styled_toggle_button::<Self, Self::ToggleButton>(label)
+    fn toggle_button<S: AsRef<str>>(label: S) -> StyledToggleButton<S, Self::PixelColor> {
+        styled_toggle_button::<_, Self, Self::ToggleButton>(label)
     }
 
-    fn toggle_button_stretched(
-        label: &'static str,
-    ) -> StyledToggleButtonStretched<Self::PixelColor> {
-        styled_toggle_button_stretched::<Self, Self::ToggleButton>(label)
+    fn toggle_button_stretched<S: AsRef<str>>(
+        label: S,
+    ) -> StyledToggleButtonStretched<S, Self::PixelColor> {
+        styled_toggle_button_stretched::<_, Self, Self::ToggleButton>(label)
     }
 
-    fn check_box(label: &'static str) -> StyledCheckBox<Self::PixelColor> {
-        styled_check_box::<Self, Self::CheckBox>(label)
+    fn check_box<S: AsRef<str>>(label: S) -> StyledCheckBox<S, Self::PixelColor> {
+        styled_check_box::<_, Self, Self::CheckBox>(label)
     }
 
-    fn radio_button(label: &'static str) -> StyledRadioButton<Self::PixelColor> {
-        styled_radio_button::<Self, Self::RadioButton>(label)
+    fn radio_button<S: AsRef<str>>(label: S) -> StyledRadioButton<S, Self::PixelColor> {
+        styled_radio_button::<_, Self, Self::RadioButton>(label)
     }
 
     fn horizontal_scrollbar(

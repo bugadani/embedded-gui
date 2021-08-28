@@ -206,11 +206,12 @@ where
 }
 
 // Type alias to decouple toggle button definition from theme
-pub type StyledCheckBox<'a, C> =
-    StyledCheckBoxDecorator<C, Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>;
+pub type StyledCheckBox<S, C> =
+    StyledCheckBoxDecorator<C, Label<S, LabelStyle<MonoTextStyle<'static, C>>>>;
 
-pub fn styled_check_box<C, S>(label: &'static str) -> StyledCheckBox<C::PixelColor>
+pub fn styled_check_box<ST, C, S>(label: ST) -> StyledCheckBox<ST, C::PixelColor>
 where
+    ST: AsRef<str>,
     C: BasicTheme,
     S: CheckBoxVisualStyle<C::PixelColor>,
 {

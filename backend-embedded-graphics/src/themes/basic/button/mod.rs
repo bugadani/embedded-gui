@@ -220,11 +220,12 @@ where
 }
 
 // Type alias to decouple button definition from theme
-pub type StyledButton<'a, C> =
-    StyledButtonDecorator<C, Spacing<Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>>;
+pub type StyledButton<S, C> =
+    StyledButtonDecorator<C, Spacing<Label<S, LabelStyle<MonoTextStyle<'static, C>>>>>;
 
-pub fn styled_button<C, S>(label: &'static str) -> StyledButton<C::PixelColor>
+pub fn styled_button<ST, C, S>(label: ST) -> StyledButton<ST, C::PixelColor>
 where
+    ST: AsRef<str>,
     C: BasicTheme,
     S: ButtonStyle<C::PixelColor>,
 {
@@ -239,18 +240,19 @@ where
     )
 }
 
-pub type StyledButtonStretched<'a, C> = StyledButtonDecorator<
+pub type StyledButtonStretched<S, C> = StyledButtonDecorator<
     C,
     FillParent<
-        Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>,
+        Label<S, LabelStyle<MonoTextStyle<'static, C>>>,
         HorizontalAndVertical,
         Center,
         Center,
     >,
 >;
 
-pub fn styled_button_stretched<C, S>(label: &'static str) -> StyledButtonStretched<C::PixelColor>
+pub fn styled_button_stretched<ST, C, S>(label: ST) -> StyledButtonStretched<ST, C::PixelColor>
 where
+    ST: AsRef<str>,
     C: BasicTheme,
     S: ButtonStyle<C::PixelColor>,
 {

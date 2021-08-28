@@ -255,11 +255,12 @@ where
 }
 
 // Type alias to decouple toggle button definition from theme
-pub type StyledToggleButton<'a, C> =
-    StyledToggleButtonDecorator<C, Spacing<Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>>>;
+pub type StyledToggleButton<S, C> =
+    StyledToggleButtonDecorator<C, Spacing<Label<S, LabelStyle<MonoTextStyle<'static, C>>>>>;
 
-pub fn styled_toggle_button<C, S>(label: &'static str) -> StyledToggleButton<C::PixelColor>
+pub fn styled_toggle_button<ST, C, S>(label: ST) -> StyledToggleButton<ST, C::PixelColor>
 where
+    ST: AsRef<str>,
     C: BasicTheme,
     S: ToggleButtonStyle<C::PixelColor>,
 {
@@ -277,20 +278,21 @@ where
     )
 }
 
-pub type StyledToggleButtonStretched<'a, C> = StyledToggleButtonDecorator<
+pub type StyledToggleButtonStretched<S, C> = StyledToggleButtonDecorator<
     C,
     FillParent<
-        Label<&'static str, LabelStyle<MonoTextStyle<'a, C>>>,
+        Label<S, LabelStyle<MonoTextStyle<'static, C>>>,
         HorizontalAndVertical,
         Center,
         Center,
     >,
 >;
 
-pub fn styled_toggle_button_stretched<C, S>(
-    label: &'static str,
-) -> StyledToggleButtonStretched<C::PixelColor>
+pub fn styled_toggle_button_stretched<ST, C, S>(
+    label: ST,
+) -> StyledToggleButtonStretched<ST, C::PixelColor>
 where
+    ST: AsRef<str>,
     C: BasicTheme,
     S: ToggleButtonStyle<C::PixelColor>,
 {

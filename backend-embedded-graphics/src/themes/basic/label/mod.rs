@@ -96,11 +96,11 @@ pub trait LabelStyle<C: PixelColor> {
 
 pub type StyledLabel<S, C> = Label<S, LabelStyleStruct<MonoTextStyle<'static, C>>>;
 
-pub fn styled_label<C, S, T>(label: T) -> StyledLabel<T, C::PixelColor>
+pub fn styled_label<ST, C, S>(label: ST) -> StyledLabel<ST, C::PixelColor>
 where
+    ST: AsRef<str>,
     C: BasicTheme,
     S: LabelStyle<C::PixelColor>,
-    T: AsRef<str>,
 {
     S::new(label)
 }
