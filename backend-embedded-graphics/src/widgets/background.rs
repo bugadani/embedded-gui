@@ -13,7 +13,7 @@ use embedded_gui::{
     WidgetRenderer,
 };
 
-use crate::{themes::Theme, EgCanvas, ToRectangle};
+use crate::{EgCanvas, ToRectangle};
 
 pub struct BackgroundStyle<C>
 where
@@ -32,18 +32,6 @@ where
 
     fn build_style(&self) -> PrimitiveStyle<C> {
         PrimitiveStyleBuilder::new().fill_color(self.color).build()
-    }
-}
-
-// TODO this is Theme dependent
-impl<C> Default for BackgroundStyle<C>
-where
-    C: Theme,
-{
-    fn default() -> Self {
-        Self {
-            color: C::BACKGROUND_COLOR,
-        }
     }
 }
 

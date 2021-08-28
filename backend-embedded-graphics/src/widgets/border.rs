@@ -13,7 +13,7 @@ use embedded_gui::{
     WidgetRenderer,
 };
 
-use crate::{themes::Theme, EgCanvas, ToRectangle};
+use crate::{EgCanvas, ToRectangle};
 
 pub struct BorderStyle<C>
 where
@@ -37,19 +37,6 @@ where
             .stroke_color(self.color)
             .stroke_width(self.width)
             .build()
-    }
-}
-
-// TODO this is Theme dependent
-impl<C> Default for BorderStyle<C>
-where
-    C: Theme,
-{
-    fn default() -> Self {
-        Self {
-            color: C::BORDER_COLOR,
-            width: 1,
-        }
     }
 }
 
