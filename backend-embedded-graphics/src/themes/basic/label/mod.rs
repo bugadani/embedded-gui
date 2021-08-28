@@ -39,14 +39,16 @@ macro_rules! label_style {
 /// BaseTheme specific BinaryColor color label style helper
 #[macro_export]
 macro_rules! label_style_binary_color {
-    ($style:ident $descriptor:tt) => {
+    ($($style:ident $descriptor:tt),+) => {
         #[allow(unused)]
         pub mod binary_color {
             use embedded_graphics::{
                 mono_font::{self, MonoFont},
                 pixelcolor::BinaryColor,
             };
-            $crate::label_style!(@impl $style<BinaryColor> $descriptor);
+            $(
+                $crate::label_style!(@impl $style<BinaryColor> $descriptor);
+            )+
         }
     };
 }
@@ -54,7 +56,7 @@ macro_rules! label_style_binary_color {
 /// BaseTheme specific RGB color label style helper
 #[macro_export]
 macro_rules! label_style_rgb {
-    (@color $mod:ident::$style:ident<$color_t:tt> $descriptor:tt) => {
+    (@color $mod:ident $color_t:tt $($style:ident $descriptor:tt),+) => {
         #[allow(unused)]
         pub mod $mod {
             use embedded_graphics::{
@@ -62,14 +64,16 @@ macro_rules! label_style_rgb {
                 pixelcolor::$color_t,
                 prelude::{RgbColor, WebColors},
             };
-            $crate::label_style!(@impl $style<$color_t> $descriptor);
+            $(
+                $crate::label_style!(@impl $style<$color_t> $descriptor);
+            )+
         }
     };
 
-    ($style:ident $descriptor:tt) => {
-        $crate::label_style_rgb!(@color rgb555::$style<Rgb555> $descriptor);
-        $crate::label_style_rgb!(@color rgb565::$style<Rgb565> $descriptor);
-        $crate::label_style_rgb!(@color rgb888::$style<Rgb888> $descriptor);
+    ($($style:ident $descriptor:tt),+) => {
+        $crate::label_style_rgb!(@color rgb555 Rgb555 $($style $descriptor),+);
+        $crate::label_style_rgb!(@color rgb565 Rgb565 $($style $descriptor),+);
+        $crate::label_style_rgb!(@color rgb888 Rgb888 $($style $descriptor),+);
     };
 }
 

@@ -33,6 +33,7 @@ pub trait BasicTheme: Sized {
     type PixelColor: PixelColor;
 
     type LabelStyle: LabelStyle<Self::PixelColor>;
+    type TitleStyle: LabelStyle<Self::PixelColor>;
     type PrimaryButton: ButtonStyle<Self::PixelColor>;
     type SecondaryButton: ButtonStyle<Self::PixelColor>;
     type ToggleButton: ToggleButtonStyle<Self::PixelColor>;
@@ -41,6 +42,10 @@ pub trait BasicTheme: Sized {
     type Slider: SliderVisualStyle<Self::PixelColor>;
     type VerticalScrollbar: ScrollbarVisualStyle<Self::PixelColor>;
     type HorizontalScrollbar: ScrollbarVisualStyle<Self::PixelColor>;
+
+    fn title<S: AsRef<str>>(label: S) -> StyledLabel<S, Self::PixelColor> {
+        styled_label::<_, Self, Self::TitleStyle>(label)
+    }
 
     fn label<S: AsRef<str>>(label: S) -> StyledLabel<S, Self::PixelColor> {
         styled_label::<_, Self, Self::LabelStyle>(label)
@@ -110,7 +115,7 @@ macro_rules! impl_theme {
                     $theme_module::$color_mod::SecondaryButton,
                 },
                 check_box::$theme_module::$color_mod::CheckBox,
-                label::$theme_module::$color_mod::Label,
+                label::$theme_module::$color_mod::{Label, Title},
                 radio_button::$theme_module::$color_mod::RadioButton,
                 scrollbar::$theme_module::$color_mod::{HorizontalScrollbar, VerticalScrollbar},
                 slider::$theme_module::$color_mod::Slider,
@@ -123,6 +128,7 @@ macro_rules! impl_theme {
                 type PixelColor = $color_t;
 
                 type LabelStyle = Label;
+                type TitleStyle = Title;
                 type PrimaryButton = PrimaryButton;
                 type SecondaryButton = SecondaryButton;
                 type ToggleButton = ToggleButton;
