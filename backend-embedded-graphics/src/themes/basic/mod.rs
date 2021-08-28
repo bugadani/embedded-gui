@@ -6,6 +6,7 @@ pub mod label;
 pub mod radio_button;
 pub mod scrollbar;
 pub mod slider;
+pub mod text_block;
 pub mod toggle_button;
 
 use core::ops::RangeInclusive;
@@ -22,6 +23,7 @@ use crate::themes::basic::{
         StyledVerticalScrollbar,
     },
     slider::{slider, SliderVisualStyle, StyledSlider},
+    text_block::{styled_text_block, StyledTextBlock, TextBlockStyle},
     toggle_button::{
         styled_toggle_button, styled_toggle_button_stretched, StyledToggleButton,
         StyledToggleButtonStretched, ToggleButtonStyle,
@@ -34,6 +36,7 @@ pub trait BasicTheme: Sized {
 
     type LabelStyle: LabelStyle<Self::PixelColor>;
     type TitleStyle: LabelStyle<Self::PixelColor>;
+    type TextBlockStyle: TextBlockStyle<Self::PixelColor>;
     type PrimaryButton: ButtonStyle<Self::PixelColor>;
     type SecondaryButton: ButtonStyle<Self::PixelColor>;
     type ToggleButton: ToggleButtonStyle<Self::PixelColor>;
@@ -49,6 +52,10 @@ pub trait BasicTheme: Sized {
 
     fn label<S: AsRef<str>>(label: S) -> StyledLabel<S, Self::PixelColor> {
         styled_label::<_, Self, Self::LabelStyle>(label)
+    }
+
+    fn text_block<S: AsRef<str>>(label: S) -> StyledTextBlock<S, Self::PixelColor> {
+        styled_text_block::<_, Self, Self::TextBlockStyle>(label)
     }
 
     fn primary_button<S: AsRef<str>>(label: S) -> StyledButton<S, Self::PixelColor> {
@@ -119,6 +126,7 @@ macro_rules! impl_theme {
                 radio_button::$theme_module::$color_mod::RadioButton,
                 scrollbar::$theme_module::$color_mod::{HorizontalScrollbar, VerticalScrollbar},
                 slider::$theme_module::$color_mod::Slider,
+                text_block::$theme_module::$color_mod::TextBlock,
                 toggle_button::$theme_module::$color_mod::ToggleButton,
                 BasicTheme,
             };
@@ -129,6 +137,7 @@ macro_rules! impl_theme {
 
                 type LabelStyle = Label;
                 type TitleStyle = Title;
+                type TextBlockStyle = TextBlock;
                 type PrimaryButton = PrimaryButton;
                 type SecondaryButton = SecondaryButton;
                 type ToggleButton = ToggleButton;
