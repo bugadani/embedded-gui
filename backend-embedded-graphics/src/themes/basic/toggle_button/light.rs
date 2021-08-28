@@ -6,7 +6,19 @@ toggle_button_style_binary_color!(
     ToggleButton {
         font: ascii::FONT_6X10,
         states: {
-            Unchecked, Checked: {
+            Unchecked: {
+                Inactive, Idle, Pressed: {
+                    label: On,
+                    border: On,
+                    background: Off,
+                },
+                Hovered: {
+                    label: Off,
+                    border: Off,
+                    background: On,
+                }
+            },
+            Checked: {
                 Inactive, Idle, Pressed: {
                     label: Off,
                     border: On,
@@ -26,7 +38,29 @@ toggle_button_style_rgb!(
     ToggleButton {
         font: ascii::FONT_6X10,
         states: {
-            Unchecked, Checked: {
+            Unchecked: {
+                Inactive: {
+                    label: CSS_LIGHT_GRAY,
+                    border: CSS_DIM_GRAY,
+                    background: CSS_DIM_GRAY,
+                },
+                Idle: {
+                    label: WHITE,
+                    border: CSS_SLATE_GRAY,
+                    background: CSS_SLATE_GRAY,
+                },
+                Hovered: {
+                    label: WHITE,
+                    border: CSS_LIGHT_SLATE_GRAY,
+                    background: CSS_LIGHT_SLATE_GRAY,
+                },
+                Pressed: {
+                    label: WHITE,
+                    border: CSS_STEEL_BLUE,
+                    background: CSS_STEEL_BLUE,
+                }
+            },
+            Checked: {
                 Inactive: {
                     label: CSS_LIGHT_GRAY,
                     border: CSS_DIM_GRAY,

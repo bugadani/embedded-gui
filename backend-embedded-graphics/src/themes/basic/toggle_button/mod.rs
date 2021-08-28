@@ -20,7 +20,6 @@ use embedded_gui::{
     widgets::{
         background::{Background, BackgroundProperties},
         border::{Border, BorderProperties},
-        button::Button,
         fill::{Center, FillParent, HorizontalAndVertical},
         label::Label,
         spacing::Spacing,
@@ -140,11 +139,11 @@ pub trait ToggleButtonStateStyle<C: PixelColor> {
     where
         Label<S, T>: LabelStyling<S, Color = C>,
     {
-        if state.has_state(Button::STATE_INACTIVE) {
+        if state.has_state(Toggle::STATE_INACTIVE) {
             Self::Inactive::apply_label(label);
-        } else if state.has_state(Button::STATE_HOVERED) {
+        } else if state.has_state(Toggle::STATE_HOVERED) {
             Self::Hovered::apply_label(label);
-        } else if state.has_state(Button::STATE_PRESSED) {
+        } else if state.has_state(Toggle::STATE_PRESSED) {
             Self::Pressed::apply_label(label);
         } else {
             Self::Idle::apply_label(label);
@@ -156,11 +155,11 @@ pub trait ToggleButtonStateStyle<C: PixelColor> {
         T: BorderProperties<Color = C>,
         W: Widget,
     {
-        if state.has_state(Button::STATE_INACTIVE) {
+        if state.has_state(Toggle::STATE_INACTIVE) {
             Self::Inactive::apply_border(border);
-        } else if state.has_state(Button::STATE_HOVERED) {
+        } else if state.has_state(Toggle::STATE_HOVERED) {
             Self::Hovered::apply_border(border);
-        } else if state.has_state(Button::STATE_PRESSED) {
+        } else if state.has_state(Toggle::STATE_PRESSED) {
             Self::Pressed::apply_border(border);
         } else {
             Self::Idle::apply_border(border);
@@ -172,11 +171,11 @@ pub trait ToggleButtonStateStyle<C: PixelColor> {
         T: BackgroundProperties<Color = C>,
         W: Widget,
     {
-        if state.has_state(Button::STATE_INACTIVE) {
+        if state.has_state(Toggle::STATE_INACTIVE) {
             Self::Inactive::apply_background(background);
-        } else if state.has_state(Button::STATE_HOVERED) {
+        } else if state.has_state(Toggle::STATE_HOVERED) {
             Self::Hovered::apply_background(background);
-        } else if state.has_state(Button::STATE_PRESSED) {
+        } else if state.has_state(Toggle::STATE_PRESSED) {
             Self::Pressed::apply_background(background);
         } else {
             Self::Idle::apply_background(background);
