@@ -106,7 +106,6 @@ where
                 .trailing_spaces(true)
                 .build(),
         )
-        .fit_height()
         .bounding_box();
 
         MeasuredSize {
