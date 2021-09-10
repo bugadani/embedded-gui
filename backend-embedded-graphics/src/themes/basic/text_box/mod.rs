@@ -83,6 +83,7 @@ macro_rules! text_box_style_rgb {
     ($($style:ident $descriptor:tt),+) => {
         $crate::text_box_style_rgb!(@color rgb555 Rgb555 $($style $descriptor),+);
         $crate::text_box_style_rgb!(@color rgb565 Rgb565 $($style $descriptor),+);
+        $crate::text_box_style_rgb!(@color rgb666 Rgb666 $($style $descriptor),+);
         $crate::text_box_style_rgb!(@color rgb888 Rgb888 $($style $descriptor),+);
     };
 }

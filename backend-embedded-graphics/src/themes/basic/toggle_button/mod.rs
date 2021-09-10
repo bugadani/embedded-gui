@@ -125,6 +125,7 @@ macro_rules! toggle_button_style_rgb {
     ($($style:ident $descriptor:tt),+) => {
         $crate::toggle_button_style_rgb!(@color rgb555, Rgb555, $($style $descriptor)+);
         $crate::toggle_button_style_rgb!(@color rgb565, Rgb565, $($style $descriptor)+);
+        $crate::toggle_button_style_rgb!(@color rgb666, Rgb666, $($style $descriptor)+);
         $crate::toggle_button_style_rgb!(@color rgb888, Rgb888, $($style $descriptor)+);
     };
 }

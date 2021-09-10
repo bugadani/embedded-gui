@@ -166,6 +166,7 @@ macro_rules! impl_theme {
         impl_theme!($theme_module, $theme, binary_color, BinaryColor);
         impl_theme!($theme_module, $theme, rgb555, Rgb555);
         impl_theme!($theme_module, $theme, rgb565, Rgb565);
+        impl_theme!($theme_module, $theme, rgb666, Rgb666);
         impl_theme!($theme_module, $theme, rgb888, Rgb888);
     };
 }
