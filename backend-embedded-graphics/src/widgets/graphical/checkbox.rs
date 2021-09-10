@@ -13,7 +13,7 @@ use embedded_gui::{
     WidgetRenderer,
 };
 
-use crate::{themes::Theme, EgCanvas, ToRectangle};
+use crate::{EgCanvas, ToRectangle};
 
 pub struct CheckBoxStyle<C>
 where
@@ -45,22 +45,6 @@ where
             .fill_color(self.checkmark_color)
             .stroke_width(0)
             .build()
-    }
-}
-
-impl<C> Default for CheckBoxStyle<C>
-where
-    C: Theme,
-{
-    fn default() -> Self {
-        Self {
-            background_color: C::BACKGROUND_COLOR,
-            border_color: C::BORDER_COLOR,
-            checkmark_color: C::BORDER_COLOR,
-            line_width: 1,
-            box_size: 9,
-            is_checked: false,
-        }
     }
 }
 

@@ -13,7 +13,7 @@ use embedded_gui::{
     WidgetRenderer,
 };
 
-use crate::{themes::Theme, EgCanvas, ToRectangle};
+use crate::{EgCanvas, ToRectangle};
 
 pub struct BackgroundStyle<C>
 where
@@ -26,19 +26,12 @@ impl<C> BackgroundStyle<C>
 where
     C: PixelColor,
 {
+    pub fn new(color: C) -> Self {
+        Self { color }
+    }
+
     fn build_style(&self) -> PrimitiveStyle<C> {
         PrimitiveStyleBuilder::new().fill_color(self.color).build()
-    }
-}
-
-impl<C> Default for BackgroundStyle<C>
-where
-    C: Theme,
-{
-    fn default() -> Self {
-        Self {
-            color: C::BACKGROUND_COLOR,
-        }
     }
 }
 
@@ -53,7 +46,6 @@ where
     }
 }
 
-// TODO: draw target should be clipped to widget's bounds, so this can be restored to Background
 impl<W, C, DT> WidgetRenderer<EgCanvas<DT>> for Background<W, BackgroundStyle<C>>
 where
     W: Widget + WidgetRenderer<EgCanvas<DT>>,
