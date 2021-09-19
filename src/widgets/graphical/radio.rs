@@ -38,16 +38,20 @@ impl<P> RadioButton<P>
 where
     P: RadioButtonProperties,
 {
+    pub fn with_style(style: P) -> Self {
+        Self {
+            parent_index: 0,
+            radio_properties: style,
+            bounds: BoundingBox::default(),
+            on_state_changed: |_, _| (),
+        }
+    }
+
     pub fn new() -> RadioButton<P>
     where
         P: Default,
     {
-        RadioButton {
-            parent_index: 0,
-            radio_properties: P::default(),
-            bounds: BoundingBox::default(),
-            on_state_changed: |_, _| (),
-        }
+        Self::with_style(P::default())
     }
 
     pub fn background_color(mut self, color: P::Color) -> Self {

@@ -1,20 +1,18 @@
 use std::{fmt::Write, thread, time::Duration};
 
 use backend_embedded_graphics::{
-    themes::{default::DefaultTheme, Theme},
+    themes::basic::{rgb888::LightTheme, BasicTheme},
     widgets::{
-        label::ascii::LabelConstructor,
-        text_block::{
-            ascii::TextBlockConstructor, HorizontalAlignment, TextBlockStyling, VerticalAlignment,
-        },
-        text_box::{ascii::TextBoxConstructor, TextBoxStyling},
+        border::BorderStyle,
+        text_block::{HorizontalAlignment, TextBlockStyling, VerticalAlignment},
+        text_box::TextBoxStyling,
     },
     EgCanvas,
 };
 use embedded_graphics::{
     draw_target::DrawTarget,
     pixelcolor::Rgb888,
-    prelude::{Size as EgSize, WebColors},
+    prelude::{RgbColor, Size as EgSize, WebColors},
 };
 use embedded_graphics_simulator::{
     sdl2::{Keycode, Mod, MouseButton},
@@ -28,7 +26,6 @@ use embedded_gui::{
     widgets::{
         border::Border,
         fill::FillParent,
-        label::Label,
         layouts::{
             frame::Frame,
             linear::{Column, Row},
@@ -36,8 +33,6 @@ use embedded_gui::{
         scroll::Scroll,
         slider::ScrollbarConnector,
         spacing::Spacing,
-        text_block::TextBlock,
-        text_box::TextBox,
         visibility::Visibility,
     },
 };
@@ -224,28 +219,28 @@ fn main() {
     let tabs = Row::new()
         .spacing(1)
         .add(
-            DefaultTheme::toggle_button("Multiline text")
+            LightTheme::toggle_button("Multiline text")
                 .disallow_manual_uncheck()
                 .bind(&page)
                 .on_selected_changed(|_, page| *page = Page::TextBlock)
                 .on_data_changed(|toggle, data| toggle.set_checked(*data == Page::TextBlock)),
         )
         .add(
-            DefaultTheme::toggle_button("Checkables")
+            LightTheme::toggle_button("Checkables")
                 .disallow_manual_uncheck()
                 .bind(&page)
                 .on_selected_changed(|_, page| *page = Page::Check)
                 .on_data_changed(|toggle, data| toggle.set_checked(*data == Page::Check)),
         )
         .add(
-            DefaultTheme::toggle_button("Sliders")
+            LightTheme::toggle_button("Sliders")
                 .disallow_manual_uncheck()
                 .bind(&page)
                 .on_selected_changed(|_, page| *page = Page::Slider)
                 .on_data_changed(|toggle, data| toggle.set_checked(*data == Page::Slider)),
         )
         .add(
-            DefaultTheme::toggle_button("Scrolling")
+            LightTheme::toggle_button("Scrolling")
                 .disallow_manual_uncheck()
                 .bind(&page)
                 .on_selected_changed(|_, page| *page = Page::Scroll)
@@ -255,103 +250,105 @@ fn main() {
     let text_block_page = Row::new()
         .spacing(1)
         .add(
-            Column::new().add(Label::new("TextBlock")).add(
-            Border::new(
-                TextBlock::new(
+            Column::new()
+                .add(LightTheme::label("TextBlock"))
+                .add(Border::with_style(
+                LightTheme::text_block(
                     "Some \x1b[4mstylish\x1b[24m multiline text that expands the widget vertically",
                 )
                 .horizontal_alignment(HorizontalAlignment::Center)
-                .vertical_alignment(VerticalAlignment::Middle)
-            )
-            .border_color(Rgb888::CSS_LIGHT_GRAY))
+                .vertical_alignment(VerticalAlignment::Middle),
+                BorderStyle::new(Rgb888::CSS_LIGHT_GRAY, 1),
+            )),
         )
         .weight(1)
         .add(
             Column::new()
-            .add(Label::new("TextBox"))
-            .add(
-                Border::new(
-                    TextBox::new(
-                        String::<100>::from("A TextBox with editable content. Click me and start typing!")
+                .add(LightTheme::label("TextBox"))
+                .add(
+                    Border::with_style(
+                        LightTheme::text_box(String::<100>::from(
+                            "A TextBox with editable content. Click me and start typing!",
+                        ))
+                        .horizontal_alignment(HorizontalAlignment::Center)
+                        .vertical_alignment(VerticalAlignment::Middle)
+                        .bind(&text_reset)
+                        .on_data_changed(|text_box, (reset, _empty)| {
+                            if *reset {
+                                text_box.text.clear();
+                            }
+                        })
+                        .on_text_changed(|(reset, empty), text| {
+                            *reset = false;
+                            *empty = text == "";
+                        }),
+                        BorderStyle::new(Rgb888::CSS_LIGHT_GRAY, 1),
                     )
-                    .horizontal_alignment(HorizontalAlignment::Center)
-                    .vertical_alignment(VerticalAlignment::Middle)
-                    .bind(&text_reset)
-                    .on_data_changed(|text_box, (reset, _empty)| {
-                        if *reset {
-                            text_box.text.clear();
-                        }
-                    })
-                    .on_text_changed(|(reset, empty), text| {
-                        *reset = false;
-                        *empty = text == "";
-                    })
+                    .border_color(Rgb888::CSS_LIGHT_GRAY),
                 )
-                .border_color(Rgb888::CSS_LIGHT_GRAY)
-            )
-            .weight(1)
-            .add(
-                DefaultTheme::primary_button("Clear")
-                .bind(&text_reset)
-                .on_clicked(|(reset, empty)| {
-                    *reset = true;
-                    // Resetting means the text box will be empty
-                    *empty = true;
-                })
-                .on_data_changed(|button, (_, empty)| {
-                    button.set_active(!*empty);
-                })
-            )
+                .weight(1)
+                .add(
+                    LightTheme::primary_button("Clear")
+                        .bind(&text_reset)
+                        .on_clicked(|(reset, empty)| {
+                            *reset = true;
+                            // Resetting means the text box will be empty
+                            *empty = true;
+                        })
+                        .on_data_changed(|button, (_, empty)| {
+                            button.set_active(!*empty);
+                        }),
+                ),
         )
         .weight(1);
 
     let checkables_page = Column::new()
         .spacing(1)
-        .add(Label::new("Checkboxes and radio buttons"))
+        .add(LightTheme::label("Checkboxes and radio buttons"))
         .add(
-            DefaultTheme::check_box("Check me")
+            LightTheme::check_box("Check me")
                 .bind(&checkbox)
                 .on_selected_changed(|checked, data| *data = checked)
                 .on_data_changed(|checkbox, data| checkbox.set_checked(*data)),
         )
         .add(
-            DefaultTheme::check_box("Inactive")
+            LightTheme::check_box("Inactive")
                 .bind(&checkbox)
                 .active(false)
                 .on_data_changed(|checkbox, data| checkbox.set_checked(*data)),
         )
         .add(
-            DefaultTheme::radio_button("Can't select me")
+            LightTheme::radio_button("Can't select me")
                 .bind(&radio)
                 .on_selected_changed(|_, data| *data = 0)
                 .on_data_changed(|radio, data| radio.set_checked(*data == 0))
                 .active(false),
         )
         .add(
-            DefaultTheme::radio_button("Select me")
+            LightTheme::radio_button("Select me")
                 .bind(&radio)
                 .on_selected_changed(|_, data| *data = 0)
                 .on_data_changed(|radio, data| radio.set_checked(*data == 0)),
         )
         .add(
-            DefaultTheme::radio_button("... or me!")
+            LightTheme::radio_button("... or me!")
                 .bind(&radio)
                 .on_selected_changed(|_, data| *data = 1)
                 .on_data_changed(|radio, data| radio.set_checked(*data == 1)),
         )
         .add(
-            DefaultTheme::toggle_button("Click me!")
+            LightTheme::toggle_button("Click me!")
                 .bind(&toggle)
                 .on_selected_changed(|selected, data| *data = selected)
                 .on_data_changed(|toggle, data| toggle.set_checked(*data)),
         )
         .add(
-            Visibility::new(Label::new("Toggle checked"))
+            Visibility::new(LightTheme::label("Toggle checked"))
                 .bind(&toggle)
                 .on_data_changed(|widget, data| widget.set_visible(*data)),
         )
         .add(
-            DefaultTheme::primary_button("Reset")
+            LightTheme::primary_button("Reset")
                 .bind(&checkables)
                 .on_clicked(|data| {
                     data.0.update(|data| *data = 0);
@@ -362,11 +359,11 @@ fn main() {
 
     let sliders_page = Column::new()
         .spacing(1)
-        .add(Label::new("Numeric sliders"))
+        .add(LightTheme::label("Numeric sliders"))
         .add(
             Row::new()
                 .add(FillParent::horizontal(
-                    Label::new(String::<11>::from("0"))
+                    LightTheme::label(String::<11>::from("0"))
                         .bind(&slider1_data)
                         .on_data_changed(|label, data| {
                             label.text.clear();
@@ -376,7 +373,7 @@ fn main() {
                 .weight(1)
                 .add(
                     Spacing::new(
-                        DefaultTheme::slider(-100..=100)
+                        LightTheme::slider(-100..=100)
                             .bind(&slider1_data)
                             .on_value_changed(|data, value| *data = value)
                             .on_data_changed(|slider, data| slider.set_value(*data)),
@@ -388,7 +385,7 @@ fn main() {
         .add(
             Row::new()
                 .add(FillParent::horizontal(
-                    Label::new(String::<11>::from("0"))
+                    LightTheme::label(String::<11>::from("0"))
                         .bind(&slider2_data)
                         .on_data_changed(|label, data| {
                             label.text.clear();
@@ -398,7 +395,7 @@ fn main() {
                 .weight(1)
                 .add(
                     Spacing::new(
-                        DefaultTheme::slider(0..=5)
+                        LightTheme::slider(0..=5)
                             .bind(&slider2_data)
                             .on_value_changed(|data, value| *data = value)
                             .on_data_changed(|slider, data| slider.set_value(*data)),
@@ -408,9 +405,9 @@ fn main() {
                 .weight(4),
         )
         .add(
-            Row::new().add(Label::new("Inactive")).add(
+            Row::new().add(LightTheme::label("Inactive")).add(
                 Spacing::new(
-                    DefaultTheme::slider(0..=5)
+                    LightTheme::slider(0..=5)
                         .set_active(false)
                         .bind(&slider2_data)
                         .on_value_changed(|data, value| *data = value)
@@ -420,7 +417,7 @@ fn main() {
             ),
         )
         .add(
-            DefaultTheme::primary_button("Reset")
+            LightTheme::primary_button("Reset")
                 .bind(&sliders)
                 .on_clicked(|data| {
                     data.0.update(|data| *data = 0);
@@ -430,7 +427,7 @@ fn main() {
 
     let scrolling_page = Column::new()
         .add(FillParent::horizontal(
-            Label::new("Scroll down")
+            LightTheme::label("Scroll down")
                 .bind(&scroll_data)
                 .on_data_changed(|label, data| {
                     label.text = if data.offset == data.maximum_offset {
@@ -444,35 +441,35 @@ fn main() {
         ))
         .add(
             Row::new()
-                .add(Border::new(
+                .add(Border::with_style(
                     Scroll::vertical(
                         Spacing::new(
                             Column::new()
-                                .add(Label::new("S"))
-                                .add(Label::new("c"))
-                                .add(Label::new("r"))
-                                .add(Label::new("o"))
-                                .add(Label::new("l"))
-                                .add(Label::new("o"))
-                                .add(Label::new("l"))
-                                .add(Label::new("o"))
-                                .add(Label::new("l"))
-                                .add(Label::new("o"))
-                                .add(Label::new("l"))
-                                .add(Label::new("o"))
-                                .add(Label::new("l"))
-                                .add(Label::new("o"))
-                                .add(Label::new("l"))
-                                .add(Label::new("o"))
-                                .add(Label::new("l"))
-                                .add(Label::new("o"))
-                                .add(Label::new("l"))
-                                .add(Label::new("o"))
-                                .add(Label::new("l"))
-                                .add(Label::new("o"))
-                                .add(Label::new("Scrollolo :)"))
+                                .add(LightTheme::label("S"))
+                                .add(LightTheme::label("c"))
+                                .add(LightTheme::label("r"))
+                                .add(LightTheme::label("o"))
+                                .add(LightTheme::label("l"))
+                                .add(LightTheme::label("o"))
+                                .add(LightTheme::label("l"))
+                                .add(LightTheme::label("o"))
+                                .add(LightTheme::label("l"))
+                                .add(LightTheme::label("o"))
+                                .add(LightTheme::label("l"))
+                                .add(LightTheme::label("o"))
+                                .add(LightTheme::label("l"))
+                                .add(LightTheme::label("o"))
+                                .add(LightTheme::label("l"))
+                                .add(LightTheme::label("o"))
+                                .add(LightTheme::label("l"))
+                                .add(LightTheme::label("o"))
+                                .add(LightTheme::label("l"))
+                                .add(LightTheme::label("o"))
+                                .add(LightTheme::label("l"))
+                                .add(LightTheme::label("o"))
+                                .add(LightTheme::label("Scrollolo :)"))
                                 .add(
-                                    DefaultTheme::primary_button("Back to top")
+                                    LightTheme::primary_button("Back to top")
                                         .bind(&scroll_data)
                                         .on_clicked(|data| data.scroll_to(0)),
                                 ),
@@ -484,10 +481,11 @@ fn main() {
                     .bind(&scroll_data)
                     .on_scroll_changed(ScrollbarConnector::on_scroll_widget_scroll_changed)
                     .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),
+                    BorderStyle::new(Rgb888::CSS_LIGHT_GRAY, 1),
                 ))
                 .weight(8)
                 .add(
-                    DefaultTheme::vertical_scrollbar()
+                    LightTheme::vertical_scrollbar()
                         .bind(&scroll_data)
                         .on_data_changed(ScrollbarConnector::on_scrollbar_data_changed)
                         .on_value_changed(ScrollbarConnector::on_scrollbar_value_changed),
@@ -497,7 +495,7 @@ fn main() {
         .add(
             Column::new()
                 .add(
-                    Scroll::horizontal(Label::new(
+                    Scroll::horizontal(LightTheme::label(
                         "Some very long text that can be used to demonstrate horizontal scrollbars",
                     ))
                     .set_active(false)
@@ -506,7 +504,7 @@ fn main() {
                     .on_data_changed(ScrollbarConnector::on_scroll_widget_data_changed),
                 )
                 .add(
-                    DefaultTheme::horizontal_scrollbar()
+                    LightTheme::horizontal_scrollbar()
                         .bind(&horizontal_scroll_data)
                         .on_data_changed(ScrollbarConnector::on_scrollbar_data_changed)
                         .on_value_changed(ScrollbarConnector::on_scrollbar_value_changed),
@@ -556,7 +554,7 @@ fn main() {
     let mut window = SimWindow::new("Everything but the kitchen sink", &output_settings);
 
     loop {
-        gui.canvas.target.clear(Rgb888::BACKGROUND_COLOR).unwrap();
+        gui.canvas.target.clear(Rgb888::WHITE).unwrap();
 
         gui.update();
         gui.measure();

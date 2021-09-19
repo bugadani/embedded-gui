@@ -50,6 +50,16 @@ where
     C: PixelColor,
     T: TextRenderer<Color = C> + CharacterStyle<Color = C>,
 {
+    pub fn new(renderer: T) -> Self {
+        Self {
+            renderer,
+            horizontal: HorizontalAlignment::Left,
+            vertical: VerticalAlignment::Top,
+            cursor: Cursor::default(),
+            cursor_color: None,
+        }
+    }
+
     /// Customize the text color
     pub fn text_color(&mut self, text_color: C) {
         self.renderer.set_text_color(Some(text_color));
@@ -361,90 +371,3 @@ where
         }
     }
 }
-
-macro_rules! textbox_for_charset {
-    ($charset:ident, $font:ident) => {
-        pub mod $charset {
-            use core::borrow::BorrowMut;
-            use embedded_graphics::{
-                mono_font::{$charset, MonoTextStyle},
-                pixelcolor::PixelColor,
-            };
-            use embedded_gui::{
-                data::WidgetData,
-                geometry::BoundingBox,
-                state::WidgetState,
-                widgets::{
-                    text_box::{TextBox, TextBoxFields},
-                    utils::WidgetDataHolder,
-                },
-            };
-            use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
-            use heapless::String;
-
-            use crate::{
-                themes::Theme,
-                widgets::text_box::{plugin::Cursor, TextBoxStyle},
-            };
-
-            pub trait TextBoxConstructor<'a, B, C, D, const N: usize>
-            where
-                B: BorrowMut<String<N>>,
-                D: WidgetData,
-                C: PixelColor,
-            {
-                fn new(text: B) -> TextBox<B, TextBoxStyle<MonoTextStyle<'a, C>>, D, N>;
-            }
-
-            impl<'a, B, C, const N: usize> TextBoxConstructor<'a, B, C, (), N>
-                for TextBox<B, TextBoxStyle<MonoTextStyle<'a, C>>, (), N>
-            where
-                C: PixelColor + Theme,
-                B: BorrowMut<heapless::String<N>>,
-            {
-                fn new(text: B) -> Self {
-                    TextBox {
-                        fields: TextBoxFields {
-                            state: WidgetState::default(),
-                            parent_index: 0,
-                            text,
-                            label_properties: TextBoxStyle {
-                                renderer: MonoTextStyle::new(
-                                    &$charset::$font,
-                                    <C as Theme>::TEXT_COLOR,
-                                ),
-                                horizontal: HorizontalAlignment::Left,
-                                vertical: VerticalAlignment::Top,
-                                cursor: Cursor::default(),
-                                cursor_color: Some(<C as Theme>::TEXT_COLOR),
-                            },
-                            bounds: BoundingBox::default(),
-                            on_text_changed: |_, _| (),
-                            on_parent_state_changed: |_, _| (),
-                        },
-                        data_holder: WidgetDataHolder::default(),
-                    }
-                }
-            }
-        }
-    };
-
-    ($charset:ident) => {
-        textbox_for_charset!($charset, FONT_6X10);
-    };
-}
-
-textbox_for_charset!(ascii);
-textbox_for_charset!(iso_8859_1);
-textbox_for_charset!(iso_8859_10);
-textbox_for_charset!(iso_8859_13);
-textbox_for_charset!(iso_8859_14);
-textbox_for_charset!(iso_8859_15);
-textbox_for_charset!(iso_8859_16);
-textbox_for_charset!(iso_8859_2);
-textbox_for_charset!(iso_8859_3);
-textbox_for_charset!(iso_8859_4);
-textbox_for_charset!(iso_8859_5);
-textbox_for_charset!(iso_8859_7);
-textbox_for_charset!(iso_8859_9);
-textbox_for_charset!(jis_x0201, FONT_6X13);

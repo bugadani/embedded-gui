@@ -1,8 +1,8 @@
 use std::{thread, time::Duration};
 
 use backend_embedded_graphics::{
-    themes::Theme,
-    widgets::{background::BackgroundStyle, border::BorderStyle, label::ascii::LabelConstructor},
+    themes::basic::{binary_color::LightTheme, BasicTheme},
+    widgets::{background::BackgroundStyle, border::BorderStyle},
     EgCanvas,
 };
 use embedded_graphics::{
@@ -23,7 +23,6 @@ use embedded_gui::{
         border::Border,
         button::Button,
         fill::{Center, FillParent, HorizontalAndVertical},
-        label::Label,
         layouts::linear::{Column, Row},
         spacing::Spacing,
     },
@@ -114,16 +113,16 @@ fn button_with_style<W: Widget>(
     >,
 > {
     Button::new(
-        Background::new(
-            Border::new(
+        Background::with_style(
+            Border::with_style(
                 FillParent::both(inner)
                     .align_horizontal(Center)
                     .align_vertical(Center),
+                BorderStyle::new(BinaryColor::Off, 1),
             )
-            .border_color(BinaryColor::Off)
             .on_state_changed(update_button_border),
+            BackgroundStyle::new(BinaryColor::Off),
         )
-        .background_color(BinaryColor::Off)
         .on_state_changed(update_button_background),
     )
 }
@@ -138,14 +137,20 @@ fn main() {
         Column::new()
             .add(
                 Row::new()
-                    .add(FillParent::horizontal(Label::new("Hello,")).align_horizontal(Center))
+                    .add(
+                        FillParent::horizontal(LightTheme::label("Hello,"))
+                            .align_horizontal(Center),
+                    )
                     .weight(1)
-                    .add(FillParent::horizontal(Label::new("World!")).align_horizontal(Center))
+                    .add(
+                        FillParent::horizontal(LightTheme::label("World!"))
+                            .align_horizontal(Center),
+                    )
                     .weight(1),
             )
             .add(
                 Spacing::new(
-                    button_with_style(Label::new("Click me").bind(&flag).on_data_changed(
+                    button_with_style(LightTheme::label("Click me").bind(&flag).on_data_changed(
                         |widget, data| widget.text = if *data { "on" } else { "off" },
                     ))
                     .bind(&flag)
@@ -164,10 +169,7 @@ fn main() {
     let mut window = SimWindow::new("GUI demonstration", &output_settings);
 
     loop {
-        gui.canvas
-            .target
-            .clear(BinaryColor::BACKGROUND_COLOR)
-            .unwrap();
+        gui.canvas.target.clear(BinaryColor::Off).unwrap();
 
         gui.update();
         gui.measure();
