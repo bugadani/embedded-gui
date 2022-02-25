@@ -1,7 +1,7 @@
 use std::{fmt::Write, thread, time::Duration};
 
 use backend_embedded_graphics::{
-    themes::basic::{rgb888::LightTheme, BasicTheme},
+    themes::basic::{light::rgb888::LightTheme, BasicTheme},
     widgets::{background::BackgroundStyle, label::MonoFontLabelStyling},
     EgCanvas,
 };

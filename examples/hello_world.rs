@@ -1,7 +1,7 @@
 use std::{thread, time::Duration};
 
 use backend_embedded_graphics::{
-    themes::basic::{binary_color::LightTheme, BasicTheme},
+    themes::basic::{light::binary_color::LightTheme, BasicTheme},
     widgets::{background::BackgroundStyle, border::BorderStyle},
     EgCanvas,
 };

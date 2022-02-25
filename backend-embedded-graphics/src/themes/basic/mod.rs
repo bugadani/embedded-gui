@@ -143,7 +143,7 @@ macro_rules! impl_theme {
             };
 
             pub struct $theme;
-            impl BasicTheme for LightTheme {
+            impl BasicTheme for $theme {
                 type PixelColor = $color_t;
 
                 type LabelStyle = Label;
@@ -163,12 +163,15 @@ macro_rules! impl_theme {
     };
 
     ($theme_module:ident, $theme:ident) => {
-        impl_theme!($theme_module, $theme, binary_color, BinaryColor);
-        impl_theme!($theme_module, $theme, rgb555, Rgb555);
-        impl_theme!($theme_module, $theme, rgb565, Rgb565);
-        impl_theme!($theme_module, $theme, rgb888, Rgb888);
+        pub mod $theme_module {
+            impl_theme!($theme_module, $theme, binary_color, BinaryColor);
+            impl_theme!($theme_module, $theme, rgb555, Rgb555);
+            impl_theme!($theme_module, $theme, rgb565, Rgb565);
+            impl_theme!($theme_module, $theme, rgb888, Rgb888);
+        }
     };
 }
 
 // Theme definitions
 impl_theme!(light, LightTheme);
+// impl_theme!(dark, DarkTheme);

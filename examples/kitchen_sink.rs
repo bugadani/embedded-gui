@@ -1,7 +1,7 @@
 use std::{fmt::Write, thread, time::Duration};
 
 use backend_embedded_graphics::{
-    themes::basic::{binary_color::LightTheme, BasicTheme},
+    themes::basic::{light::binary_color::LightTheme, BasicTheme},
     widgets::{
         border::BorderStyle,
         text_block::{HorizontalAlignment, TextBlockStyling, VerticalAlignment},
