@@ -542,7 +542,10 @@ fn main() {
     let mut window = SimWindow::new("Everything but the kitchen sink", &output_settings);
 
     loop {
-        gui.canvas.target.clear(BinaryColor::Off).unwrap();
+        gui.canvas
+            .target
+            .clear(LightTheme::BACKGROUND_COLOR)
+            .unwrap();
 
         gui.update();
         gui.measure();

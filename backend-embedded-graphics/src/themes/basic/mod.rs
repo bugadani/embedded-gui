@@ -50,6 +50,8 @@ pub trait BasicTheme: Sized {
     type VerticalScrollbar: ScrollbarVisualStyle<Self::PixelColor>;
     type HorizontalScrollbar: ScrollbarVisualStyle<Self::PixelColor>;
 
+    const BACKGROUND_COLOR: Self::PixelColor;
+
     fn title<S: AsRef<str>>(label: S) -> StyledLabel<S, Self::PixelColor> {
         styled_label::<_, Self, Self::TitleStyle>(label)
     }
@@ -122,9 +124,10 @@ pub trait BasicTheme: Sized {
 
 /// This macro is used to define the theme structure.
 macro_rules! impl_theme {
-    ($theme_module:ident, $theme:ident, $color_mod:ident, $color_t:ident) => {
+    ($theme_module:ident, $theme:ident, $color_mod:ident, $color_t:ident, $clear_color:ident) => {
         pub mod $color_mod {
-            use embedded_graphics::pixelcolor::$color_t;
+            #[allow(unused_imports)]
+            use embedded_graphics::{pixelcolor::$color_t, prelude::RgbColor};
 
             use $crate::themes::basic::{
                 button::{
@@ -158,16 +161,18 @@ macro_rules! impl_theme {
                 type Slider = Slider;
                 type VerticalScrollbar = VerticalScrollbar;
                 type HorizontalScrollbar = HorizontalScrollbar;
+
+                const BACKGROUND_COLOR: Self::PixelColor = $color_t::$clear_color;
             }
         }
     };
 
     ($theme_module:ident, $theme:ident) => {
         pub mod $theme_module {
-            impl_theme!($theme_module, $theme, binary_color, BinaryColor);
-            impl_theme!($theme_module, $theme, rgb555, Rgb555);
-            impl_theme!($theme_module, $theme, rgb565, Rgb565);
-            impl_theme!($theme_module, $theme, rgb888, Rgb888);
+            impl_theme!($theme_module, $theme, binary_color, BinaryColor, Off);
+            impl_theme!($theme_module, $theme, rgb555, Rgb555, WHITE);
+            impl_theme!($theme_module, $theme, rgb565, Rgb565, WHITE);
+            impl_theme!($theme_module, $theme, rgb888, Rgb888, WHITE);
         }
     };
 }

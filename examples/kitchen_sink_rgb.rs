@@ -12,7 +12,7 @@ use backend_embedded_graphics::{
 use embedded_graphics::{
     draw_target::DrawTarget,
     pixelcolor::Rgb888,
-    prelude::{RgbColor, Size as EgSize, WebColors},
+    prelude::{Size as EgSize, WebColors},
 };
 use embedded_graphics_simulator::{
     sdl2::{Keycode, Mod, MouseButton},
@@ -554,7 +554,10 @@ fn main() {
     let mut window = SimWindow::new("Everything but the kitchen sink", &output_settings);
 
     loop {
-        gui.canvas.target.clear(Rgb888::WHITE).unwrap();
+        gui.canvas
+            .target
+            .clear(LightTheme::BACKGROUND_COLOR)
+            .unwrap();
 
         gui.update();
         gui.measure();

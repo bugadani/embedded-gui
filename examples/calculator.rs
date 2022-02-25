@@ -6,8 +6,7 @@ use backend_embedded_graphics::{
     EgCanvas,
 };
 use embedded_graphics::{
-    draw_target::DrawTarget, mono_font::ascii::FONT_10X20, pixelcolor::BinaryColor,
-    prelude::Size as EgSize,
+    draw_target::DrawTarget, mono_font::ascii::FONT_10X20, prelude::Size as EgSize,
 };
 use embedded_graphics_simulator::{
     sdl2::MouseButton, BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent,
@@ -364,7 +363,10 @@ fn main() {
     let mut window = SimWindow::new("GUI demonstration", &output_settings);
 
     loop {
-        gui.canvas.target.clear(BinaryColor::Off).unwrap();
+        gui.canvas
+            .target
+            .clear(LightTheme::BACKGROUND_COLOR)
+            .unwrap();
 
         gui.update();
         gui.measure();

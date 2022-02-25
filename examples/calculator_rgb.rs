@@ -9,7 +9,7 @@ use embedded_graphics::{
     draw_target::DrawTarget,
     mono_font::ascii::FONT_10X20,
     pixelcolor::{Rgb888, WebColors},
-    prelude::{RgbColor, Size as EgSize},
+    prelude::Size as EgSize,
 };
 use embedded_graphics_simulator::{
     sdl2::MouseButton, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window as SimWindow,
@@ -386,7 +386,10 @@ fn main() {
     let mut window = SimWindow::new("GUI demonstration", &output_settings);
 
     loop {
-        gui.canvas.target.clear(Rgb888::BLACK).unwrap();
+        gui.canvas
+            .target
+            .clear(LightTheme::BACKGROUND_COLOR)
+            .unwrap();
 
         gui.update();
         gui.measure();
