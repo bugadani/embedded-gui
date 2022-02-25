@@ -1,7 +1,7 @@
 use std::{fmt::Write, thread, time::Duration};
 
 use backend_embedded_graphics::{
-    themes::basic::{light::rgb888::LightTheme, BasicTheme},
+    themes::basic::{light::rgb888::LightTheme as Theme, BasicTheme},
     widgets::{background::BackgroundStyle, label::MonoFontLabelStyling},
     EgCanvas,
 };
@@ -229,7 +229,7 @@ fn main() {
             .add(Background::with_style(
                 Spacing::new(
                     FillParent::horizontal(
-                        LightTheme::label(String::<11>::new())
+                        Theme::label(String::<11>::new())
                             .font(&FONT_10X20)
                             .bind(&calculator)
                             .on_data_changed(|label, calc| {
@@ -246,19 +246,19 @@ fn main() {
                 Row::new()
                     .spacing(1)
                     .add(
-                        LightTheme::primary_button_stretched("CE")
+                        Theme::primary_button_stretched("CE")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.clear()),
                     )
                     .weight(2)
                     .add(
-                        LightTheme::secondary_button_stretched("<")
+                        Theme::secondary_button_stretched("<")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.delete_digit()),
                     )
                     .weight(1)
                     .add(
-                        LightTheme::primary_button_stretched("/")
+                        Theme::primary_button_stretched("/")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.set_op(Op::Divide)),
                     )
@@ -269,25 +269,25 @@ fn main() {
                 Row::new()
                     .spacing(1)
                     .add(
-                        LightTheme::secondary_button_stretched("7")
+                        Theme::secondary_button_stretched("7")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.add_digit(7)),
                     )
                     .weight(1)
                     .add(
-                        LightTheme::secondary_button_stretched("8")
+                        Theme::secondary_button_stretched("8")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.add_digit(8)),
                     )
                     .weight(1)
                     .add(
-                        LightTheme::secondary_button_stretched("9")
+                        Theme::secondary_button_stretched("9")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.add_digit(9)),
                     )
                     .weight(1)
                     .add(
-                        LightTheme::primary_button_stretched("x")
+                        Theme::primary_button_stretched("x")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.set_op(Op::Multiply)),
                     )
@@ -298,25 +298,25 @@ fn main() {
                 Row::new()
                     .spacing(1)
                     .add(
-                        LightTheme::secondary_button_stretched("4")
+                        Theme::secondary_button_stretched("4")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.add_digit(4)),
                     )
                     .weight(1)
                     .add(
-                        LightTheme::secondary_button_stretched("5")
+                        Theme::secondary_button_stretched("5")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.add_digit(5)),
                     )
                     .weight(1)
                     .add(
-                        LightTheme::secondary_button_stretched("6")
+                        Theme::secondary_button_stretched("6")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.add_digit(6)),
                     )
                     .weight(1)
                     .add(
-                        LightTheme::primary_button_stretched("-")
+                        Theme::primary_button_stretched("-")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.set_op(Op::Subtract)),
                     )
@@ -327,25 +327,25 @@ fn main() {
                 Row::new()
                     .spacing(1)
                     .add(
-                        LightTheme::secondary_button_stretched("1")
+                        Theme::secondary_button_stretched("1")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.add_digit(1)),
                     )
                     .weight(1)
                     .add(
-                        LightTheme::secondary_button_stretched("2")
+                        Theme::secondary_button_stretched("2")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.add_digit(2)),
                     )
                     .weight(1)
                     .add(
-                        LightTheme::secondary_button_stretched("3")
+                        Theme::secondary_button_stretched("3")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.add_digit(3)),
                     )
                     .weight(1)
                     .add(
-                        LightTheme::primary_button_stretched("+")
+                        Theme::primary_button_stretched("+")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.set_op(Op::Add)),
                     )
@@ -356,13 +356,13 @@ fn main() {
                 Row::new()
                     .spacing(1)
                     .add(
-                        LightTheme::secondary_button_stretched("0")
+                        Theme::secondary_button_stretched("0")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.add_digit(0)),
                     )
                     .weight(3)
                     .add(
-                        LightTheme::primary_button_stretched("=")
+                        Theme::primary_button_stretched("=")
                             .bind(&calculator)
                             .on_clicked(|calculator| calculator.update())
                             .on_data_changed(|button, calculator| {
@@ -386,10 +386,7 @@ fn main() {
     let mut window = SimWindow::new("GUI demonstration", &output_settings);
 
     loop {
-        gui.canvas
-            .target
-            .clear(LightTheme::BACKGROUND_COLOR)
-            .unwrap();
+        gui.canvas.target.clear(Theme::BACKGROUND_COLOR).unwrap();
 
         gui.update();
         gui.measure();
