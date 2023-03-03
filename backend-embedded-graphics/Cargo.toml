@@ -5,6 +5,7 @@ authors = ["Dániel Buga <bugadani@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+embedded-canvas = "0.2.0"
 embedded-graphics = "0.7.0"
 embedded-text = { version = "0.5.0", features = ["plugin"] }
 embedded-gui = { path = ".." }
@@ -14,4 +15,5 @@ object-chain = "0.1"
 
 [features]
 ansi = ["embedded-text/ansi"]
+std = ["embedded-canvas/alloc"]
 default = ["ansi"]
