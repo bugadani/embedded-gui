@@ -8,7 +8,7 @@ use backend_embedded_graphics::{
 use embedded_graphics::{
     draw_target::DrawTarget,
     pixelcolor::Rgb888,
-    prelude::{RgbColor, Size as EgSize},
+    prelude::{Dimensions, RgbColor, Size as EgSize},
     primitives::{Circle, Primitive, PrimitiveStyle, Rectangle},
     Drawable,
 };
@@ -209,7 +209,7 @@ fn main() {
                     .bind(&state)
                     .on_data_changed(|widget, state| {
                         let clear_color = widget.canvas_properties.clear_color;
-                        let canvas = widget.canvas();
+                        let mut canvas = widget.canvas();
 
                         canvas.clear(clear_color).unwrap();
 
@@ -218,18 +218,19 @@ fn main() {
                         let increment = if t < 50 { t } else { 50 - (t - 50) };
 
                         let rectangle = Rectangle::with_center(
-                            canvas.center(),
+                            canvas.bounding_box().center(),
                             EgSize {
                                 width: 50 + increment,
                                 height: 50 + increment,
                             },
                         )
                         .into_styled(PrimitiveStyle::with_stroke(Rgb888::BLUE, 1));
-                        rectangle.draw(canvas).unwrap();
+                        rectangle.draw(&mut canvas).unwrap();
 
-                        let circle = Circle::with_center(canvas.center(), 40 + increment)
-                            .into_styled(PrimitiveStyle::with_stroke(Rgb888::RED, 1));
-                        circle.draw(canvas).unwrap();
+                        let circle =
+                            Circle::with_center(canvas.bounding_box().center(), 40 + increment)
+                                .into_styled(PrimitiveStyle::with_stroke(Rgb888::RED, 1));
+                        circle.draw(&mut canvas).unwrap();
                     }),
             ))),
     );

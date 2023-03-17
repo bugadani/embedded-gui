@@ -1,10 +1,10 @@
 use embedded_canvas::CCanvasAt;
 use embedded_graphics::{
-    prelude::{Dimensions, DrawTarget, PixelColor, Point, Size},
+    prelude::{Dimensions, DrawTarget, DrawTargetExt, PixelColor, Point, Size},
     Drawable,
 };
 use embedded_gui::{
-    geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
+    geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize},
     input::{
         controller::InputContext,
         event::{InputEvent, PointerEvent},
@@ -18,15 +18,14 @@ use embedded_gui::{
     WidgetRenderer,
 };
 
-use crate::{themes::Theme, EgCanvas};
+use crate::{themes::Theme, EgCanvas, ToRectangle};
 
 pub trait CanvasProperties {
     type Color;
-    type Canvas: Drawable<Color = Self::Color>;
+    type Canvas: DrawTargetExt + Drawable<Color = Self::Color>;
 
     fn canvas(&mut self) -> &mut Self::Canvas;
     fn measure(&self) -> MeasuredSize;
-    fn move_canvas(&mut self, pos: Position);
 }
 
 pub struct CCanvasStyle<C, const W: usize, const H: usize>
@@ -53,10 +52,6 @@ where
             width: W as u32,
             height: H as u32,
         }
-    }
-
-    fn move_canvas(&mut self, pos: Position) {
-        self.canvas.top_left = Point { x: pos.x, y: pos.y };
     }
 }
 
@@ -114,10 +109,6 @@ where
             width: self.canvas.bounding_box().size.width,
             height: self.canvas.bounding_box().size.height,
         }
-    }
-
-    fn move_canvas(&mut self, pos: Position) {
-        self.canvas.top_left = Point { x: pos.x, y: pos.y };
     }
 }
 
@@ -179,11 +170,18 @@ impl<P, H> Canvas<P, H>
 where
     H: FnMut(InputContext, InputEvent) -> bool,
 {
-    pub fn canvas(&mut self) -> &mut P::Canvas
+    pub fn canvas(
+        &mut self,
+    ) -> impl DrawTarget<
+        Color = <P::Canvas as DrawTarget>::Color,
+        Error = <P::Canvas as DrawTarget>::Error,
+    > + Dimensions
+           + '_
     where
         P: CanvasProperties,
     {
-        self.canvas_properties.canvas()
+        let bounds = self.bounding_box().to_rectangle();
+        self.canvas_properties.canvas().cropped(&bounds)
     }
 
     pub fn with_input_handler<H2>(self, handler: H2) -> Canvas<P, H2>
@@ -312,8 +310,10 @@ where
     H: FnMut(InputContext, InputEvent) -> bool,
 {
     fn draw(&mut self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
-        self.canvas_properties.move_canvas(self.bounds.position);
-        self.canvas().draw(&mut canvas.target)?;
+        let bounds = self.bounding_box().to_rectangle();
+        self.canvas_properties
+            .canvas()
+            .draw(&mut canvas.target.clipped(&bounds))?;
 
         Ok(())
     }
