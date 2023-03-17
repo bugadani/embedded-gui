@@ -21,7 +21,7 @@ use embedded_gui::{
     geometry::Position,
     input::event::{InputEvent, Key, KeyEvent, Modifier, PointerEvent},
     prelude::*,
-    widgets::{border::Border, fill::FillParent, layouts::linear::Column},
+    widgets::{border::Border, fill::FillParent, layouts::frame::Frame},
 };
 
 trait Convert {
@@ -184,13 +184,8 @@ fn main() {
 
     let mut gui = Window::new(
         EgCanvas::new(display),
-        Column::new()
-            .add(
-                DefaultTheme::primary_button("Animate")
-                    .bind(&state)
-                    .on_clicked(|state| state.enabled = !state.enabled),
-            )
-            .add(FillParent::both(Border::new(
+        Frame::new()
+            .add_layer(FillParent::both(Border::new(
                 Canvas::with_properties(CanvasStyle::<Rgb888>::new(EgSize::new(256, 128)))
                     .with_input_handler(|_ctxt, input| {
                         state.update(|data| match input {
@@ -232,7 +227,12 @@ fn main() {
                                 .into_styled(PrimitiveStyle::with_stroke(Rgb888::RED, 1));
                         circle.draw(&mut canvas).unwrap();
                     }),
-            ))),
+            )))
+            .add_layer(
+                DefaultTheme::primary_button("Animate")
+                    .bind(&state)
+                    .on_clicked(|state| state.enabled = !state.enabled),
+            ),
     );
 
     let output_settings = OutputSettingsBuilder::new().scale(2).build();
