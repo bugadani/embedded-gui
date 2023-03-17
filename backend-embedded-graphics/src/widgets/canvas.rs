@@ -252,7 +252,10 @@ where
                 }
             }
 
-            InputEvent::PointerEvent(position, PointerEvent::Drag | PointerEvent::Hover) => {
+            // We want controls drawn above the Canvas to get input events.
+            InputEvent::PointerEvent(_, PointerEvent::Hover) => None,
+
+            InputEvent::PointerEvent(position, PointerEvent::Drag) => {
                 if bounds.contains(position) {
                     Some(0)
                 } else {
