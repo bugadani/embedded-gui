@@ -118,11 +118,11 @@ where
     }
 
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
-        self.parent.test_input(event).or_else(|| {
-            self.object
-                .test_input(event)
-                .map(|idx| idx + self.parent.count_widgets())
-        })
+        // We need to pass to object first because it is the "upper" layer
+        self.object
+            .test_input(event)
+            .map(|idx| idx + self.parent.count_widgets())
+            .or_else(|| self.parent.test_input(event))
     }
 
     fn count_widgets(&self) -> usize {
