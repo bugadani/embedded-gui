@@ -13,15 +13,96 @@ use embedded_graphics::{
     Drawable,
 };
 use embedded_graphics_simulator::{
-    sdl2::MouseButton, OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window as SimWindow,
+    sdl2::{Keycode, Mod, MouseButton},
+    OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window as SimWindow,
 };
 use embedded_gui::{
     data::BoundData,
     geometry::Position,
-    input::event::{InputEvent, PointerEvent},
+    input::event::{InputEvent, Key, KeyEvent, Modifier, PointerEvent},
     prelude::*,
     widgets::{border::Border, fill::FillParent, layouts::linear::Column},
 };
+
+trait Convert {
+    type Output;
+
+    fn convert(self) -> Self::Output;
+}
+
+impl Convert for Keycode {
+    type Output = Option<Key>;
+
+    fn convert(self) -> Self::Output {
+        match self {
+            Keycode::Backspace => Some(Key::Backspace),
+            Keycode::Tab => Some(Key::Tab),
+            Keycode::Return => Some(Key::Enter),
+            Keycode::Space => Some(Key::Space),
+            Keycode::KpComma | Keycode::Comma => Some(Key::Comma),
+            Keycode::KpMinus | Keycode::Minus => Some(Key::Minus),
+            Keycode::KpPeriod | Keycode::Period => Some(Key::Period),
+            Keycode::Kp1 | Keycode::Num0 => Some(Key::N0),
+            Keycode::Kp2 | Keycode::Num1 => Some(Key::N1),
+            Keycode::Kp3 | Keycode::Num2 => Some(Key::N2),
+            Keycode::Kp4 | Keycode::Num3 => Some(Key::N3),
+            Keycode::Kp5 | Keycode::Num4 => Some(Key::N4),
+            Keycode::Kp6 | Keycode::Num5 => Some(Key::N5),
+            Keycode::Kp7 | Keycode::Num6 => Some(Key::N6),
+            Keycode::Kp8 | Keycode::Num7 => Some(Key::N7),
+            Keycode::Kp9 | Keycode::Num8 => Some(Key::N8),
+            Keycode::Kp0 | Keycode::Num9 => Some(Key::N9),
+            Keycode::A => Some(Key::A),
+            Keycode::B => Some(Key::B),
+            Keycode::C => Some(Key::C),
+            Keycode::D => Some(Key::D),
+            Keycode::E => Some(Key::E),
+            Keycode::F => Some(Key::F),
+            Keycode::G => Some(Key::G),
+            Keycode::H => Some(Key::H),
+            Keycode::I => Some(Key::I),
+            Keycode::J => Some(Key::J),
+            Keycode::K => Some(Key::K),
+            Keycode::L => Some(Key::L),
+            Keycode::M => Some(Key::M),
+            Keycode::N => Some(Key::N),
+            Keycode::O => Some(Key::O),
+            Keycode::P => Some(Key::P),
+            Keycode::Q => Some(Key::Q),
+            Keycode::R => Some(Key::R),
+            Keycode::S => Some(Key::S),
+            Keycode::T => Some(Key::T),
+            Keycode::U => Some(Key::U),
+            Keycode::V => Some(Key::V),
+            Keycode::W => Some(Key::W),
+            Keycode::X => Some(Key::X),
+            Keycode::Y => Some(Key::Y),
+            Keycode::Z => Some(Key::Z),
+            Keycode::Delete => Some(Key::Del),
+            Keycode::Right => Some(Key::ArrowRight),
+            Keycode::Left => Some(Key::ArrowLeft),
+            Keycode::Down => Some(Key::ArrowDown),
+            Keycode::Up => Some(Key::ArrowUp),
+            _ => None,
+        }
+    }
+}
+
+impl Convert for Mod {
+    type Output = Modifier;
+
+    fn convert(self) -> Self::Output {
+        if self.contains(Mod::RALTMOD) {
+            Modifier::Alt
+        } else if self.intersects(Mod::LSHIFTMOD | Mod::RSHIFTMOD) {
+            Modifier::Shift
+        } else if self.contains(Mod::CAPSMOD) {
+            Modifier::Shift
+        } else {
+            Modifier::None
+        }
+    }
+}
 
 fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
     unsafe {
@@ -65,6 +146,20 @@ fn convert_input(event: SimulatorEvent) -> Result<InputEvent, bool> {
                     PointerEvent::Hover
                 },
             )),
+            SimulatorEvent::KeyDown {
+                keycode, keymod, ..
+            } => Ok(InputEvent::KeyEvent(KeyEvent::KeyDown(
+                keycode.convert().ok_or(false)?,
+                keymod.convert(),
+                0,
+            ))),
+
+            SimulatorEvent::KeyUp {
+                keycode, keymod, ..
+            } => Ok(InputEvent::KeyEvent(KeyEvent::KeyUp(
+                keycode.convert().ok_or(false)?,
+                keymod.convert(),
+            ))),
             SimulatorEvent::Quit => Err(true),
             _ => Err(false),
         }
@@ -97,6 +192,20 @@ fn main() {
             )
             .add(FillParent::both(Border::new(
                 Canvas::with_properties(CanvasStyle::<Rgb888>::new(EgSize::new(256, 128)))
+                    .with_input_handler(|_ctxt, input| {
+                        state.update(|data| match input {
+                            InputEvent::PointerEvent(_, event) => match event {
+                                PointerEvent::Up => data.enabled = true,
+                                PointerEvent::Down => data.enabled = false,
+                                PointerEvent::Hover | PointerEvent::Drag => {}
+                            },
+                            InputEvent::KeyEvent(KeyEvent::KeyDown(Key::Space, _, _)) => {
+                                data.enabled = !data.enabled;
+                            }
+                            _ => (),
+                        });
+                        true
+                    })
                     .bind(&state)
                     .on_data_changed(|widget, state| {
                         let clear_color = widget.canvas_properties.clear_color;

@@ -1,12 +1,19 @@
-use embedded_canvas::{ CCanvasAt};
+use embedded_canvas::CCanvasAt;
 use embedded_graphics::{
-    prelude::{DrawTarget, PixelColor, Point, Dimensions, Size},
+    prelude::{Dimensions, DrawTarget, PixelColor, Point, Size},
     Drawable,
 };
 use embedded_gui::{
     geometry::{measurement::MeasureSpec, BoundingBox, MeasuredSize, Position},
+    input::{
+        controller::InputContext,
+        event::{InputEvent, PointerEvent},
+    },
     prelude::WrapperBindable,
-    state::WidgetState,
+    state::{
+        selection::{Selected, Unselected},
+        WidgetState,
+    },
     widgets::Widget,
     WidgetRenderer,
 };
@@ -71,12 +78,11 @@ use embedded_canvas::CanvasAt;
 //#[cfg(feature = "std")]
 pub struct CanvasStyle<C>
 where
-C: PixelColor,
+    C: PixelColor,
 {
     pub clear_color: C,
     pub canvas: CanvasAt<C>,
 }
-
 
 //#[cfg(feature = "std")]
 impl<C> CanvasStyle<C>
@@ -128,14 +134,21 @@ where
     }
 }
 
-pub struct Canvas<P> {
+pub struct Canvas<P, H: FnMut(InputContext, InputEvent) -> bool> {
     pub bounds: BoundingBox,
     pub parent_index: usize,
     pub canvas_properties: P,
+    pub state: WidgetState,
+    handler: Option<H>,
 }
 
-impl<P> Canvas<P> {
-    pub fn new() -> Self
+impl Canvas<(), fn(InputContext, InputEvent) -> bool> {
+    pub const STATE_SELECTED: Selected = Selected;
+    pub const STATE_UNSELECTED: Unselected = Unselected;
+}
+
+impl<P> Canvas<P, fn(InputContext, InputEvent) -> bool> {
+    pub fn new() -> Canvas<P, fn(InputContext, InputEvent) -> bool>
     where
         P: Default,
     {
@@ -143,10 +156,12 @@ impl<P> Canvas<P> {
             parent_index: 0,
             bounds: BoundingBox::default(),
             canvas_properties: P::default(),
+            state: WidgetState::default(),
+            handler: None,
         }
     }
 
-    pub fn with_properties(properties: P) -> Self
+    pub fn with_properties(properties: P) -> Canvas<P, fn(InputContext, InputEvent) -> bool>
     where
         P: Default,
     {
@@ -154,22 +169,48 @@ impl<P> Canvas<P> {
             parent_index: 0,
             bounds: BoundingBox::default(),
             canvas_properties: properties,
+            state: WidgetState::default(),
+            handler: None,
         }
     }
+}
 
+impl<P, H> Canvas<P, H>
+where
+    H: FnMut(InputContext, InputEvent) -> bool,
+{
     pub fn canvas(&mut self) -> &mut P::Canvas
     where
         P: CanvasProperties,
     {
         self.canvas_properties.canvas()
     }
+
+    pub fn with_input_handler<H2>(self, handler: H2) -> Canvas<P, H2>
+    where
+        H2: FnMut(InputContext, InputEvent) -> bool,
+    {
+        Canvas {
+            parent_index: self.parent_index,
+            bounds: self.bounds,
+            canvas_properties: self.canvas_properties,
+            state: self.state,
+            handler: Some(handler),
+        }
+    }
 }
 
-impl<P> WrapperBindable for Canvas<P> where P: CanvasProperties {}
-
-impl<P> Widget for Canvas<P>
+impl<P, H> WrapperBindable for Canvas<P, H>
 where
     P: CanvasProperties,
+    H: FnMut(InputContext, InputEvent) -> bool,
+{
+}
+
+impl<P, H> Widget for Canvas<P, H>
+where
+    P: CanvasProperties,
+    H: FnMut(InputContext, InputEvent) -> bool,
 {
     fn bounding_box(&self) -> BoundingBox {
         self.bounds
@@ -197,13 +238,78 @@ where
     }
 
     fn on_state_changed(&mut self, _: WidgetState) {}
+
+    fn test_input(&mut self, event: InputEvent) -> Option<usize> {
+        let bounds = self.bounding_box();
+
+        let state = &mut self.state;
+        self.handler.as_mut().and_then(|_| match event {
+            InputEvent::Cancel => {
+                state.set_state(Canvas::STATE_UNSELECTED);
+                None
+            }
+
+            InputEvent::PointerEvent(position, PointerEvent::Down) => {
+                if bounds.contains(position) {
+                    Some(0)
+                } else {
+                    // Allow a potentially clicked widget to handle the event.
+                    state.set_state(Canvas::STATE_UNSELECTED);
+                    None
+                }
+            }
+
+            InputEvent::PointerEvent(position, PointerEvent::Drag | PointerEvent::Hover) => {
+                if bounds.contains(position) {
+                    Some(0)
+                } else {
+                    None
+                }
+            }
+
+            InputEvent::KeyEvent(_) => {
+                if state.has_state(Canvas::STATE_SELECTED) {
+                    Some(0)
+                } else {
+                    None
+                }
+            }
+
+            _ => Some(0),
+        })
+    }
+
+    fn handle_input(&mut self, ctxt: InputContext, event: InputEvent) -> bool {
+        let state = &mut self.state;
+        self.handler
+            .as_mut()
+            .map(|handler| {
+                match event {
+                    InputEvent::Cancel => {
+                        state.set_state(Canvas::STATE_UNSELECTED);
+                    }
+                    InputEvent::PointerEvent(_, PointerEvent::Down) => {
+                        state.set_state(Canvas::STATE_SELECTED);
+                    }
+                    _ => {}
+                }
+
+                handler(ctxt, event)
+            })
+            .unwrap_or(false)
+    }
+
+    fn is_selectable(&self) -> bool {
+        self.handler.is_some()
+    }
 }
 
-impl<C, DT, P> WidgetRenderer<EgCanvas<DT>> for Canvas<P>
+impl<C, DT, P, H> WidgetRenderer<EgCanvas<DT>> for Canvas<P, H>
 where
     C: PixelColor,
     DT: DrawTarget<Color = C>,
     P: CanvasProperties<Color = C>,
+    H: FnMut(InputContext, InputEvent) -> bool,
 {
     fn draw(&mut self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
         self.canvas_properties.move_canvas(self.bounds.position);
