@@ -1,5 +1,6 @@
 use embedded_canvas::CCanvasAt;
 use embedded_graphics::{
+    draw_target::Cropped,
     prelude::{Dimensions, DrawTarget, DrawTargetExt, PixelColor, Point, Size},
     Drawable,
 };
@@ -170,13 +171,7 @@ impl<P, H> Canvas<P, H>
 where
     H: FnMut(InputContext, InputEvent) -> bool,
 {
-    pub fn canvas(
-        &mut self,
-    ) -> impl DrawTarget<
-        Color = <P::Canvas as DrawTarget>::Color,
-        Error = <P::Canvas as DrawTarget>::Error,
-    > + Dimensions
-           + '_
+    pub fn canvas(&mut self) -> Cropped<'_, P::Canvas>
     where
         P: CanvasProperties,
     {
