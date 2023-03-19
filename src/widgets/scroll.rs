@@ -547,6 +547,10 @@ where
         }
     }
 
+    fn reset_changed(&mut self) {
+        self.data_holder.reset_changed();
+    }
+
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
         if self.fields.state.has_state(Scroll::STATE_INACTIVE) {
             return None;

@@ -11,7 +11,6 @@ where
     D: WidgetData,
 {
     pub data: D,
-    pub last_version: D::Version,
     pub on_data_changed: fn(&mut W, &D::Data),
 }
 
@@ -19,7 +18,6 @@ impl<W> Default for WidgetDataHolder<W, ()> {
     fn default() -> Self {
         Self {
             data: (),
-            last_version: (),
             on_data_changed: |_, _| (),
         }
     }
@@ -32,7 +30,6 @@ impl<W> WidgetDataHolder<W, ()> {
     {
         WidgetDataHolder {
             data,
-            last_version: D::Version::default(),
             on_data_changed: |_, _| (),
         }
     }
@@ -43,11 +40,11 @@ where
     D: WidgetData,
 {
     pub fn update(&mut self, widget: &mut W) {
-        let current_version = self.data.version();
-        if current_version != self.last_version {
-            self.last_version = current_version;
+        self.data
+            .on_changed(|data| (self.on_data_changed)(widget, data));
+    }
 
-            self.data.read(|data| (self.on_data_changed)(widget, data));
-        }
+    pub fn reset_changed(&self) {
+        self.data.reset_changed()
     }
 }

@@ -57,6 +57,10 @@ where
         self.data_holder.update(&mut self.widget);
         self.widget.update();
     }
+
+    fn reset_changed(&mut self) {
+        self.data_holder.reset_changed();
+    }
 }
 
 impl<W, D, C> WidgetRenderer<C> for Wrapper<W, D>

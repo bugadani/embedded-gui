@@ -198,6 +198,10 @@ where
         self.data_holder.update(&mut self.fields);
     }
 
+    fn reset_changed(&mut self) {
+        self.data_holder.reset_changed();
+    }
+
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
         if self.fields.state.has_state(TextBox::STATE_INACTIVE) {
             return None;

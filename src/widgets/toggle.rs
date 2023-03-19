@@ -222,6 +222,10 @@ where
         self.fields.inner.update();
     }
 
+    fn reset_changed(&mut self) {
+        self.data_holder.reset_changed();
+    }
+
     fn test_input(&mut self, event: InputEvent) -> Option<usize> {
         if self.fields.state.has_state(Toggle::STATE_INACTIVE) {
             return None;

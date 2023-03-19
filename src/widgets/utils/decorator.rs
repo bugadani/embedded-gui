@@ -31,6 +31,10 @@ pub trait WidgetDecorator {
         self.widget_mut().arrange(position);
     }
 
+    fn reset_changed(&mut self) {
+        self.widget_mut().reset_changed();
+    }
+
     fn children(&self) -> usize {
         1 + self.widget().children()
     }

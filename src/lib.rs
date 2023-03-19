@@ -123,6 +123,7 @@ where
 
     pub fn update(&mut self) {
         self.root.update();
+        self.root.reset_changed();
     }
 
     pub fn measure(&mut self) {

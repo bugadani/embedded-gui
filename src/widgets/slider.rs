@@ -416,6 +416,10 @@ where
         self.data_holder.update(&mut self.fields);
     }
 
+    fn reset_changed(&mut self) {
+        self.data_holder.reset_changed();
+    }
+
     fn parent_index(&self) -> usize {
         self.fields.parent_index
     }

@@ -1,17 +1,16 @@
 use core::{
-    cell::{RefCell, RefMut},
+    cell::{Cell, RefCell, RefMut},
     ops::Deref,
 };
 
 pub trait WidgetData {
     type Data;
-    type Version: PartialEq + Default;
 
     fn update(&self, _f: impl FnOnce(&mut Self::Data));
 
-    fn read(&self, callback: impl FnOnce(&Self::Data));
+    fn on_changed(&self, callback: impl FnOnce(&Self::Data));
 
-    fn version(&self) -> Self::Version;
+    fn reset_changed(&self);
 }
 
 impl<T> WidgetData for &T
@@ -19,39 +18,34 @@ where
     T: WidgetData,
 {
     type Data = T::Data;
-    type Version = T::Version;
 
     fn update(&self, f: impl FnOnce(&mut Self::Data)) {
         (*self).update(f)
     }
 
-    fn read(&self, callback: impl FnOnce(&Self::Data)) {
-        (*self).read(callback);
+    fn on_changed(&self, callback: impl FnOnce(&Self::Data)) {
+        (*self).on_changed(callback);
     }
 
-    fn version(&self) -> Self::Version {
-        (*self).version()
+    fn reset_changed(&self) {
+        (*self).reset_changed();
     }
 }
 
 impl WidgetData for () {
     type Data = ();
-    type Version = ();
 
     fn update(&self, _f: impl FnOnce(&mut Self::Data)) {}
 
-    fn read(&self, callback: impl FnOnce(&Self::Data)) {
-        callback(&());
-    }
+    fn on_changed(&self, _: impl FnOnce(&Self::Data)) {}
 
-    fn version(&self) {}
+    fn reset_changed(&self) {}
 }
 
 struct BoundDataInner<D, F>
 where
     F: FnMut(&D),
 {
-    version: usize,
     data: D,
     on_changed: F,
 }
@@ -62,6 +56,7 @@ where
     F: FnMut(&D),
 {
     inner: RefCell<BoundDataInner<D, F>>,
+    changed: Cell<bool>,
 }
 
 impl<D, F> BoundData<D, F>
@@ -71,10 +66,10 @@ where
     pub fn new(init: D, on_changed: F) -> Self {
         Self {
             inner: RefCell::new(BoundDataInner {
-                version: 1, // Make sure update fires always after creation
                 data: init,
                 on_changed,
             }),
+            changed: Cell::new(true),
         }
     }
 }
@@ -84,12 +79,11 @@ where
     F: FnMut(&D),
 {
     type Data = D;
-    type Version = usize;
 
     fn update(&self, updater: impl FnOnce(&mut Self::Data)) {
         let mut borrow = self.inner.borrow_mut();
 
-        borrow.version = borrow.version.wrapping_add(1);
+        self.changed.set(true);
         updater(&mut borrow.data);
 
         let (data, mut on_changed) =
@@ -98,12 +92,14 @@ where
         on_changed(data.deref());
     }
 
-    fn read(&self, callback: impl FnOnce(&Self::Data)) {
-        let borrow = self.inner.borrow();
-        callback(&borrow.data);
+    fn on_changed(&self, callback: impl FnOnce(&Self::Data)) {
+        if self.changed.get() {
+            let borrow = self.inner.borrow();
+            callback(&borrow.data);
+        }
     }
 
-    fn version(&self) -> usize {
-        self.inner.borrow().version
+    fn reset_changed(&self) {
+        self.changed.set(false);
     }
 }

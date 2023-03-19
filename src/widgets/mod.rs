@@ -140,4 +140,6 @@ pub trait Widget {
     fn is_selectable(&self) -> bool {
         false
     }
+
+    fn reset_changed(&mut self) {}
 }
