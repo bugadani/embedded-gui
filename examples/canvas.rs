@@ -2,7 +2,7 @@ use std::{thread, time::Duration};
 
 use backend_embedded_graphics::{
     themes::{default::DefaultTheme, Theme},
-    widgets::canvas::{Canvas, CanvasStyle},
+    widgets::canvas::{Canvas, CanvasProperties, CanvasStyle},
     EgCanvas,
 };
 use embedded_graphics::{
@@ -203,7 +203,7 @@ fn main() {
                     })
                     .bind(&state)
                     .on_data_changed(|widget, state| {
-                        let clear_color = widget.canvas_properties.clear_color;
+                        let clear_color = widget.canvas_properties.clear_color();
                         let mut canvas = widget.canvas();
 
                         canvas.clear(clear_color).unwrap();

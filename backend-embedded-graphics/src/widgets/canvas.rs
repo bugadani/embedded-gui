@@ -23,9 +23,10 @@ use crate::{themes::Theme, EgCanvas, ToRectangle};
 
 pub trait CanvasProperties {
     type Color;
-    type Canvas: DrawTargetExt + Drawable<Color = Self::Color>;
+    type Canvas: DrawTarget<Color = Self::Color> + DrawTargetExt + Drawable<Color = Self::Color>;
 
     fn canvas(&mut self) -> &mut Self::Canvas;
+    fn clear_color(&mut self) -> Self::Color;
     fn measure(&self) -> MeasuredSize;
 }
 
@@ -46,6 +47,10 @@ where
 
     fn canvas(&mut self) -> &mut Self::Canvas {
         &mut self.canvas
+    }
+
+    fn clear_color(&mut self) -> Self::Color {
+        self.clear_color
     }
 
     fn measure(&self) -> MeasuredSize {
@@ -103,6 +108,10 @@ where
 
     fn canvas(&mut self) -> &mut Self::Canvas {
         &mut self.canvas
+    }
+
+    fn clear_color(&mut self) -> Self::Color {
+        self.clear_color
     }
 
     fn measure(&self) -> MeasuredSize {
