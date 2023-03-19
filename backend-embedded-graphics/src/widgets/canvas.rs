@@ -135,60 +135,69 @@ where
     }
 }
 
-pub struct Canvas<P, H: FnMut(InputContext, InputEvent) -> bool> {
+pub struct Canvas<P, H, D> {
     pub bounds: BoundingBox,
     pub parent_index: usize,
     pub canvas_properties: P,
     pub state: WidgetState,
     handler: Option<H>,
+    on_draw: D,
+    draw: bool,
 }
 
-impl Canvas<(), fn(InputContext, InputEvent) -> bool> {
+impl Canvas<(), (), ()> {
     pub const STATE_SELECTED: Selected = Selected;
     pub const STATE_UNSELECTED: Unselected = Unselected;
 }
 
-impl<P> Canvas<P, fn(InputContext, InputEvent) -> bool> {
-    pub fn new() -> Canvas<P, fn(InputContext, InputEvent) -> bool>
+impl<P> Canvas<P, (), ()>
+where
+    P: CanvasProperties,
+{
+    pub fn new() -> Canvas<P, fn(InputContext, InputEvent) -> bool, fn(&mut Cropped<'_, P::Canvas>)>
     where
         P: Default,
     {
-        Self {
+        Canvas {
             parent_index: 0,
             bounds: BoundingBox::default(),
             canvas_properties: P::default(),
             state: WidgetState::default(),
             handler: None,
+            on_draw: |_| {},
+            draw: true,
         }
     }
 
-    pub fn with_properties(properties: P) -> Canvas<P, fn(InputContext, InputEvent) -> bool>
+    pub fn with_properties(
+        properties: P,
+    ) -> Canvas<P, fn(InputContext, InputEvent) -> bool, fn(&mut Cropped<'_, P::Canvas>)>
     where
         P: Default,
     {
-        Self {
+        Canvas {
             parent_index: 0,
             bounds: BoundingBox::default(),
             canvas_properties: properties,
             state: WidgetState::default(),
             handler: None,
+            on_draw: |_| {},
+            draw: true,
         }
     }
 }
 
-impl<P, H> Canvas<P, H>
+impl<P, H, D> Canvas<P, H, D>
 where
+    P: CanvasProperties,
     H: FnMut(InputContext, InputEvent) -> bool,
+    D: FnMut(&mut Cropped<'_, P::Canvas>),
 {
-    pub fn canvas(&mut self) -> Cropped<'_, P::Canvas>
-    where
-        P: CanvasProperties,
-    {
-        let bounds = self.bounding_box().to_rectangle();
-        self.canvas_properties.canvas().cropped(&bounds)
+    pub fn invalidate(&mut self) {
+        self.draw = true;
     }
 
-    pub fn with_input_handler<H2>(self, handler: H2) -> Canvas<P, H2>
+    pub fn with_input_handler<H2>(self, handler: H2) -> Canvas<P, H2, D>
     where
         H2: FnMut(InputContext, InputEvent) -> bool,
     {
@@ -198,21 +207,41 @@ where
             canvas_properties: self.canvas_properties,
             state: self.state,
             handler: Some(handler),
+            on_draw: self.on_draw,
+            draw: self.draw,
+        }
+    }
+
+    pub fn with_on_draw<D2>(self, on_draw: D2) -> Canvas<P, H, D2>
+    where
+        P: CanvasProperties,
+        D2: FnMut(&mut Cropped<'_, P::Canvas>),
+    {
+        Canvas {
+            parent_index: self.parent_index,
+            bounds: self.bounds,
+            canvas_properties: self.canvas_properties,
+            state: self.state,
+            handler: self.handler,
+            on_draw,
+            draw: self.draw,
         }
     }
 }
 
-impl<P, H> WrapperBindable for Canvas<P, H>
+impl<P, H, D> WrapperBindable for Canvas<P, H, D>
 where
     P: CanvasProperties,
     H: FnMut(InputContext, InputEvent) -> bool,
+    D: FnMut(&mut Cropped<'_, P::Canvas>),
 {
 }
 
-impl<P, H> Widget for Canvas<P, H>
+impl<P, H, D> Widget for Canvas<P, H, D>
 where
     P: CanvasProperties,
     H: FnMut(InputContext, InputEvent) -> bool,
+    D: FnMut(&mut Cropped<'_, P::Canvas>),
 {
     fn bounding_box(&self) -> BoundingBox {
         self.bounds
@@ -309,14 +338,26 @@ where
     }
 }
 
-impl<C, DT, P, H> WidgetRenderer<EgCanvas<DT>> for Canvas<P, H>
+impl<C, DT, P, H, D> WidgetRenderer<EgCanvas<DT>> for Canvas<P, H, D>
 where
     C: PixelColor,
     DT: DrawTarget<Color = C>,
     P: CanvasProperties<Color = C>,
     H: FnMut(InputContext, InputEvent) -> bool,
+    D: FnMut(&mut Cropped<'_, P::Canvas>),
 {
     fn draw(&mut self, canvas: &mut EgCanvas<DT>) -> Result<(), DT::Error> {
+        if self.draw {
+            self.draw = false;
+            let bounds = self.bounding_box().to_rectangle();
+            let clear_color = self.canvas_properties.clear_color();
+            let mut canvas = self.canvas_properties.canvas().cropped(&bounds);
+
+            _ = canvas.clear(clear_color);
+
+            (self.on_draw)(&mut canvas);
+        }
+
         let bounds = self.bounding_box().to_rectangle();
         self.canvas_properties
             .canvas()

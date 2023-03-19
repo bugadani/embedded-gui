@@ -2,7 +2,7 @@ use std::{thread, time::Duration};
 
 use backend_embedded_graphics::{
     themes::{default::DefaultTheme, Theme},
-    widgets::canvas::{Canvas, CanvasProperties, CanvasStyle},
+    widgets::canvas::{Canvas, CanvasStyle},
     EgCanvas,
 };
 use embedded_graphics::{
@@ -201,14 +201,8 @@ fn main() {
                         });
                         true
                     })
-                    .bind(&state)
-                    .on_data_changed(|widget, state| {
-                        let clear_color = widget.canvas_properties.clear_color();
-                        let mut canvas = widget.canvas();
-
-                        canvas.clear(clear_color).unwrap();
-
-                        let t = state.time % 100;
+                    .with_on_draw(|canvas| {
+                        let t = state.with_data(|state| state.time % 100);
 
                         let increment = if t < 50 { t } else { 50 - (t - 50) };
 
@@ -220,13 +214,15 @@ fn main() {
                             },
                         )
                         .into_styled(PrimitiveStyle::with_stroke(Rgb888::BLUE, 1));
-                        rectangle.draw(&mut canvas).unwrap();
+                        rectangle.draw(canvas).unwrap();
 
                         let circle =
                             Circle::with_center(canvas.bounding_box().center(), 40 + increment)
                                 .into_styled(PrimitiveStyle::with_stroke(Rgb888::RED, 1));
-                        circle.draw(&mut canvas).unwrap();
-                    }),
+                        circle.draw(canvas).unwrap();
+                    })
+                    .bind(&state)
+                    .on_data_changed(|widget, _| widget.invalidate()),
             )))
             .add_layer(
                 DefaultTheme::primary_button("Animate")
