@@ -9,7 +9,7 @@ pub trait WidgetData {
 
     fn update(&self, _f: impl FnOnce(&mut Self::Data));
 
-    fn read<W>(&self, widget: &mut W, callback: fn(&mut W, &Self::Data));
+    fn read(&self, callback: impl FnOnce(&Self::Data));
 
     fn version(&self) -> Self::Version;
 }
@@ -25,8 +25,8 @@ where
         (*self).update(f)
     }
 
-    fn read<W>(&self, widget: &mut W, callback: fn(&mut W, &Self::Data)) {
-        (*self).read(widget, callback);
+    fn read(&self, callback: impl FnOnce(&Self::Data)) {
+        (*self).read(callback);
     }
 
     fn version(&self) -> Self::Version {
@@ -40,8 +40,8 @@ impl WidgetData for () {
 
     fn update(&self, _f: impl FnOnce(&mut Self::Data)) {}
 
-    fn read<W>(&self, widget: &mut W, callback: fn(&mut W, &Self::Data)) {
-        callback(widget, &());
+    fn read(&self, callback: impl FnOnce(&Self::Data)) {
+        callback(&());
     }
 
     fn version(&self) {}
@@ -98,9 +98,9 @@ where
         on_changed(data.deref());
     }
 
-    fn read<W>(&self, widget: &mut W, callback: fn(&mut W, &Self::Data)) {
+    fn read(&self, callback: impl FnOnce(&Self::Data)) {
         let borrow = self.inner.borrow();
-        callback(widget, &borrow.data);
+        callback(&borrow.data);
     }
 
     fn version(&self) -> usize {

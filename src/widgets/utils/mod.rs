@@ -47,7 +47,7 @@ where
         if current_version != self.last_version {
             self.last_version = current_version;
 
-            self.data.read(widget, self.on_data_changed);
+            self.data.read(|data| (self.on_data_changed)(widget, data));
         }
     }
 }
