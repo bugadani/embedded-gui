@@ -1,5 +1,6 @@
 pub mod background;
 pub mod border;
+pub mod canvas;
 pub mod graphical;
 pub mod label;
 pub mod scroll;

@@ -49,6 +49,8 @@ use embedded_gui::{
     Canvas,
 };
 
+pub use embedded_canvas;
+
 trait ToPoint {
     fn to_point(self) -> Point;
 }
