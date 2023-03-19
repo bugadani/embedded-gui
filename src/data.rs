@@ -10,6 +10,8 @@ pub trait WidgetData {
 
     fn on_changed(&self, callback: impl FnOnce(&Self::Data));
 
+    fn with_data<R>(&self, f: impl FnOnce(&Self::Data) -> R) -> R;
+
     fn reset_changed(&self);
 }
 
@@ -27,6 +29,10 @@ where
         (*self).on_changed(callback);
     }
 
+    fn with_data<R>(&self, f: impl FnOnce(&Self::Data) -> R) -> R {
+        (*self).with_data(f)
+    }
+
     fn reset_changed(&self) {
         (*self).reset_changed();
     }
@@ -38,6 +44,10 @@ impl WidgetData for () {
     fn update(&self, _f: impl FnOnce(&mut Self::Data)) {}
 
     fn on_changed(&self, _: impl FnOnce(&Self::Data)) {}
+
+    fn with_data<R>(&self, f: impl FnOnce(&Self::Data) -> R) -> R {
+        f(&())
+    }
 
     fn reset_changed(&self) {}
 }
@@ -94,9 +104,13 @@ where
 
     fn on_changed(&self, callback: impl FnOnce(&Self::Data)) {
         if self.changed.get() {
-            let borrow = self.inner.borrow();
-            callback(&borrow.data);
+            self.with_data(callback);
         }
+    }
+
+    fn with_data<R>(&self, f: impl FnOnce(&Self::Data) -> R) -> R {
+        let borrow = self.inner.borrow();
+        f(&borrow.data)
     }
 
     fn reset_changed(&self) {
