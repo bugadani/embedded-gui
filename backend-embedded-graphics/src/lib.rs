@@ -24,7 +24,8 @@
 //! Themes
 //! ------
 //!
-//! This crate provides collections of commonly used widget compositions, called themes.
+//! This crate provides collections of commonly used widget compositions, called themes. Rendering
+//! and visual style of graphical widgets are also implemented by themes.
 //!
 //!  - [`DefaultTheme`]: supports both `BinaryColor`, `Rgb555`, `Rgb565`, `Rgb888` draw targets.
 //!
