@@ -36,6 +36,14 @@ where
     C: PixelColor,
     T: TextRenderer<Color = C> + CharacterStyle<Color = C>,
 {
+    pub fn new(renderer: T) -> Self {
+        Self {
+            renderer,
+            horizontal: HorizontalAlignment::Left,
+            vertical: VerticalAlignment::Top,
+        }
+    }
+
     /// Customize the text color
     pub fn text_color(&mut self, text_color: C) {
         self.renderer.set_text_color(Some(text_color));
@@ -233,69 +241,3 @@ where
         .map(|_| ())
     }
 }
-
-macro_rules! textbox_for_charset {
-    ($charset:ident, $font:ident) => {
-        pub mod $charset {
-            use embedded_graphics::{
-                mono_font::{$charset, MonoTextStyle},
-                pixelcolor::PixelColor,
-            };
-            use embedded_gui::{geometry::BoundingBox, widgets::text_block::TextBlock};
-            use embedded_text::alignment::{HorizontalAlignment, VerticalAlignment};
-
-            use crate::{themes::Theme, widgets::text_block::TextBlockStyle};
-
-            pub trait TextBlockConstructor<'a, S, C>
-            where
-                S: AsRef<str>,
-                C: PixelColor,
-            {
-                fn new(text: S) -> TextBlock<S, TextBlockStyle<MonoTextStyle<'a, C>>>;
-            }
-
-            impl<'a, C, S> TextBlockConstructor<'a, S, C>
-                for TextBlock<S, TextBlockStyle<MonoTextStyle<'a, C>>>
-            where
-                S: AsRef<str>,
-                C: PixelColor + Theme,
-            {
-                fn new(text: S) -> Self {
-                    TextBlock {
-                        parent_index: 0,
-                        text,
-                        label_properties: TextBlockStyle {
-                            renderer: MonoTextStyle::new(
-                                &$charset::$font,
-                                <C as Theme>::TEXT_COLOR,
-                            ),
-                            horizontal: HorizontalAlignment::Left,
-                            vertical: VerticalAlignment::Top,
-                        },
-                        bounds: BoundingBox::default(),
-                        on_state_changed: |_, _| (),
-                    }
-                }
-            }
-        }
-    };
-
-    ($charset:ident) => {
-        textbox_for_charset!($charset, FONT_6X10);
-    };
-}
-
-textbox_for_charset!(ascii);
-textbox_for_charset!(iso_8859_1);
-textbox_for_charset!(iso_8859_10);
-textbox_for_charset!(iso_8859_13);
-textbox_for_charset!(iso_8859_14);
-textbox_for_charset!(iso_8859_15);
-textbox_for_charset!(iso_8859_16);
-textbox_for_charset!(iso_8859_2);
-textbox_for_charset!(iso_8859_3);
-textbox_for_charset!(iso_8859_4);
-textbox_for_charset!(iso_8859_5);
-textbox_for_charset!(iso_8859_7);
-textbox_for_charset!(iso_8859_9);
-textbox_for_charset!(jis_x0201, FONT_6X13);

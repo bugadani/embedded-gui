@@ -38,16 +38,20 @@ impl<P> CheckBox<P>
 where
     P: CheckBoxProperties,
 {
+    pub fn with_style(style: P) -> CheckBox<P> {
+        CheckBox {
+            parent_index: 0,
+            checkbox_properties: style,
+            bounds: BoundingBox::default(),
+            on_state_changed: |_, _| (),
+        }
+    }
+
     pub fn new() -> CheckBox<P>
     where
         P: Default,
     {
-        CheckBox {
-            parent_index: 0,
-            checkbox_properties: P::default(),
-            bounds: BoundingBox::default(),
-            on_state_changed: |_, _| (),
-        }
+        Self::with_style(P::default())
     }
 
     pub fn background_color(mut self, color: P::Color) -> Self {

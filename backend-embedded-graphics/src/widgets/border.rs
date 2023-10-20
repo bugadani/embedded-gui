@@ -13,38 +13,30 @@ use embedded_gui::{
     WidgetRenderer,
 };
 
-use crate::{themes::Theme, EgCanvas, ToRectangle};
+use crate::{EgCanvas, ToRectangle};
 
 pub struct BorderStyle<C>
 where
     C: PixelColor,
 {
-    color: C,
-    width: u32,
+    pub color: C,
+    pub width: u32,
 }
 
 impl<C> BorderStyle<C>
 where
     C: PixelColor,
 {
+    pub fn new(color: C, width: u32) -> Self {
+        Self { color, width }
+    }
+
     fn build_style(&self) -> PrimitiveStyle<C> {
         PrimitiveStyleBuilder::new()
             .stroke_alignment(StrokeAlignment::Inside)
             .stroke_color(self.color)
             .stroke_width(self.width)
             .build()
-    }
-}
-
-impl<C> Default for BorderStyle<C>
-where
-    C: Theme,
-{
-    fn default() -> Self {
-        Self {
-            color: C::BORDER_COLOR,
-            width: 1,
-        }
     }
 }
 
@@ -63,7 +55,6 @@ where
     }
 }
 
-// TODO: draw target should be clipped to widget's bounds, so this can be restored to Border
 impl<W, C, DT> WidgetRenderer<EgCanvas<DT>> for Border<W, BorderStyle<C>>
 where
     W: Widget + WidgetRenderer<EgCanvas<DT>>,
